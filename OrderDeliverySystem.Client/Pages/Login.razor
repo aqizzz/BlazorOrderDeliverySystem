@@ -1,0 +1,87 @@
+﻿@page "/login"
+@using OrderDeliverySystem.Share.DTOs
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@using OrderDeliverySystem.Client.Shared.Common
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager NavigationManager
+@inject IAuthService AuthService
+@rendermode InteractiveServer
+
+<h3>Login</h3>
+
+@* Display message to user if it's not empty *@
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert @alertClass" role="alert">
+        @message
+    </div>
+}
+
+<EditForm Model="@model" OnValidSubmit="HandleLogin" FormName="loginForm">
+    <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
+    <DataAnnotationsValidator />
+
+    <div class="form-group">
+        <label for="email">Email:</label>
+        <InputText id="email" @bind-Value="model.Email" class="form-control" />
+        <ValidationMessage For="@(() => model.Email)" />
+    </div>
+
+    <div class="form-group">
+        <label for="password">Password:</label>
+        <InputText id="password" @bind-Value="model.Password" type="password" class="form-control" />
+        <ValidationMessage For="@(() => model.Password)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Login</button>
+</EditForm>
+
+<p class="text-center mt-4">Don't have account? <a href="/register">Create one now</a></p>
+
+@code {
+    // Create an instance of LoginModel to bind form data
+    private readonly LoginRequestDTO model = new LoginRequestDTO();
+
+    public bool ShowErrors { get; set; } = false;
+
+    public IEnumerable<string> Errors { get; set; } = new List<string>();
+
+    private string message { get; set; } = string.Empty;
+    private string alertClass { get; set; } = string.Empty;
+    private bool showAlert { get; set; } = false;
+
+    // Handle form submission
+    private async Task HandleLogin()
+    {
+        try
+        {
+            // Send a POST request to the login API endpoint
+            var result = await this.AuthService.Login(this.model);
+
+            if (result.Succeeded)
+            {
+
+                this.ShowErrors = false;
+
+                this.message = "You have successfully logged in!";
+                this.alertClass = "alert-success";
+                this.showAlert = true;
+
+                await Task.Delay(3000);
+
+                // Login successful, navigate to home page or dashboard
+                NavigationManager.NavigateTo("/");
+            }
+            else
+            {
+                // Handle login failure
+                this.Errors = result.Errors;
+                this.ShowErrors = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
+        }
+    }
+}
