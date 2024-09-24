@@ -1,7 +1,34 @@
 ﻿@page "/"
+@inject IHttpClientFactory HttpClientFactory
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+@if (isCustomer)
+{
+    <MudContainer Class="my-10">
+        <div style="position: relative; display: inline-block;">
+            <MudImage Src="images/banner1.png" Alt="Swedish Farm House" Elevation="15" Class="rounded-lg mt-3" Style="width:100%" />
+            <div Class="rounded-lg mt-3" style="position: absolute; top: 0; left: 0; width: 100%; height: 98%; background-color: rgba(50, 50, 50, 0.6);"></div>
+            <div style="width:95%;position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 110px; font-weight: bold;">
+                Bringing Your Favourite
+                <br />Dishes Home
+            </div>
 
-<PageTitle>Home</PageTitle>
+            <div Class="rounded-lg mt-3" style="position: absolute; top: 80%; left: 75%; ">
+                <MudButton Class="text-white" Variant="Variant.Outlined" Color="Color.Inherit" Size="Size.Large" Href="/restaurants">Order Now</MudButton>
+            </div>
+        </div>
+    </MudContainer>
+}
+else
+{
+    <MudContainer Class="my-10">
+        <div>this is main content</div>
+    </MudContainer>
+}
 
-<h1>Hello, world!</h1>
 
-Welcome to your new app.
+@code {
+    public string Role { get; set; }
+    bool isCustomer = true;
+}

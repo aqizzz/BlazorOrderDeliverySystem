@@ -1,0 +1,48 @@
+﻿@page "/restaurants"
+@using OrderDeliverySystem.Client.Shared
+
+ <MudContainer Class="my-10" MaxWidth="MaxWidth.Large">
+
+    <MudText Class="pt-4" Typo="Typo.h3" Align="Align.Center" GutterBottom="true">Restaurants</MudText>
+    <MudText Align="Align.Center">Some long pricing text should go here maybe? who knows what text you would want here, i guess i cant fill it in for you.</MudText>
+    <MudGrid Class="mt-2">
+        <MudItem xs="12" sm="12" md="12" Class="d-flex justify-content-center align-items-end mb-2">
+            <div class="w-50 mb-4">
+                <MudTextField @bind-Value="searchText" Placeholder="Search Merchant by Name..." Adornment="Adornment.End" AdornmentColor="Color.Secondary" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" OnBlur="@OnSearch" OnKeyUp="OnKeyUp" />
+            </div>
+        </MudItem>
+        <MudDivider Style="color:rgba(112, 0, 0, 1);border-color:rgba(112, 0, 0, 1);border-width:3px;" />
+        <MudItem xs="12" sm="6" md="3">
+            <RestaurantCard RestaurantId="1" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <RestaurantCard RestaurantId="2" />
+        </MudItem>
+        <MudItem xs="12" sm="12" md="3">
+            <RestaurantCard RestaurantId="3" />
+        </MudItem>
+        <MudItem xs="12" sm="12" md="3">
+            <RestaurantCard RestaurantId="4" />
+        </MudItem>
+    </MudGrid>
+
+</MudContainer>
+@code {
+    
+    private string searchText = "";
+
+    private void OnSearch()
+    {
+        // search logic
+        Console.WriteLine($"Searching for: {searchText}");
+    }
+
+    private void OnKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            // click enter to search
+            OnSearch();
+        }
+    }
+}
