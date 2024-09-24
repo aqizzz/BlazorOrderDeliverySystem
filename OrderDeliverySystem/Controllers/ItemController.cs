@@ -192,6 +192,34 @@ namespace OrderDeliverySystem.Controllers
             return Ok(existingItem);
         }
 
+        // DELETE: api/items/{id}
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Merchant")] // Ensure that only merchants can access this endpoint
+        public async Task<IActionResult> DeleteItem(int id)
+        {
+            // Find the item by its ID
+            var item = await _context.Items.FindAsync(id);
+
+            if (item == null)
+            {
+                _logger.LogInformation($"Item with id {id} not found.");
+                return NotFound($"Item with id {id} not found.");
+            }
+
+            // Ensure the user is the owner of the item 
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Get the current user's ID
+            if (item.MerchantId != int.Parse(userId))
+            {
+                return Forbid(); // User is not authorized to delete this item
+            }
+
+            // Remove the item from the database
+            _context.Items.Remove(item);
+            await _context.SaveChangesAsync();
+
+            return NoContent(); // Return 204 No Content status
+        }
+
 
     }
 }
