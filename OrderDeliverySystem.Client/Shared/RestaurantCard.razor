@@ -1,0 +1,46 @@
+﻿@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<MudButton OnClick="Transfer" Color="Color.Primary">
+
+    <MudCard Class="px-4 py-3">
+        <MudCardMedia  Image="images/Merchant.png" Height="150" Size=""/>
+        <MudCardContent>
+            <MudGrid>
+                <MudItem xs="12">
+                        <MudText Typo="Typo.h5">Merchant @RestaurantId</MudText>
+                </MudItem>
+                <MudItem xs="2">
+                    <MudIcon Class="inline-block" Icon="@Icons.Material.Outlined.AccessTime">.</MudIcon>
+                </MudItem>
+                <MudItem xs="10">
+                    <MudText Typo="Typo.body2">Time: 40 ~ 50 mins</MudText>
+                </MudItem>
+                <MudItem xs="2">
+                    <MudIcon Class="inline-block" Icon="@Icons.Material.Outlined.LocationOn"></MudIcon>
+                </MudItem>
+                <MudItem xs="10">
+                    <MudText Typo="Typo.body2">Address: This Merchant's Address'</MudText>
+                </MudItem>
+            </MudGrid>
+       
+        </MudCardContent>
+        <!--<MudCardActions>
+            <MudButton Variant="Variant.Text" Color="Color.Primary">Share</MudButton>
+            <MudButton Variant="Variant.Text" Color="Color.Primary">Learn More</MudButton>
+        </MudCardActions>-->
+    </MudCard>
+</MudButton>
+
+@code {
+    [Parameter]
+    public string RestaurantId { get; set; }
+
+
+    private void Transfer()
+    {
+        NavigationManager.NavigateTo($"/merchant/{RestaurantId}");
+        // 这里可以执行其他逻辑
+    }
+}
