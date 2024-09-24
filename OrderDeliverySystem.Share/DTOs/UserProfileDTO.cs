@@ -5,11 +5,14 @@ using static OrderDeliverySystem.Share.Data.Constants.User;
 
 namespace OrderDeliverySystem.Share.DTOs
 {
-    public class UserUpdateDTO
+    public class UserProfileDTO : AddressUpdateDTO
     {
+        public int UserId { get; set; }
+
         [Required(ErrorMessage = RequiredAttributeErrorMessage)]
         [EmailAddress(ErrorMessage = InvalidEmailFormatErrorMessage)]
-        public string Email { get; set; }
+        [StringLength(MaxEmailLength, ErrorMessage = StringLengthErrorMessage, MinimumLength = MinEmailLength)]
+        public string Email { get; set; } = string.Empty;
 
         [StringLength(MaxNameLength, ErrorMessage = StringLengthErrorMessage, MinimumLength = MinNameLength)]
         public string? FirstName { get; set; }
@@ -17,7 +20,7 @@ namespace OrderDeliverySystem.Share.DTOs
         [StringLength(MaxNameLength, ErrorMessage = StringLengthErrorMessage, MinimumLength = MinNameLength)]
         public string? LastName { get; set; }
 
-        [PhoneFormat(ErrorMessage = PhoneFormatDoesNotMatchErrorMessage)]
+        [PhoneFormat]
         public string? Phone { get; set; }
     }
 }

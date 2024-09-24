@@ -65,7 +65,7 @@ namespace OrderDeliverySystem.Share.Data
                     .OnDelete(DeleteBehavior.Cascade);
 
                 entity.Property(dw => dw.CommissionRate)
-                    .HasPrecision(15, 2);
+                    .HasPrecision(5, 2);
             });
 
 
@@ -147,13 +147,13 @@ namespace OrderDeliverySystem.Share.Data
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.Property(e => e.Discount)
-                    .HasColumnType("decimal(18, 2)");
+                    .HasColumnType("decimal(5, 2)");
 
                 entity.Property(e => e.PriceAtOrder)
                     .HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.Tax)
-                    .HasColumnType("decimal(18, 2)");
+                    .HasColumnType("decimal(5, 2)");
             }); 
 
             // Configure Review Table
@@ -207,6 +207,9 @@ namespace OrderDeliverySystem.Share.Data
             modelBuilder.Entity<AddressModel>(entity =>
             {
                 entity.HasKey(a => a.AddressId);
+
+                entity.HasIndex(a => new { a.UserId, a.Type }).IsUnique();
+
                 entity.HasOne(a => a.User)
                     .WithMany(u => u.Addresses)
                     .HasForeignKey(a => a.UserId)
