@@ -17,10 +17,10 @@ namespace OrderDeliverySystemApi.Controllers
             _context = context;
             _logger = logger;
         }
-        public OrdersController(AppDbContext context)
+       /* public OrdersController(AppDbContext context)
         : this(context, null) // Providing a default value for ILogger (null in this case)
         {
-        }
+        }*/
         [HttpGet("{id}")]
         public async Task<ActionResult<Order>> GetOrder(int id)
         {
@@ -154,6 +154,58 @@ namespace OrderDeliverySystemApi.Controllers
             return NoContent();
         }
 
+        [HttpGet("recent-orders/{customerId}")]
+     public async Task<IActionResult> GetRecentOrdersByCustomer (int customerId)
+     {
+         var customer = await _context.Customers.FindAsync(customerId);
+         if (customer == null)
+         {
+             return NotFound("Customer not found.");
+         }
+         var recentOrders = await _context.Orders
+             .Where(o => o.CustomerId == customerId && o.Status != "Delivered")
+             .Include(o => o.Customer)
+             .Include(o => o.Merchant)
+             .Include(o => o.DeliveryWorker)
+             .Include(o => o.PickupAddress)
+             .Include(o => o.DropoffAddress)
+             .Include(o => o.OrderItems)
+             .OrderByDescending(o => o.CreatedAt)
+             .ToListAsync();
+
+         if (!recentOrders.Any()) 
+         {
+             return NotFound("No recent orders found for this customer.");
+         }
+         return Ok(recentOrders);
+     }
+
+     [HttpGet("order-history/{customerId}")]
+     public async Task<IActionResult> GetOrderHistoryByCustomer(int customerId)
+     {
+         var customer = await _context.Customers.FindAsync(customerId);
+         if (customer == null)
+         {
+             return NotFound("Customer not found.");
+         }
+         var orderHistory = await _context.Orders
+             .Where(o => o.CustomerId == customerId && o.Status == "Delivered" || o.Status == "Cancelled")
+             .Include(o => o.Customer)
+             .Include(o => o.Merchant)
+             .Include(o => o.DeliveryWorker)
+             .Include(o => o.PickupAddress)
+             .Include(o => o.DropoffAddress)
+             .Include(o => o.OrderItems)
+             .OrderByDescending(o => o.CreatedAt)
+             .ToListAsync();
+
+         if (!orderHistory.Any())
+         {
+             return NotFound("No order history found for this customer.");
+         }
+         return Ok(orderHistory);
+     }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteOrder(int id)
         {
@@ -173,6 +225,64 @@ namespace OrderDeliverySystemApi.Controllers
         private bool OrderExists(int id)
         {
             return _context.Orders.Any(o => o.OrderId == id);
+        }
+
+        [HttpGet("{role}/{id}")]
+        public async Task<IActionResult> GetOrdersByRole(string role, int id, bool recent = false)
+        {
+            IQueryable<Order> query = _context.Orders
+                .Include(o => o.Customer)
+                .Include(o => o.OrderItems);
+
+            switch (role.ToLower())
+            {
+                case "customer":
+                    query = query.Where(o => o.CustomerId == id); break;
+                case "merchant":
+                    query = query.Where(o => o.MerchantId == id); break;
+                case "worker":
+                    query = query.Where(o => o.WorkerId == id); break;
+            }
+
+            if (recent)
+            {
+                query = query.Where(o => o.Status != "Delivered");
+            }
+            else
+            {
+                query = query.Where(o => o.Status == "Delivered" || o.Status == "Cancelled");
+            }
+            //Old
+            /*var orders = await query 
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();*/
+            //New
+            var orders = await query
+                .OrderByDescending(o => o.CreatedAt)
+                .Select(o => new OrderDTO
+                {
+                    OrderId = o.OrderId,
+                    CustomerId = o.CustomerId,
+                    MerchantId = o.MerchantId,
+                    WorkerId = o.WorkerId,
+                    TotalAmount = o.TotalAmount,
+                    Status = o.Status,
+                    OrderItems = o.OrderItems.Select(oi => new AppOrderItem
+                    {
+                        OrderItemId = oi.OrderItemId,
+                        ItemId = oi.ItemId,
+                        OrderId = oi.OrderId,
+                        Quantity = oi.Quantity
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            if (!orders.Any())
+            {
+                return NotFound($"No {(recent ? "recent orders" : "order history")} found for this {role}.");
+            }
+            return Ok(orders);
+
         }
     }
 }

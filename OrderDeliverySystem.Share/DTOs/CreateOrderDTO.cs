@@ -2,19 +2,18 @@
 
 namespace OrderDeliverySystem.Share.DTOs
 {
-    public class AppCreateOrderDTO
+    public class CreateOrderDTO
     {
-        public int OrderId { get; set; }
-        public int CustomerId { get; set; }
-        public int MerchantId { get; set; }
-        public int? WorkerId { get; set; }
-        public int? PickupAddressId { get; set; }
-        public int? DropoffAddressId { get; set; }
-        public decimal TotalAmount { get; set; }
-        public string Status { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
-
+        public int UserId { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public string Phone { get; set; }
+        public string Address { get; set; }
+        public string City { get; set; }
+        public string Province { get; set; }
+        public string PostCode { get; set; }
+        public int CartId { get; set; }
         public ICollection<AppOrderItem> OrderItems { get; set; }
     }
 }
