@@ -10,7 +10,7 @@ namespace OrderDeliverySystem.Share.Util
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            if (value == null)
+            if (value is null or (object)"")
             {
                 return ValidationResult.Success;
             }

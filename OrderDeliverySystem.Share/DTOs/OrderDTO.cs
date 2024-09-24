@@ -1,4 +1,6 @@
-﻿namespace OrderDeliverySystem.Share.DTOs
+﻿using OrderDeliverySystem.Share.Data.Models;
+
+namespace OrderDeliverySystem.Share.DTOs
 {
     public class OrderDTO
     {
@@ -12,7 +14,9 @@
         public string Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-
+        public  CustomerDTO1 Customer { get; set; }
+        public  MerchantDTO1 Merchant { get; set; }
+        public WorkerDTO1? DeliveryWorker { get; set; }
         public ICollection<AppOrderItem> OrderItems { get; set; }
     }
 }
