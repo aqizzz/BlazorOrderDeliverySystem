@@ -1,9 +1,13 @@
 ﻿@page "/"
+@using OrderDeliverySystem.Client.Pages.Adimin
+@using OrderDeliverySystem.Client.Pages.DeleveryWorker
+@using OrderDeliverySystem.Client.Shared
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
-@if (isCustomer)
+
+@if (_role == "Customer" || _role == "Guest")
 {
     <MudContainer Class="my-10">
         <div style="position: relative; display: inline-block;">
@@ -22,13 +26,30 @@
 }
 else
 {
-    <MudContainer Class="my-10">
-        <div>this is main content</div>
+     <MudContainer Class="my-10">
+        @if (_role == "Admin")
+        {
+
+            <UserManagement />
+        }
+        else if (_role == "Merchant")
+        {
+            <OrderList Role="@_role" UserId="4"/>
+        }
+        else if (_role == "Delivery Worker")
+        {
+            <OrderList Role="@_role" UserId="5" />
+        }
+   
     </MudContainer>
 }
 
 
 @code {
-    public string Role { get; set; }
+    //string _role = "Guest";
+    //string _role = "Customer";
+    string _role = "Admin";
+    //string _role = "Merchant";
+    //string _role = "Delivery Worker";
     bool isCustomer = true;
 }

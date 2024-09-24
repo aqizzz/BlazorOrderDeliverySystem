@@ -22,4 +22,10 @@
 		<ProjectReference Include="..\OrderDeliverySystem.Share\OrderDeliverySystem.Share.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Content Update="Pages\Reviews.razor">
+	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+	  </Content>
+	</ItemGroup>
+
 </Project>

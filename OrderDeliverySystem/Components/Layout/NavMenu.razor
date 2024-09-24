@@ -8,7 +8,7 @@
 @rendermode InteractiveServer
 
 
-@if (isCustomer)
+@if (Role == "Customer" || Role == "Guest")
 {
     <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/" Class="rounded-lg m-4" /></MudLink>
 
@@ -76,7 +76,17 @@ else
 
 
 @code{
-    bool isUser = true;
+    [Parameter] public string Role { get; set; }
+    bool isUser = false;
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Role.Equals("Guest")|| !Role.Equals(String.Empty))
+        {
+            isUser = true;
+        }
+    }
+
+ 
     bool isCustomer = true;
     bool _cartExpanded = false;
 
@@ -95,10 +105,7 @@ else
     }
     public async Task LogIn()
     {
-        isUser = true;
-        isCustomer = true;
-        StateHasChanged();
-        NavigationManager.NavigateTo("/");
+        NavigationManager.NavigateTo("/login");
     }
 
    

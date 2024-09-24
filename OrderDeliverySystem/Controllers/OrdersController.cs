@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
 using OrderDeliverySystem.Share.Data.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace OrderDeliverySystemApi.Controllers
 {
@@ -22,6 +23,7 @@ namespace OrderDeliverySystemApi.Controllers
         {
         }
         [HttpGet("{id}")]
+        [Authorize(Roles = "Customer, Merchant, Delevery Worker")]
         public async Task<ActionResult<Order>> GetOrder(int id)
         {
             var order = await _context.Orders
@@ -44,6 +46,7 @@ namespace OrderDeliverySystemApi.Controllers
 
 
         [HttpPost("create")]
+        [Authorize(Roles = "Customer")]
         public async Task<ActionResult<Order>> CreateOrder(AppCreateOrderDTO orderDto)
         {
             // Fetch required entities from the database (Merchant and Customer)
@@ -108,6 +111,7 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Merchant, Delevery Worker")]
         public async Task<IActionResult> UpdateOrder(int id, Order updatedOrder)
         {
             if (id != updatedOrder.OrderId)
@@ -154,6 +158,7 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Merchant, Customer")]
         public async Task<IActionResult> DeleteOrder(int id)
         {
             var order = await _context.Orders.FindAsync(id);

@@ -1,4 +1,7 @@
 ﻿@page "/customer-profile"
+@attribute [Authorize(Roles = "Customer")]
+@using Microsoft.AspNetCore.Authorization;
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 <h3>CustomerProfile</h3>
 
 @code {

@@ -1,4 +1,7 @@
 ﻿@page "/order/{Id}"
+@attribute [Authorize(Roles = "Customer")]
+@using Microsoft.AspNetCore.Authorization;
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using OrderDeliverySystem.Client.Shared
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager

@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@*@inject AuthenticationStateProvider AuthenticationStateProvider*@
 
 
 <MudThemeProvider/>
@@ -6,14 +7,20 @@
 <MudDialogProvider/>
 <MudSnackbarProvider/>
 
+
 <MudLayout>
     <MudAppBar Height="Auto" Class="p-3 bg-white">
-        <NavMenu />
+        <NavMenu Role="@_role" />
     </MudAppBar>
-   @if (!isCustomer)
+    @if (_role != "Customer" ||  _role != "Guest")
     {
         <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Style="min-height:700px;">
-         <LeftNavBar />
+            <MudContainer Class="my-10" >
+
+                <LeftNavBar />
+
+            </MudContainer>
+        
         </MudDrawer>
         <MudMainContent Class="mt-1" Style="min-height:700px;">
             @Body
@@ -24,7 +31,12 @@
     {
         <MudMainContent Class="mt-1" Style="min-height:700px;">
 
-            @Body
+            <MudContainer Class="my-10">
+
+                @Body
+
+            </MudContainer>
+         
            
         </MudMainContent>
 
@@ -44,7 +56,25 @@
 </MudLayout>
 
 @code {
-    bool isCustomer = true;
+  
+    //string _role = "Guest";
+    //string _role = "Customer";
+    //string _role = "Admin";
+    string _role = "Merchant";
+    //string _role = "DeliveryWorker";
+
+   @* private bool isAdminOrManager;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        // 检查用户是否拥有 Admin 或 Manager 角色
+        isAdminOrManager = user.IsInRole("Admin") || user.IsInRole("Manager");
+    }*@
+ 
+
     bool _drawerOpen = true;
     
     void DrawerToggle()
@@ -63,5 +93,5 @@
             _ => Color.Error
         };
     }
-}
 
+}
