@@ -20,3 +20,4 @@ builder.Services.AddHttpClient("API", client =>
 });
 
 await builder.Build().RunAsync();
+
