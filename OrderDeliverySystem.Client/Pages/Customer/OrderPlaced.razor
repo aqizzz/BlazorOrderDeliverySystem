@@ -1,0 +1,74 @@
+﻿@page "/order/{Id}"
+@using OrderDeliverySystem.Client.Shared
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<MudContainer Class="my-10">
+    <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="true">Place Order</MudText>
+    <MudDivider Class=" border-4" Style="border-color:rgba(112, 0, 0, 1);" />
+   <MudContainer Class="my-3">
+        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Start" GutterBottom="true" Style="color:rgba(112, 0, 0, 1);">Place Order</MudText>
+        <MudDivider Class=" border-2" Style="border-color:rgba(112, 0, 0, 1);" />
+        <CustomerProfile/>
+    </MudContainer>
+    <MudContainer Class="my-3">
+        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Start" GutterBottom="true" Style="color:rgba(112, 0, 0, 1);">Place Order</MudText>
+        <MudDivider Class=" border-2" Style="border-color:rgba(112, 0, 0, 1);"  />
+        <MudGrid >
+            <MudItem xs="12" sm="12" md="3">
+                <MudGrid Class="ps-10 " >
+                    <MudItem xs="12" >
+                        <MudImage Src="images/food.png" Width="120" Height="80" Alt="Swedish Farm House" Class="rounded-lg mt-4" />
+                    </MudItem>
+                    
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h5">Merchant Name</MudText>
+                    </MudItem>
+                    <MudItem xs="2">
+                        <MudIcon Class="inline-block" Icon="@Icons.Material.Outlined.AccessTime"></MudIcon>
+                    </MudItem>
+                    <MudItem xs="10">
+                        <MudText Typo="Typo.body2">Time: 40 ~ 50 mins</MudText>
+                    </MudItem>
+                    <MudItem xs="2">
+                        <MudIcon Class="inline-block" Icon="@Icons.Material.Outlined.LocationOn"></MudIcon>
+                    </MudItem>
+                    <MudItem xs="10">
+                        <MudText Typo="Typo.body2">Address: This Merchant's Address'</MudText>
+                    </MudItem>
+                </MudGrid>
+
+            </MudItem>
+        
+           
+            <MudItem xs="12" sm="9" md="9"> 
+                <MudGrid>
+                    <MudItem xs="12" sm="12" md="8">
+                        <ItemCard />
+                    </MudItem>
+                    <MudItem xs="12" sm="12" md="4">
+                        <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(Before tax):  $19.98</MudText>
+                        <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Tax (15%):  $2.99</MudText>
+                        <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(After tax):  $22.98</MudText>
+                        <MudText Class="pt-4 ps-6 border-b-2 border-solid mb-2" Typo="Typo.body2" Align="Align.Start" GutterBottom="true" Style="border-color:rgba(112, 0, 0, 1);">Delevery Fee:  $6 ( $3/ km )</MudText>
+                        <MudText Class="pt-4 ps-6" Typo="Typo.subtitle2" Align="Align.Start" GutterBottom="true">Total Amount:  $28.98</MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudItem>
+        </MudGrid>
+        <MudDivider Class="mt-5 border-2" Style="border-color:rgba(112, 0, 0, 1);" />
+    </MudContainer>
+
+</MudContainer>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // 使用 Id 参数进行一些操作
+        Console.WriteLine($"Selected restaurant ID: {Id}");
+    }
+}

@@ -1,0 +1,25 @@
+﻿@using OrderDeliverySystem.Client.Shared
+
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<MudPaper Class="pa-16 ma-2" Elevation="3" Style="position:absolute;top: 70px;right: -20px;z-index: 1000;">
+    <!-- content here-->
+
+    <!-- content here-->
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="PlaceOrder">Placed Order</MudButton>
+
+
+
+</MudPaper>
+
+
+@code {
+    string cartId = "1";
+ 
+    private void PlaceOrder(){
+        NavigationManager.NavigateTo($"/order/{cartId}");
+    }
+
+}

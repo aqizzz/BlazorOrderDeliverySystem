@@ -10,7 +10,6 @@ using OrderDeliverySystem.Client.Infrastructure.Services.Orders;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddMudServices();
-
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
 builder.Services.AddScoped<OrderService>();
