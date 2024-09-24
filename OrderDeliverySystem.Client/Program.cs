@@ -23,3 +23,4 @@ builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStatePr
 });*/
 
 await builder.Build().RunAsync();
+
