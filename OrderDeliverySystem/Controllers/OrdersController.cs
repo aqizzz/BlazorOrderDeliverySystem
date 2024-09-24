@@ -44,7 +44,8 @@ namespace OrderDeliverySystemApi.Controllers
 
 
         [HttpPost("create")]
-        public async Task<ActionResult<Order>> CreateOrder(AppCreateOrderDTO orderDto)
+        [Authorize(Roles = "Customer")]
+        public async Task<ActionResult<Order>> CreateOrder(CreateOrderDTO orderDto)
         {
             // Fetch required entities from the database (Merchant and Customer)
             var merchant = await _context.Merchants.FindAsync(orderDto.MerchantId);
