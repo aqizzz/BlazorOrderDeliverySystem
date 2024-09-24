@@ -122,7 +122,7 @@ namespace OrderDeliverySystemApi.Controllers
                     else
                     {
 
-                        existingCartItem.Quantity = itemDto.Quantity;
+                        existingCartItem.Quantity += itemDto.Quantity;
                     }
                 }
                 else
