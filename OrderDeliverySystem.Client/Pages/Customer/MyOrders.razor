@@ -1,0 +1,42 @@
+﻿@page "/my-orders"
+
+@using OrderDeliverySystem.Client.Shared
+
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+
+<MudContainer Class="my-10">
+    <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My Orders</MudText>
+    <MudTabs TabHeaderClass="d-flex justify-content-end " Elevation="1" Rounded="true" PanelClass="pa-6" ActiveTabClass="border-solid border-1 mud-border-primary" >
+       
+        <MudTabPanel>
+            <ChildContent>
+                <OrderCard OrderId="1" />
+            </ChildContent>
+            <TabContent>
+                Recent Order
+            </TabContent>
+        </MudTabPanel>
+        <MudTabPanel>
+            <ChildContent>
+                <OrderCard OrderId="2"/>
+            </ChildContent>
+            <TabContent>
+                History Order
+            </TabContent>
+        </MudTabPanel>
+    </MudTabs>
+
+
+</MudContainer>
+@code {
+    bool _expanded = true;
+   
+    private void OnExpandCollapseClick()
+    {
+        _expanded = !_expanded;
+    }
+ 
+}

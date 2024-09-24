@@ -14,11 +14,12 @@ using System;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using OrderDeliverySystem.Client.Infrastructure;
-
+using MudBlazor.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddMudServices();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
