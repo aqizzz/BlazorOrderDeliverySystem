@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Pages\ItemList.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.8" />
@@ -20,6 +24,18 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\OrderDeliverySystem.Share\OrderDeliverySystem.Share.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <UpToDateCheckInput Remove="Pages\ItemList.razor" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_ContentIncludedByDefault Remove="Pages\ItemList.razor" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="Pages\ItemList.razor" />
 	</ItemGroup>
 
 </Project>
