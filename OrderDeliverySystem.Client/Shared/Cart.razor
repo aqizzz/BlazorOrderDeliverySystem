@@ -54,9 +54,9 @@
 </MudPaper>
 
 @code {
-    [Parameter] public EventCallback OnClose { get; set; } // Parameter for callback
+    [Parameter] public EventCallback OnClose { get; set; } 
 
-    string cartId = "1"; // Modify this to fetch the correct cartId dynamically
+    string cusotmerId = "1"; 
     private List<GetCartItemsResponseDTO> cartItems = new();
     private decimal subtotal;
     private bool isLoading = true;
@@ -71,7 +71,7 @@
         try
         {
             var httpClient = HttpClientFactory.CreateClient("API");
-            var response = await httpClient.GetFromJsonAsync<GetCartReponseDTO>($"api/cart/getCart/{cartId}");
+            var response = await httpClient.GetFromJsonAsync<GetCartReponseDTO>($"api/cart/getCart/{cusotmerId}");
 
             if (response != null)
             {
@@ -124,7 +124,7 @@
             var httpClient = HttpClientFactory.CreateClient("API");
             var updateDto = new AddUpdateCartItemsRequestDTO(itemId, quantity);
 
-            var response = await httpClient.PutAsJsonAsync($"api/cart/updateCart/{cartId}", updateDto);
+            var response = await httpClient.PutAsJsonAsync($"api/cart/updateCart/{cusotmerId}", updateDto);
 
             if (response.IsSuccessStatusCode)
             {
@@ -143,7 +143,7 @@
         try
         {
             var httpClient = HttpClientFactory.CreateClient("API");
-            var response = await httpClient.DeleteAsync($"api/cart/deleteItem/{cartId}/{itemId}");
+            var response = await httpClient.DeleteAsync($"api/cart/deleteItem/{cusotmerId}/{itemId}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -160,7 +160,7 @@
 
     private void PlaceOrder()
     {
-        NavigationManager.NavigateTo($"/order/{cartId}");
+        NavigationManager.NavigateTo($"/order/{cusotmerId}");
     }
 
     public string FormatCurrency(decimal value)
