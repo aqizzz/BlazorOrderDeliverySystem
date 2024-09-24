@@ -112,7 +112,7 @@ builder.Services.AddAuthentication(options =>
     {
         OnChallenge = context =>
         {
-            context.Response.Redirect("/login"); // Redirect to login page
+            context.Response.Redirect("/"); // Redirect to home page
             context.HandleResponse(); // Suppress the default behavior
             return Task.CompletedTask;
         }

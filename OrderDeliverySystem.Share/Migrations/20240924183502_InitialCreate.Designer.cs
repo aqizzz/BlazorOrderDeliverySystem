@@ -12,7 +12,7 @@ using OrderDeliverySystem.Share.Data;
 namespace OrderDeliverySystem.Share.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240923041438_InitialCreate")]
+    [Migration("20240924183502_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -46,7 +46,7 @@ namespace OrderDeliverySystem.Share.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Type")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Unit")
                         .HasColumnType("nvarchar(max)");
@@ -56,7 +56,9 @@ namespace OrderDeliverySystem.Share.Migrations
 
                     b.HasKey("AddressId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "Type")
+                        .IsUnique()
+                        .HasFilter("[Type] IS NOT NULL");
 
                     b.ToTable("Addresses");
                 });
@@ -169,8 +171,8 @@ namespace OrderDeliverySystem.Share.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WorkerId"));
 
                     b.Property<decimal?>("CommissionRate")
-                        .HasPrecision(15, 2)
-                        .HasColumnType("decimal(15,2)");
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
 
                     b.Property<DateTime?>("LastTaskAssigned")
                         .HasColumnType("datetime2");
