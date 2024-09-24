@@ -1,0 +1,159 @@
+﻿@page "/cart"
+@using OrderDeliverySystem.Share.DTOs.CartDTO
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<h3>Your Cart</h3>
+
+@if (cartItems == null)
+{
+    <p>Loading...</p>
+}
+else if (!cartItems.Any())
+{
+    <p>Your cart is empty.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in cartItems)
+            {
+                <tr>
+                    <td>@item.ItemName</td>
+                    <td>
+                        <button class="btn btn-secondary" @onclick="() => DecreaseQuantity(item.ItemId)">-</button>
+                        <span>@item.Quantity</span>
+                        <button class="btn btn-secondary" @onclick="() => IncreaseQuantity(item.ItemId)">+</button>
+                    </td>
+                    <td>@FormatCurrency(item.ItemPrice)</td>
+                    <td>@FormatCurrency(item.Quantity * item.ItemPrice)</td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="() => RemoveItem(item.ItemId)">Remove</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4>Subtotal: @FormatCurrency(subtotal)</h4>
+
+    <button class="btn btn-success" @onclick="Checkout">Checkout</button>
+}
+
+@code {
+    private List<GetCartItemsResponseDTO> cartItems = new();
+    private decimal subtotal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCartItems();
+    }
+
+    private async Task LoadCartItems()
+    {
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("API");
+            var response = await httpClient.GetFromJsonAsync<GetCartReponseDTO>("api/cart/getCart/1");
+
+            if (response != null)
+            {
+                cartItems = response.CartItems;
+                subtotal = cartItems.Sum(ci => ci.Quantity * ci.ItemPrice);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading cart: {ex.Message}");
+        }
+    }
+
+    private async Task IncreaseQuantity(int itemId)
+    {
+        var item = cartItems.FirstOrDefault(ci => ci.ItemId == itemId);
+        if (item != null)
+        {
+            item.Quantity++;
+            await UpdateCartItem(item.ItemId, item.Quantity);
+        }
+    }
+
+    private async Task DecreaseQuantity(int itemId)
+    {
+        var item = cartItems.FirstOrDefault(ci => ci.ItemId == itemId);
+        if (item != null)
+        {
+            if (item.Quantity > 1)
+            {
+                item.Quantity--;
+            }
+            else
+            {
+                cartItems.Remove(item);
+            }
+            await UpdateCartItem(item.ItemId, item.Quantity);
+        }
+    }
+
+    private async Task UpdateCartItem(int itemId, int quantity)
+    {
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("API");
+            var updateDto = new AddUpdateCartItemsRequestDTO(itemId, quantity);
+
+            var response = await httpClient.PutAsJsonAsync($"api/cart/updateCart/1", updateDto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                subtotal = cartItems.Sum(ci => ci.Quantity * ci.ItemPrice);
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating item: {ex.Message}");
+        }
+    }
+
+    private async Task RemoveItem(int itemId)
+    {
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("API");
+            var response = await httpClient.DeleteAsync($"api/cart/deleteItem/1/{itemId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                cartItems = cartItems.Where(ci => ci.ItemId != itemId).ToList();
+                subtotal = cartItems.Sum(ci => ci.Quantity * ci.ItemPrice);
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error removing item: {ex.Message}");
+        }
+    }
+
+    private async Task Checkout()
+    {
+        NavigationManager.NavigateTo("/checkout");
+    }
+
+    public string FormatCurrency(decimal value)
+    {
+        return value.ToString("C2", System.Globalization.CultureInfo.CurrentCulture);
+    }
+}
