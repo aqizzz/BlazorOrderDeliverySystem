@@ -1,4 +1,5 @@
 ﻿@using MudBlazor
+@using OrderDeliverySystem.Share.DTOs
 @using System.ComponentModel.DataAnnotations
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
@@ -8,7 +9,7 @@
 
 <MudGrid>
     <MudItem xs="12" sm="12" md="12" Class="d-flex justify-content-between align-items-center border-b-4 border-solid" Style="border-color:rgba(112, 0, 0, 1);">
-        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">OrderId: @OrderId</MudText>
+        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">OrderId: @Order.OrderId</MudText>
         <MudButton OnClick="OnExpandCollapseClick" >@(_expanded ? "Details" : "Details")</MudButton>
     </MudItem>
 
@@ -18,28 +19,31 @@
     <MudItem xs="12" sm="12" md="3">
         <MudGrid>
             <MudItem xs="12">
-                <MudText Class="pb-2" Typo="Typo.h5">Merchant Name</MudText>
+                <MudText Class="pb-2" Typo="Typo.h5">@Order.Merchant.BusinessName</MudText>
                 <div Class="pb-2">
                 <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.AccessTime"></MudIcon>
-                <MudText Class="d-inline-block" Typo="Typo.body2">Time: 40 ~ 50 mins</MudText>
+                <MudText Class="d-inline-block" Typo="Typo.body2">Time: @Order.Merchant.PreparingTime mins</MudText>
                 </div>
                 <div Class="pb-2">
                 <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.LocationOn"></MudIcon>
-                <MudText Class="d-inline-block" Typo="Typo.body2">Address: This Merchant's Address'</MudText>
+                    @foreach (var address in Order.Merchant.User.Addresses)
+                    {
+                        <MudText Class="d-inline-block" Typo="Typo.body2">Address: @address.FullAddress</MudText>
+                    }
                 </div>
             </MudItem>
         </MudGrid>
     </MudItem>
     <MudItem xs="12" sm="12" md="5" Class="d-flex justify-content-center align-item-center"  GutterBottom="true">
        <div>
-        <MudText Typo="Typo.body1" Align="Align.Center" >Order Time: 09/14/2024 18:45</MudText>
-        <MudText Typo="Typo.body1" Align="Align.Center" >Arrived time: 09/14/2024 19:25</MudText>
-        <MudText Typo="Typo.body1" Align="Align.Center" >Status: Approved</MudText>
+        <MudText Typo="Typo.body1" Align="Align.Center" >Order Time: @Order.CreatedAt.ToString("MM/dd/yy hh:mm tt")</MudText>
+        <MudText Typo="Typo.body1" Align="Align.Center" >Arrival time: 09/14/2024 19:25</MudText>
+        <MudText Typo="Typo.body1" Align="Align.Center" >Status: @Order.Status</MudText>
         <MudLink OnClick="GoTracking"> <MudText Typo="Typo.body1" Align="Align.Center" >Delivery Tracking-></MudText></MudLink>
         </div>
     </MudItem>
     <MudItem xs="12" sm="12" md="2">
-        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount:</MudText>
+        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount: $@Order.TotalAmount</MudText>
     </MudItem>
 
     <MudItem xs="12" sm="12" md="12">
@@ -50,11 +54,11 @@
                     <ItemCard />
                 </MudItem>
                 <MudItem xs="12" sm="12" md="3">
-                    <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(Before tax):  $19.98</MudText>
-                    <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Tax (15%):  $2.99</MudText>
-                    <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(After tax):  $22.98</MudText>
-                    <MudText Class="pt-4 ps-6 border-b-2 border-solid mb-2" Typo="Typo.body2" Align="Align.Start" GutterBottom="true" Style="border-color:rgba(112, 0, 0, 1);">Delevery Fee:  $6 ( $3/ km )</MudText>
-                    <MudText Class="pt-4 ps-6" Typo="Typo.subtitle2" Align="Align.Start" GutterBottom="true">Total Amount:  $28.98</MudText>
+                    <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(Before tax):  $@Order.TotalAmount</MudText>
+                    <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Tax (15%):  @GetTaxAmount().ToString("C")</MudText>
+                    <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(After tax):  @GetTotalAfterTax().ToString("C")</MudText>
+                    <MudText Class="pt-4 ps-6 border-b-2 border-solid mb-2" Typo="Typo.body2" Align="Align.Start" GutterBottom="true" Style="border-color:rgba(112, 0, 0, 1);">Delivery Fee:  $6 ( $3/ km )</MudText>
+                    <MudText Class="pt-4 ps-6" Typo="Typo.subtitle2" Align="Align.Start" GutterBottom="true">Total Amount:  @GetTotalAmount().ToString("C")</MudText>
                 </MudItem>
             </MudGrid>
         </MudCollapse>
@@ -69,22 +73,18 @@
 </MudGrid>
 
 
-
-
-
-
-
 @code {
     [Parameter]
-    public string OrderId { get; set; }
+    public OrderDTO Order{ get; set; }
+
+    private const decimal TaxRate = 0.15m;
+    private const decimal DeliveryFee = 6.00m;
 
     protected override void OnInitialized()
     {
         // 使用 Id 参数进行一些操作
-        Console.WriteLine($"Selected restaurant ID: {OrderId}");
+        Console.WriteLine($"Selected restaurant ID: {Order.OrderId}");
     }
-
-
 
     bool _expanded = false;
 
@@ -95,7 +95,20 @@
 
     private void GoTracking()
     {
-        NavigationManager.NavigateTo($"/tracking/{OrderId}");
+        NavigationManager.NavigateTo($"/tracking/{Order.OrderId}");
         // 这里可以执行其他逻辑
+    }
+
+    private decimal GetTaxAmount()
+    {
+        return Order.TotalAmount * TaxRate;
+    }
+    private decimal GetTotalAfterTax()
+    {
+        return Order.TotalAmount + GetTaxAmount();
+    }
+    private decimal GetTotalAmount()
+    {
+        return GetTotalAfterTax() + DeliveryFee;
     }
 }
