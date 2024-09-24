@@ -1,13 +1,13 @@
-﻿@page "/ItemList"
+﻿@* @page "/ItemList"
 @using System.Net.Http.Json
 @using MudBlazor.Examples.Data.Models
 @inject HttpClient httpClient
 @using OrderDeliverySystem.Share.DTOs
-@* @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication *@
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using OrderDeliverySystem.Client.Shared.Common
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
-@* @inject IAuthService AuthService *@
+@inject IAuthService AuthService
 @rendermode InteractiveServer
 
 <h3>ItemList</h3>
@@ -80,4 +80,4 @@
             return true;
         return false;
     }
-}
+} *@
