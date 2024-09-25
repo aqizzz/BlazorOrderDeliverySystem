@@ -1,0 +1,86 @@
+﻿@page "/order-history"
+@inject OrderService OrderService
+
+@using OrderDeliverySystem.Client.Shared
+@inject IJSRuntime JSRuntime
+@using System.ComponentModel.DataAnnotations
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@using OrderDeliverySystem.Client.Infrastructure.Services.Orders;
+@using OrderDeliverySystem.Client.Shared.Common
+@using OrderDeliverySystem.Share.DTOs
+@using OrderDeliverySystem.Share.Data
+@inject IAuthService AuthService
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+
+<MudContainer Class="my-10">
+    <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My Orders</MudText>
+    <MudTabs TabHeaderClass="d-flex justify-content-end " Elevation="1" Rounded="true" PanelClass="pa-6" ActiveTabClass="border-solid border-1 mud-border-primary">
+
+        <MudTabPanel>
+            <ChildContent>
+                @if (recentOrders.Any())
+                {
+                    @foreach (var order in recentOrders)
+                    {
+                        <OrderCard Order="@order" />
+                    }
+                }
+                else
+                {
+                    <MudText>You have no recent orders!</MudText>
+                }
+
+            </ChildContent>
+            <TabContent>
+                Recent Orders
+            </TabContent>
+        </MudTabPanel>
+        <MudTabPanel>
+            <ChildContent>
+                @if (orderHistory.Any())
+                {
+                    @foreach (var order in orderHistory)
+                    {
+                        <OrderCard Order="@order" />
+                    }
+                }
+                else
+                {
+                    <MudText>You have no orders!</MudText>
+                }
+            </ChildContent>
+
+            <TabContent>
+                Order History
+            </TabContent>
+        </MudTabPanel>
+    </MudTabs>
+
+
+</MudContainer>
+@code {
+    private List<OrderDTO> recentOrders = new();
+    private List<OrderDTO> orderHistory = new();
+    // private OrderDTO? selectedOrder = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        int workerId = 5;
+        recentOrders = await OrderService.GetOrdersByRoleAsync("worker", workerId, true);
+        orderHistory = await OrderService.GetOrdersByRoleAsync("worker", workerId, false);
+    }
+    private void ShowOrderDetails(OrderDTO order)
+    {
+        //selectedOrderItems = order.OrderItems;
+    }
+    bool _expanded = true;
+
+    private void OnExpandCollapseClick()
+    {
+        _expanded = !_expanded;
+    }
+
+}

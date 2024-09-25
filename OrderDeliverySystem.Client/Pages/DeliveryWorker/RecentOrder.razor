@@ -1,0 +1,102 @@
+﻿@page "/recent-order"
+@using MudBlazor
+@using OrderDeliverySystem.Client.Shared
+@using System.ComponentModel.DataAnnotations
+@inject IHttpClientFactory HttpClientFactory
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<MudContainer Class="my-10">
+    <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My Orders</MudText>
+    <MudDivider Class=" border-2" Style="border-color:rgba(112, 0, 0, 1);" />
+    <MudGrid>
+        <MudItem xs="12" sm="12" md="12" Class="d-flex justify-content-between align-items-center border-b-4 border-solid" Style="border-color:rgba(112, 0, 0, 1);">
+            <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">OrderId: @Id</MudText>
+            <MudButton OnClick="OnExpandCollapseClick">@(_expanded ? "Details" : "Details")</MudButton>
+        </MudItem>
+
+        <MudItem xs="12" sm="12" md="2">
+            <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Picture</MudText>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="3">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudText Class="pb-2" Typo="Typo.h5">Merchant Name</MudText>
+                    <div Class="pb-2">
+                        <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.AccessTime"></MudIcon>
+                        <MudText Class="d-inline-block" Typo="Typo.body2">Time: 40 ~ 50 mins</MudText>
+                    </div>
+                    <div Class="pb-2">
+                        <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.LocationOn"></MudIcon>
+                        <MudText Class="d-inline-block" Typo="Typo.body2">Address: This Merchant's Address'</MudText>
+                    </div>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="5" Class="d-flex justify-content-center align-item-center" GutterBottom="true">
+            <div>
+                <MudText Typo="Typo.body1" Align="Align.Center">Order Time: 09/14/2024 18:45</MudText>
+                <MudText Typo="Typo.body1" Align="Align.Center">Arrived time: 09/14/2024 19:25</MudText>
+                <MudText Typo="Typo.body1" Align="Align.Center">Status: Approved</MudText>
+            </div>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="2">
+            <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount:</MudText>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="12" Class=" border-t-4 border-solid mt-4" Style="border-color:rgba(112, 0, 0, 1);">
+            <MudCollapse Expanded="_expanded">
+
+                <MudGrid>
+                    <MudItem xs="12" sm="12" md="9">
+                        <ItemCard />
+                    </MudItem>
+                    <MudItem xs="12" sm="12" md="3">
+                        <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(Before tax):  $19.98</MudText>
+                        <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Tax (15%):  $2.99</MudText>
+                        <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(After tax):  $22.98</MudText>
+                        <MudText Class="pt-4 ps-6 border-b-2 border-solid mb-2" Typo="Typo.body2" Align="Align.Start" GutterBottom="true" Style="border-color:rgba(112, 0, 0, 1);">Delevery Fee:  $6 ( $3/ km )</MudText>
+                        <MudText Class="pt-4 ps-6" Typo="Typo.subtitle2" Align="Align.Start" GutterBottom="true">Total Amount:  $28.98</MudText>
+                    </MudItem>
+                </MudGrid>
+                <MudDivider Class="border-b-2 border-solid mt-4" Style="border-color:rgba(112, 0, 0, 1);"></MudDivider>
+            </MudCollapse>
+            <MudGrid>
+                    <MudItem xs="12" sm="12" md="9">
+                    <gmp-map center="37.4220656,-122.0840897"
+                             zoom="10"
+                             map-id="DEMO_MAP_ID"
+                             style="height: 600px"></gmp-map>
+                    </MudItem>
+                <MudItem xs="12" sm="12" md="9">
+                    <ItemCard />
+                </MudItem>
+            
+        
+            </MudGrid>
+        </MudItem>
+
+
+    </MudGrid>
+
+</MudContainer>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // 使用 Id 参数进行一些操作
+        Console.WriteLine($"Selected restaurant ID: {Id}");
+    }
+
+    bool _expanded = false;
+
+    private void OnExpandCollapseClick()
+    {
+        _expanded = !_expanded;
+    }
+
+}
+
