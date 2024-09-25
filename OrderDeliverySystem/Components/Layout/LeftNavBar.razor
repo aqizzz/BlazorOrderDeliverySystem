@@ -1,7 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-
+ <MudContainer Class="my-10" >
+            
 <MudNavMenu Class="mud-width-full">
     <div class="d-flex justify-content-center">
         <MudImage Src="images/food.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/" Class="rounded-lg m-4" />
@@ -14,7 +15,7 @@
     </div>
 
     <MudDivider Class="my-2" />
-    @if (isAdmin)
+        @if (_role == "Admin")
     {
         <MudNavLink Href="/user-management" Icon="@Icons.Material.Filled.Dashboard">User Management</MudNavLink>
         <MudNavLink Href="/review-list" Icon="@Icons.Material.Filled.Dashboard">Review  Management</MudNavLink>
@@ -22,7 +23,7 @@
     }
     else
     {
-        @if (isMerchant)
+            @if (_role == "Merchant")
         {
             <MudNavLink Href="/merchant-profile" Icon="@Icons.Material.Filled.Dashboard">Profile Management</MudNavLink>
             <MudNavLink Href="/product-list" Icon="@Icons.Material.Filled.Dashboard">Product Management</MudNavLink>
@@ -30,7 +31,7 @@
             <MudNavLink Href="/review-list" Icon="@Icons.Material.Filled.Dashboard">Review Management</MudNavLink>
             <MudNavLink Href="/password" Icon="@Icons.Material.Filled.Receipt">Password Reset</MudNavLink>
         }
-        else if (isDeliveryWorker)
+            else if (_role == "Worker")
         {
             <MudNavLink Href="/worker-profile" Icon="@Icons.Material.Filled.Dashboard">Profile Management</MudNavLink>
             <MudNavLink Href="/order-list" Icon="@Icons.Material.Filled.Dashboard">Order</MudNavLink>
@@ -42,19 +43,30 @@
    
 </MudNavMenu>
 
+</MudContainer>
 @code {
-  
-    private bool isAdmin;
+
+    string _role = "Admin";
+    //string _role = "Merchant";
+    //string _role = "Guest";
+    //string _role = "Customer";
+    // string _role = "Worker";
+
+    @*private bool isAdmin;
+    private bool isCustomer;
     private bool isMerchant;
     private bool isDeliveryWorker;
+    private bool isGuest;
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-     
+
         isAdmin = user.IsInRole("Admin");
+        isCustomer = user.IsInRole("Customer");
         isMerchant = user.IsInRole("Merchant");
-        isDeliveryWorker = user.IsInRole("Delivery Worker");
-    }
+        isDeliveryWorker = user.IsInRole("Worker");
+        isGuest = (!isAdmin || !isCustomer || !isMerchant || !isDeliveryWorker);
+    }*@
 }
 

@@ -7,7 +7,8 @@
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 @rendermode InteractiveAuto
-
+<MudContainer Class="my-10">
+   
 <h3>Register</h3>
 @if (!string.IsNullOrEmpty(message))
 {
@@ -46,6 +47,7 @@
 <br />
 <br />
 
+</MudContainer>
 @code {
     // Model for user registration
     private readonly CustomerRegisterDTO user = new CustomerRegisterDTO();
