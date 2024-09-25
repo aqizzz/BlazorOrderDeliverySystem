@@ -138,7 +138,7 @@ namespace OrderDeliverySystemApi.Controllers
             return tokenHandler.WriteToken(token);
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPost("me/change-password")]
         public async Task<IActionResult> ChangePassword(ChangePasswordRequestDto passwordDto)
         {
