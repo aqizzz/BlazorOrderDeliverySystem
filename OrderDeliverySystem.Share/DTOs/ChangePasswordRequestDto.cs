@@ -21,7 +21,7 @@ namespace OrderDeliverySystem.Share.DTOs
         [StringLength(MaxPasswordLength, ErrorMessage = StringLengthErrorMessage, MinimumLength = MinPasswordLength)]
         [RegularExpression(PasswordRegularExpression,
             ErrorMessage = InvalidPasswordFormatErrorMessage)]
-        [Compare(nameof(Password), ErrorMessage = PasswordsDoNotMatchErrorMessage)]
+        [Compare(nameof(NewPassword), ErrorMessage = PasswordsDoNotMatchErrorMessage)]
         public string ConfirmNewPassword { get; set; } = string.Empty;
 
     }

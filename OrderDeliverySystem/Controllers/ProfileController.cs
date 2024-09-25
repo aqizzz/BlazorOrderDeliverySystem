@@ -13,15 +13,15 @@ namespace OrderDeliverySystem.Controllers
     public class ProfileController(AppDbContext context, IConfiguration config) : ControllerBase
     {
         [HttpGet("{userId}")]
-        [Authorize]
+        //[Authorize]
         public async Task<IActionResult> GetUserInfo(int userId)
         {
-            var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            //var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-            if (!User.IsInRole("Admin") && userId != loggedInUserId)
-            {
-                return Forbid();
-            }
+            //if (!User.IsInRole("Admin") && userId != loggedInUserId)
+            //{
+            //    return Forbid();
+            //}
 
             var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             if (user == null)
@@ -32,10 +32,11 @@ namespace OrderDeliverySystem.Controllers
             UserProfileDTO profile = new()
             {
                 UserId = user.UserId,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                Phone = user.Phone,
+                FirstName = user.FirstName ?? "",
+                LastName = user.LastName ?? "",
+                Email = user.Email ?? "",
+                Phone = user.Phone ?? "",
+                Type = "Main",
                 Unit = address?.Unit ?? "",
                 Address = address?.Address ?? "",
                 City = address?.City ?? "",
@@ -47,15 +48,15 @@ namespace OrderDeliverySystem.Controllers
         }
 
         [HttpGet("worker/{userId}")]
-        [Authorize(Roles = "Admin, Worker")]
+        //[Authorize(Roles = "Admin, Worker")]
         public async Task<IActionResult> GetWorkerInfo(int userId)
         {
-            var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            //var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-            if (!User.IsInRole("Admin") && userId != loggedInUserId)
-            {
-                return Forbid();
-            }
+            //if (!User.IsInRole("Admin") && userId != loggedInUserId)
+            //{
+            //    return Forbid();
+            //}
 
             var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             if (user == null)
@@ -88,15 +89,15 @@ namespace OrderDeliverySystem.Controllers
         }
 
         [HttpGet("merchant/{userId}")]
-        [Authorize(Roles = "Admin, Merchant")]
+        //[Authorize(Roles = "Admin, Merchant")]
         public async Task<IActionResult> GetMerchantInfo(int? userId)
         {
-            var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            //var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-            if (!User.IsInRole("Admin") && userId != loggedInUserId)
-            {
-                return Forbid();
-            }
+            //if (!User.IsInRole("Admin") && userId != loggedInUserId)
+            //{
+            //    return Forbid();
+            //}
 
             var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             if (user == null)
@@ -115,7 +116,7 @@ namespace OrderDeliverySystem.Controllers
                 LastName = user.LastName,
                 Phone = user.Phone,
                 Email = user.Email,
-                BusinessName = merchant.BusinessName ?? "",
+                BusinessName = merchant.BusinessName ?? "New Business",
                 MerchantPic = merchant.MerchantPic ?? "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png",
                 MerchantDescription = merchant.MerchantDescription ?? "",
                 PreparingTime = merchant.PreparingTime ?? 0,
@@ -130,15 +131,15 @@ namespace OrderDeliverySystem.Controllers
         }
 
         [HttpPut("edit")]
-        [Authorize(Roles = "Admin, Customer")]
+        //[Authorize(Roles = "Admin, Customer")]
         public async Task<IActionResult> Edit(UserProfileDTO dto)
         {
-            var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            //var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-            if (!User.IsInRole("Admin") && dto.UserId != loggedInUserId)
-            {
-                return Forbid();
-            }
+            //if (!User.IsInRole("Admin") && dto.UserId != loggedInUserId)
+            //{
+            //    return Forbid();
+            //}
 
             using var transaction = await context.Database.BeginTransactionAsync();
 
@@ -184,12 +185,12 @@ namespace OrderDeliverySystem.Controllers
         [Authorize(Roles = "Admin, Worker")]
         public async Task<IActionResult> Edit(WorkerProfileDTO dto)
         {
-            var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            //var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-            if (!User.IsInRole("Admin") && dto.UserId != loggedInUserId)
-            {
-                return Forbid();
-            }
+            //if (!User.IsInRole("Admin") && dto.UserId != loggedInUserId)
+            //{
+            //    return Forbid();
+            //}
 
             using var transaction = await context.Database.BeginTransactionAsync();
 
@@ -240,15 +241,15 @@ namespace OrderDeliverySystem.Controllers
         }
 
         [HttpPut("edit/merchant")]
-        [Authorize(Roles = "Admin, Merchant")]
+        //[Authorize(Roles = "Admin, Merchant")]
         public async Task<IActionResult> Edit(MerchantProfileDTO dto)
         {
-            var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            //var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-            if (!User.IsInRole("Admin") && dto.UserId != loggedInUserId)
-            {
-                return Forbid();
-            }
+            //if (!User.IsInRole("Admin") && dto.UserId != loggedInUserId)
+            //{
+            //    return Forbid();
+            //}
 
             using var transaction = await context.Database.BeginTransactionAsync();
 

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using static OrderDeliverySystem.Share.Data.ErrorMessages;
 using static OrderDeliverySystem.Share.Data.Constants.Address;
+using System.Text.Json.Serialization;
 
 namespace OrderDeliverySystem.Share.DTOs
 {

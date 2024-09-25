@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OrderDeliverySystem.Client.Infrastructure.Services.Authentication;
+using OrderDeliverySystem.Client.Infrastructure.Services.Profile;
 using OrderDeliverySystem.Components;
 using OrderDeliverySystem.Middleware;
 using OrderDeliverySystem.Share.Data;
@@ -26,7 +27,6 @@ builder.Services.AddMudServices();
 builder.Services.AddScoped<OrderService>();
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -68,7 +68,7 @@ builder.Services.AddRazorComponents()
 var baseUrl = "https://orderdeliverysystemtesttestapi.azure-api.net";
 if (environment == "Development")
 {
-    baseUrl = "https://localhost:7027";
+    baseUrl = "https://localhost:7027/";
 }
 
 // Add HttpClient service for API calls
@@ -92,6 +92,7 @@ builder.Services.AddHttpClient("API", client =>
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
 
 builder.Services.AddAuthentication(options =>
 {
