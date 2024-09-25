@@ -1,4 +1,7 @@
-﻿
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
 <MudNavMenu Class="mud-width-full">
     <div class="d-flex justify-content-center">
         <MudImage Src="images/food.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/" Class="rounded-lg m-4" />
@@ -11,34 +14,47 @@
     </div>
 
     <MudDivider Class="my-2" />
-    @if (_role == "Admin")
+    @if (isAdmin)
     {
-        <MudNavLink Href="/profile" Icon="@Icons.Material.Filled.Dashboard">User Management</MudNavLink>
-        <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard">Review  Management</MudNavLink>
+        <MudNavLink Href="/user-management" Icon="@Icons.Material.Filled.Dashboard">User Management</MudNavLink>
+        <MudNavLink Href="/review-list" Icon="@Icons.Material.Filled.Dashboard">Review  Management</MudNavLink>
+        <MudNavLink Href="/password" Icon="@Icons.Material.Filled.Receipt">Password Reset</MudNavLink>
     }
     else
     {
-        @if (_role == "Merchant")
+        @if (isMerchant)
         {
-            <MudNavLink Href="/profile" Icon="@Icons.Material.Filled.Dashboard">Profile Management</MudNavLink>
-            <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard">Product Management</MudNavLink>
-            <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard">Order Management</MudNavLink>
-            <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard">Review Management</MudNavLink>
+            <MudNavLink Href="/merchant-profile" Icon="@Icons.Material.Filled.Dashboard">Profile Management</MudNavLink>
+            <MudNavLink Href="/product-list" Icon="@Icons.Material.Filled.Dashboard">Product Management</MudNavLink>
+            <MudNavLink Href="/order-list" Icon="@Icons.Material.Filled.Dashboard">Order Management</MudNavLink>
+            <MudNavLink Href="/review-list" Icon="@Icons.Material.Filled.Dashboard">Review Management</MudNavLink>
+            <MudNavLink Href="/password" Icon="@Icons.Material.Filled.Receipt">Password Reset</MudNavLink>
         }
-        else
+        else if (isDeliveryWorker)
         {
-            <MudNavLink Href="/profile" Icon="@Icons.Material.Filled.Dashboard">Profile Management</MudNavLink>
-            <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard">Order</MudNavLink>
-            <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard">Histiry Order</MudNavLink>
+            <MudNavLink Href="/worker-profile" Icon="@Icons.Material.Filled.Dashboard">Profile Management</MudNavLink>
+            <MudNavLink Href="/order-list" Icon="@Icons.Material.Filled.Dashboard">Order</MudNavLink>
+            <MudNavLink Href="/history-orders" Icon="@Icons.Material.Filled.Dashboard">Histiry Order</MudNavLink>
+            <MudNavLink Href="/password" Icon="@Icons.Material.Filled.Receipt">Password Reset</MudNavLink>
         }
+       
     }
-    <MudNavLink Href="/billing" Icon="@Icons.Material.Filled.Receipt">Password Reset</MudNavLink>
+   
 </MudNavMenu>
 
 @code {
-    string _role = "Admin";
-    //string _role = "Merchant";
-    //string _role = "DeliveryWorker";
-
+  
+    private bool isAdmin;
+    private bool isMerchant;
+    private bool isDeliveryWorker;
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+     
+        isAdmin = user.IsInRole("Admin");
+        isMerchant = user.IsInRole("Merchant");
+        isDeliveryWorker = user.IsInRole("Delivery Worker");
+    }
 }
 

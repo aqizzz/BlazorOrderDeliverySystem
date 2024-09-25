@@ -2,6 +2,8 @@
 @using OrderDeliverySystem.Client.Pages.Customer
 @using OrderDeliverySystem.Components
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
@@ -76,8 +78,19 @@ else
 
 
 @code{
-    bool isUser = true;
-    bool isCustomer = true;
+    private bool isCustomer;
+    private bool isUser;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+       
+        isCustomer = user.IsInRole("Customer");
+        isUser = user !=null;
+    }
+
     bool _cartExpanded = false;
 
 

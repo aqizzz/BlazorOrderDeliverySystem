@@ -144,33 +144,7 @@
     private void OrderCreationSubmit()
     {
 
-        var result = await Order(this.user);
-
-        if (result.Succeeded)
-        {
-            this.ShowErrors = false;
-
-            this.message = "You have successfully registered.\n Please login.";
-            this.alertClass = "alert-success";
-            this.showAlert = true;
-
-            // Force UI update
-            await InvokeAsync(StateHasChanged);
-
-            // Wait for 2 seconds to show success message
-            await Task.Delay(2000);
-
-            this.NavigationManager.NavigateTo("/login");
-        }
-        else
-        {
-            // Registration failed
-            this.Errors = result.Errors;
-            this.ShowErrors = true;
-        }
-
-        // Force UI update to show message
-        await InvokeAsync(StateHasChanged);
+     
     }
 
 }

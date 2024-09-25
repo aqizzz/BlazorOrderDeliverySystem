@@ -5,6 +5,7 @@ namespace OrderDeliverySystem.Share.DTOs
     public class CreateOrderDTO
     {
         public int UserId { get; set; }
+        public int MerchantId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
