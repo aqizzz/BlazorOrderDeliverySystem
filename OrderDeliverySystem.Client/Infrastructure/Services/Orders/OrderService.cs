@@ -16,8 +16,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
         }
          public async Task<List<OrderDTO>> GetOrdersByRoleAsync(string role, int id, bool recent)
         {
-            var uri = $"{Base}{role}/{id}?recent=true";
-            Console.WriteLine($"Base Address: {_httpClient.BaseAddress}");
+            var uri = $"{Base}{role}/{id}?recent={recent.ToString().ToLower()}";
             Console.WriteLine($"making request to { uri}");
 			var orders = await _httpClient.GetFromJsonAsync<List<OrderDTO>>(uri);
 			return orders ?? new List<OrderDTO>();

@@ -1,10 +1,18 @@
 ﻿@page "/my-orders"
+@inject OrderService OrderService
 
 @using OrderDeliverySystem.Client.Shared
 @attribute [Authorize(Roles="Customer")]
 @using Microsoft.AspNetCore.Authorization;
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 
+@using System.ComponentModel.DataAnnotations
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@using OrderDeliverySystem.Client.Infrastructure.Services.Orders;
+@using OrderDeliverySystem.Client.Shared.Common
+@using OrderDeliverySystem.Share.DTOs
+@using OrderDeliverySystem.Share.Data
+@inject IAuthService AuthService
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
@@ -16,18 +24,39 @@
        
         <MudTabPanel>
             <ChildContent>
-                <OrderCard OrderId="1" />
+                @if (recentOrders.Any())
+				{
+				@foreach (var order in recentOrders)
+				{
+                        <OrderCard Order="@order" />
+				}
+				}else
+				{
+					<MudText>You have no recent orders!</MudText>
+				}
+               
             </ChildContent>
             <TabContent>
-                Recent Order
+                Recent Orders
             </TabContent>
         </MudTabPanel>
         <MudTabPanel>
             <ChildContent>
-                <OrderCard OrderId="2"/>
+                @if (orderHistory.Any())
+                {
+                    @foreach (var order in orderHistory)
+                    {
+                        <OrderCard Order="@order" />
+                    }
+                }
+                else
+                {
+                    <MudText>You have no orders!</MudText>
+                }
             </ChildContent>
+              
             <TabContent>
-                History Order
+                Order History
             </TabContent>
         </MudTabPanel>
     </MudTabs>
@@ -35,6 +64,20 @@
 
 </MudContainer>
 @code {
+    private List<OrderDTO> recentOrders = new();
+    private List<OrderDTO> orderHistory = new();
+   // private OrderDTO? selectedOrder = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        int customerId = 13;
+        recentOrders = await OrderService.GetOrdersByRoleAsync("customer", customerId, true);
+        orderHistory = await OrderService.GetOrdersByRoleAsync("customer", customerId, false);
+    }
+    private void ShowOrderDetails(OrderDTO order)
+    {
+        //selectedOrderItems = order.OrderItems;
+    }
     bool _expanded = true;
    
     private void OnExpandCollapseClick()

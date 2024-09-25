@@ -68,7 +68,7 @@ else
     <MudCollapse Expanded="_cartExpanded" >
         @if (_cartExpanded)
         {
-            <Cart/>
+        <Cart OnClose="CloseCart" />
         }
     </MudCollapse>
 
@@ -94,6 +94,11 @@ else
     private void OnExpandCartClick()
     {
         _cartExpanded = !_cartExpanded;
+    }
+
+    private void CloseCart()
+    {
+        _cartExpanded = false; 
     }
     public async Task LogOut()
     {
