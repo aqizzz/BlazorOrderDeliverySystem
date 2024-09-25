@@ -12,7 +12,7 @@
     <MudAppBar Height="Auto" Class="p-3 bg-white">
         <NavMenu Role="@_role" />
     </MudAppBar>
-    @if (_role != "Customer" ||  _role != "Guest")
+    @if (_role != "Customer" &&  _role != "Guest")
     {
         <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Style="min-height:700px;">
             <MudContainer Class="my-10" >
@@ -58,9 +58,9 @@
 @code {
   
     //string _role = "Guest";
-    //string _role = "Customer";
+    string _role = "Customer";
     //string _role = "Admin";
-    string _role = "Merchant";
+    //string _role = "Merchant";
     //string _role = "DeliveryWorker";
 
    @* private bool isAdminOrManager;

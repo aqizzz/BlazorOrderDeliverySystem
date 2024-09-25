@@ -2,12 +2,9 @@
 @inject OrderService OrderService
 
 @using OrderDeliverySystem.Client.Shared
-@attribute [Authorize(Roles="Customer")]
 @using Microsoft.AspNetCore.Authorization;
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
-
 @using System.ComponentModel.DataAnnotations
-@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using OrderDeliverySystem.Client.Infrastructure.Services.Orders;
 @using OrderDeliverySystem.Client.Shared.Common
 @using OrderDeliverySystem.Share.DTOs

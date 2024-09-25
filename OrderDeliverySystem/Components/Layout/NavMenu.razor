@@ -77,7 +77,7 @@ else
 
 @code{
     [Parameter] public string Role { get; set; }
-    bool isUser = false;
+    bool isUser = true;
     protected override async Task OnInitializedAsync()
     {
         if (!Role.Equals("Guest")|| !Role.Equals(String.Empty))
