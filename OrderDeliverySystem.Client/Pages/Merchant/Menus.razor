@@ -18,7 +18,8 @@
     <h3>ItemList</h3>
 
     <!-- 表格显示部分 -->
-    <MudTable Items="@Items" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<ViewItemDTO,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
+    @* <MudTable Items="@Items" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped"  @bind-SelectedItem="selectedItem1"> *@
+        <MudTable Items="@Items" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<ViewItemDTO,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
         <ToolBarContent>
             <MudText Typo="Typo.h6">Items</MudText>
             <MudSpacer />
@@ -55,12 +56,9 @@
         </PagerContent>
     </MudTable>
     
-   @*   <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateTestItem">
-         Add Test Item
-     </MudButton> *@
 
     <!-- Temporary debugging using foreach loop to display raw data -->
-    <div>
+    @* <div>
         <h3>Raw Data (for debugging)</h3>
         <ul>
             @foreach (var item in Items)
@@ -68,7 +66,7 @@
                 <li>@item.MerchantId - @item.ItemId - @item.ItemName - @item.ItemDescription - @item.ItemPrice - @item.ItemPic - @item.ItemIsAvailable</li>
             }
         </ul>
-    </div>
+    </div> *@
 
  @*    <!-- 交互控件部分 -->
     <div class="d-flex flex-wrap mt-4">
@@ -85,6 +83,7 @@
 </MudContainer>
 
 @code {
+    private int merchantId = 2;
 
     private bool dense = false;
     private bool hover = true;
@@ -94,23 +93,39 @@
     private ViewItemDTO selectedItem1 = null;
     private HashSet<ViewItemDTO> selectedItems = new HashSet<ViewItemDTO>();
 
-    private IEnumerable<ViewItemDTO> Items = new List<ViewItemDTO>();
+   // private IEnumerable<ViewItemDTO> Items = new List<ViewItemDTO>();
+    private List<ViewItemDTO> Items = new List<ViewItemDTO>();
+    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        // Items = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>("/api/items");
+        await LoadMenuItems();
+    }
+
+    private async Task LoadMenuItems()
+    {
         try
-         {
-           var httpClient = HttpClientFactory.CreateClient("ApiClient");
-            Items = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>("api/items");
-         }
-         catch (Exception ex)
         {
-             Console.WriteLine($"Error fetching items: {ex.Message}");
+            var httpClient = HttpClientFactory.CreateClient("API");
+            var response = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>($"api/items/merchant/{merchantId}");
+
+            if (response != null)
+            {
+                Items = response;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching items: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
         }
     }
 
-    private bool FilterFunc1(ViewItemDTO item) => FilterFunc(item, searchString1);
+     private bool FilterFunc1(ViewItemDTO item) => FilterFunc(item, searchString1);
 
     private bool FilterFunc(ViewItemDTO item, string searchString)
     {
@@ -132,57 +147,23 @@
         {
             var httpClient = HttpClientFactory.CreateClient("ApiClient");
 
-            // Assuming you have an API endpoint to add the item to the cart
+           // Assuming you have an API endpoint to add the item to the cart
             var response = await httpClient.PostAsJsonAsync("/api/cart", item);
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine($"Item {item.ItemName} added to cart successfully.");
-                // You might want to show a success notification on the UI
+              //  You might want to show a success notification on the UI
             }
             else
             {
                 Console.WriteLine($"Failed to add item {item.ItemName} to cart.");
-                // Handle failure (e.g., show an error message)
+              //  Handle failure (e.g., show an error message)
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error adding item to cart: {ex.Message}");
         }
-    }
-
-   
-    // private async Task CreateTestItem()
-    // {
-    //     var newItem = new ViewItemDTO
-    //         {
-    //             MerchantId = 01,
-    //             ItemId = 01,
-    //             ItemName = "Test Item",
-    //             ItemDescription = "Test description",
-    //             ItemPrice = 9.99M,
-    //             ItemPic = "Test pic",
-    //             ItemIsAvailable = true
-    //         };
-
-    //     try
-    //     {
-    //         var httpClient = HttpClientFactory.CreateClient("ApiClient");
-    //         var response = await httpClient.PostAsJsonAsync("/api/items", newItem);
-    //         if (response.IsSuccessStatusCode)
-    //         {
-    //             Console.WriteLine("Test item added successfully.");
-    //         }
-    //         else
-    //         {
-    //             Console.WriteLine("Failed to add test item.");
-    //         }
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Console.WriteLine($"Error adding test item: {ex.Message}");
-    //     }
-    // }
-
+   }
 
 }
