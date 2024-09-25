@@ -1,4 +1,4 @@
-@page "/order/{CartId}"
+@page "/order-now"
 @attribute [Authorize(Roles = "Customer")]
 @using System.Text.RegularExpressions
 @using System.ComponentModel.DataAnnotations
@@ -7,7 +7,10 @@
 @using OrderDeliverySystem.Client.Shared.Common
 @using OrderDeliverySystem.Client.Shared
 @using OrderDeliverySystem.Share.DTOs
+@using OrderDeliverySystem.Share.DTOs.CartDTO
 @using OrderDeliverySystem.Share.Data.Models
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
@@ -28,7 +31,8 @@
                 <MudItem xs="12" sm="7">
                     <MudCard>
                         <MudCardContent>
-                            <MudTextField @bind-Value="order.UserId" For="@(() => order.UserId)" InputType="InputType.Hidden" />
+                            <MudTextField @bind-Value="order.CustomerId" For="@(() => order.CustomerId)" InputType="InputType.Hidden" />
+                            <MudTextField @bind-Value="order.MerchantId" For="@(() => order.MerchantId)" InputType="InputType.Hidden" />
                             <MudTextField @bind-Value="order.CartId" For="@(() => order.CartId)" InputType="InputType.Hidden" />
                             <MudTextField @bind-Value="order.FirstName" For="@(() => order.FirstName)" InputType="InputType.Hidden" />
                             <MudTextField Label="First name" HelperText="Max. 8 characters"
@@ -39,8 +43,17 @@
                                           @bind-Value="order.Email" For="@(() => order.Email)" InputType="InputType.Email" />
                             <MudTextField Label="Phone" HelperText="Enter your phone number" Class="mt-3"
                                           @bind-Value="order.Phone" For="@(() => order.Phone)" InputType="InputType.Telephone" />
-                            <MudTextField Label="Address" HelperText="Repeat the password" Class="mt-3"
+                         <MudTextField Label="Unit" HelperText="Enter your Unit" Class="mt-3"
+                                          @bind-Value="order.Unit" For="@(() => order.Unit)" InputType="InputType.Text" />
+                            <MudTextField Label="Address" HelperText="Enter your address" Class="mt-3"
                                               @bind-Value="order.Address" For="@(() => order.Address)" InputType="InputType.Text" />
+                            <MudTextField Label="City" HelperText="Enter your City" Class="mt-3"
+                                          @bind-Value="order.City" For="@(() => order.City)" InputType="InputType.Text" />
+                            <MudTextField Label="Provice" HelperText="Enter your Provice" Class="mt-3"
+                                          @bind-Value="order.Province" For="@(() => order.Province)" InputType="InputType.Text" />
+                            <MudTextField Label="Postcode" HelperText="Enter your PostCode" Class="mt-3"
+                                          @bind-Value="order.PostCode" For="@(() => order.PostCode)" InputType="InputType.Text" />
+                            
                         </MudCardContent>
                        
                     </MudCard>
@@ -122,25 +135,110 @@
  </EditForm>
         
 @code {
-    [Parameter]
-    public int CartId { get; set; }
-    private ICollection<AppOrderItem> OrderItems { get; set; }
+    private const decimal TaxRate = 0.15m;
+    private const decimal DeliveryFee = 6.00m;
+    int customerId;
+    int merchantId;
+    int itemId;
+    int cartId;
+    decimal subtotal;
 
+    private List<GetCartItemsResponseDTO> cartItems = new();
     private CreateOrderDTO order = new CreateOrderDTO();
     bool success;
-    protected override void OnInitialized()
+    protected async Task OnInitialized()
     {
-        order.UserId = 2;
-        if (CartId != null)
+        await GetCustomerId();
+        await LoadCartItems();
+        await GetMerchantId();
+        order.CustomerId = customerId;
+        order.MerchantId = merchantId;
+        order.OrderItems = cartItems;
+        order.TotalAmount = GetTotalAmount();
+
+    }
+    private async Task LoadCartItems()
+    {
+        try
         {
-            order.CartId = CartId;
+            var httpClient = HttpClientFactory.CreateClient("API");
+            var response = await httpClient.GetFromJsonAsync<GetCartReponseDTO>($"api/cart/getCart/{customerId}");
+
+            if (response != null)
+            {
+                order.CartId = response.CartId;
+               
+                cartItems = response.CartItems;
+                subtotal = cartItems.Sum(ci => ci.Quantity * ci.ItemPrice);
+                itemId = cartItems.FirstOrDefault().ItemId;
+            }
         }
-      
-       
-        Console.WriteLine($"Selected restaurant ID: {CartId}");
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading cart: {ex.Message}");
+        }
+        
     }
 
+    private async Task GetCustomerId()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
     
+        if (user.Identity.IsAuthenticated)
+        {
+            // Retrieve the CustomerId from claims, assuming it is stored as a claim
+            var customerIdClaim = user.FindFirst("CustomerId");
+
+            if (customerIdClaim != null)
+            {
+                // Parse CustomerId as needed (e.g., to int)
+                customerId = int.Parse(customerIdClaim.Value);
+                Console.WriteLine($"CustomerId: {customerId}");
+            }
+            else
+            {
+                Console.WriteLine("CustomerId claim not found.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("User is not authenticated.");
+        };
+    }
+
+    private async Task GetMerchantId()
+    {
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("API");
+            var response = await httpClient.GetFromJsonAsync<ViewItemDTO>($"api/items/{itemId}");
+
+            if (response != null)
+            {
+                merchantId = response.MerchantId;
+              
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading cart: {ex.Message}");
+        }
+    }
+
+    private decimal GetTaxAmount()
+    {
+        return subtotal * TaxRate;
+    }
+    private decimal GetTotalAfterTax()
+    {
+        return subtotal + GetTaxAmount();
+    }
+    private decimal GetTotalAmount()
+    {
+        return GetTotalAfterTax() + DeliveryFee;
+    }
     private void OrderCreationSubmit()
     {
 
