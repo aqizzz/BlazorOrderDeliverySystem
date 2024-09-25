@@ -15,18 +15,18 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Authentication
         private readonly AuthenticationStateProvider authenticationStateProvider;
         private readonly IHttpClientFactory httpClientFactory;
 
-        private const string LoginPath = "api/Auth/login";
-        private const string RegisterPath = "api/Auth/register";
-        private const string ChangePasswordPath = "api/Auth/me/change-password";
+        private const string LoginPath = "/api/Auth/login";
+        private const string RegisterPath = "/api/Auth/register";
+        private const string ChangePasswordPath = "/api/Auth/me/change-password";
 
         public AuthService(
             ILocalStorageService localStorage,
             AuthenticationStateProvider authenticationStateProvider,
             IHttpClientFactory httpClientFactory)
         {
-            this.localStorage = localStorage ?? throw new ArgumentNullException(nameof(localStorage));
-            this.authenticationStateProvider = authenticationStateProvider ?? throw new ArgumentNullException(nameof(authenticationStateProvider));
-            this.httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+            this.localStorage = localStorage;
+            this.authenticationStateProvider = authenticationStateProvider;
+            this.httpClientFactory = httpClientFactory;
         }
 
         public async Task<Result> Register(CustomerRegisterDTO model)

@@ -1,4 +1,5 @@
-﻿@using OrderDeliverySystem.Client.Shared
+﻿@using MudBlazor
+@using OrderDeliverySystem.Client.Shared
 @using OrderDeliverySystem.Client.Pages.Customer
 @using OrderDeliverySystem.Components
 @using System.ComponentModel.DataAnnotations
@@ -68,7 +69,7 @@ else
     <MudCollapse Expanded="_cartExpanded" >
         @if (_cartExpanded)
         {
-            <Cart/>
+        <Cart OnClose="CloseCart" />
         }
     </MudCollapse>
 
@@ -84,6 +85,11 @@ else
     private void OnExpandCartClick()
     {
         _cartExpanded = !_cartExpanded;
+    }
+
+    private void CloseCart()
+    {
+        _cartExpanded = false; 
     }
     public async Task LogOut()
     {
