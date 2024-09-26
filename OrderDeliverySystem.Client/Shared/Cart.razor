@@ -1,10 +1,12 @@
-﻿@page "/cart"
-@using OrderDeliverySystem.Client.Shared
+﻿@using OrderDeliverySystem.Client.Shared
 @using OrderDeliverySystem.Share.DTOs.CartDTO
+@using OrderDeliverySystem.Client.Infrastructure.Services.Cart;
 @using MudBlazor
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
+@inject CartService CartService
 @rendermode InteractiveServer
+
 
 <MudPaper Class="pa-4" Elevation="3" Style="position: absolute; top: 70px; right: 20px; z-index: 1000; width: 400px;">
     <div class="d-flex justify-content-between align-items-center">
@@ -55,9 +57,10 @@
 </MudPaper>
 
 @code {
-    [Parameter] public EventCallback OnClose { get; set; } 
+    [Parameter] public EventCallback OnClose { get; set; }
 
-    string cusotmerId = "3"; 
+
+    string customerId = "1";
     private List<GetCartItemsResponseDTO> cartItems = new();
     private decimal subtotal;
     private bool isLoading = true;
@@ -71,8 +74,7 @@
     {
         try
         {
-            var httpClient = HttpClientFactory.CreateClient("API");
-            var response = await httpClient.GetFromJsonAsync<GetCartReponseDTO>($"api/cart/getCart/{cusotmerId}");
+            var response = await CartService.GetCartItems(customerId);
 
             if (response != null)
             {
@@ -113,55 +115,38 @@
             }
             else
             {
-                await RemoveItem(item.ItemId); 
+                await RemoveItem(item.ItemId);
             }
         }
     }
 
     private async Task UpdateCartItem(int itemId, int quantity)
     {
-        try
-        {
-            var httpClient = HttpClientFactory.CreateClient("API");
-            var updateDto = new AddUpdateCartItemsRequestDTO(itemId, quantity);
+        var updateDto = new AddUpdateCartItemsRequestDTO(itemId, quantity);
+        var response = await CartService.UpdateCartItems(customerId, updateDto);
 
-            var response = await httpClient.PutAsJsonAsync($"api/cart/updateCart/{cusotmerId}", updateDto);
-
-            if (response.IsSuccessStatusCode)
-            {
-                subtotal = cartItems.Sum(ci => ci.Quantity * ci.ItemPrice);
-                StateHasChanged();
-            }
-        }
-        catch (Exception ex)
+        if (response.IsSuccessStatusCode)
         {
-            Console.WriteLine($"Error updating item: {ex.Message}");
+            subtotal = cartItems.Sum(ci => ci.Quantity * ci.ItemPrice);
+            StateHasChanged();
         }
     }
 
     private async Task RemoveItem(int itemId)
     {
-        try
-        {
-            var httpClient = HttpClientFactory.CreateClient("API");
-            var response = await httpClient.DeleteAsync($"api/cart/deleteItem/{cusotmerId}/{itemId}");
+        var response = await CartService.RemoveCartItems(customerId, itemId);
 
-            if (response.IsSuccessStatusCode)
-            {
-                cartItems = cartItems.Where(ci => ci.ItemId != itemId).ToList();
-                subtotal = cartItems.Sum(ci => ci.Quantity * ci.ItemPrice);
-                StateHasChanged();
-            }
-        }
-        catch (Exception ex)
+        if (response.IsSuccessStatusCode)
         {
-            Console.WriteLine($"Error removing item: {ex.Message}");
+            cartItems = cartItems.Where(ci => ci.ItemId != itemId).ToList();
+            subtotal = cartItems.Sum(ci => ci.Quantity * ci.ItemPrice);
+            StateHasChanged();
         }
     }
-
     private void PlaceOrder()
     {
-        NavigationManager.NavigateTo($"/order-now");
+        NavigationManager.NavigateTo($"/order/{customerId}");
+
     }
 
     public string FormatCurrency(decimal value)
