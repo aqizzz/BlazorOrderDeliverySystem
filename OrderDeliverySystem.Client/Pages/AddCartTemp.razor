@@ -3,12 +3,20 @@
 @using OrderDeliverySystem.Share.DTOs.CartDTO
 @inject IHttpClientFactory HttpClientFactory
 @using MudBlazor
+@using System.Net.Http.Json
+@inject HttpClient httpClient
+@using OrderDeliverySystem.Share.DTOs
+@using OrderDeliverySystem.Client.Shared.Common
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
 
 <MudContainer>
     <MudText Typo="Typo.h6" Style="color: rgba(112, 0, 0, 1);">Classic Breakfast Dishes</MudText>
+    @foreach (var item in Items)
+    {
+        <div>@item.ItemId</div>
+    }
     <MudDivider Class="mb-4" />
 
     <!-- Item 1: Chicken Sandwich -->
@@ -63,9 +71,53 @@
     </MudPaper>
 </MudContainer>
 
+
 @code {
-    
-    private int customerId = 1;
+    [Parameter]
+    public int userId { get; set; }
+
+    private int customerId = 3;
+
+    private bool dense = false;
+    private bool hover = true;
+    private bool striped = false;
+    private bool bordered = false;
+    private string searchString1 = "";
+    private ViewItemDTO selectedItem1 = null;
+    private HashSet<ViewItemDTO> selectedItems = new HashSet<ViewItemDTO>();
+
+    private List<ViewItemDTO> Items = new List<ViewItemDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Items = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>("/api/items");
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("API");
+            Items = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>("api/items/merchant/{userId}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching items: {ex.Message}");
+            // 你可以在页面上显示一个错误消息
+        }
+    }
+
+    private bool FilterFunc1(ViewItemDTO item) => FilterFunc(item, searchString1);
+
+    private bool FilterFunc(ViewItemDTO item, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (item.ItemName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (item.ItemDescription.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if ($"{item.ItemPrice}".Contains(searchString))
+            return true;
+        return false;
+    }
+
 
    
     public async Task AddToCart(int itemId, int quantity)

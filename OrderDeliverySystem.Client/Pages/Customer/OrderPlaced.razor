@@ -1,16 +1,85 @@
-﻿@page "/order/{Id}"
+@page "/order-now"
+@attribute [Authorize(Roles = "Customer")]
+@using System.Text.RegularExpressions
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization;
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@using OrderDeliverySystem.Client.Shared.Common
 @using OrderDeliverySystem.Client.Shared
+@using OrderDeliverySystem.Share.DTOs
+@using OrderDeliverySystem.Share.DTOs.CartDTO
+@using OrderDeliverySystem.Share.Data.Models
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
+
+
+
+<EditForm Model="@order" OnValidSubmit="OrderCreationSubmit">
+<DataAnnotationsValidator />
 
 <MudContainer Class="my-10">
     <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="true">Place Order</MudText>
     <MudDivider Class=" border-4" Style="border-color:rgba(112, 0, 0, 1);" />
    <MudContainer Class="my-3">
-        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Start" GutterBottom="true" Style="color:rgba(112, 0, 0, 1);">Place Order</MudText>
+        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Start" GutterBottom="true" Style="color:rgba(112, 0, 0, 1);">Customer Info</MudText>
         <MudDivider Class=" border-2" Style="border-color:rgba(112, 0, 0, 1);" />
-        <CustomerProfile/>
+        
+            <MudGrid>
+                <MudItem xs="12" sm="7">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudTextField @bind-Value="order.CustomerId" For="@(() => order.CustomerId)" InputType="InputType.Hidden" />
+                            <MudTextField @bind-Value="order.MerchantId" For="@(() => order.MerchantId)" InputType="InputType.Hidden" />
+                            <MudTextField @bind-Value="order.CartId" For="@(() => order.CartId)" InputType="InputType.Hidden" />
+                            <MudTextField @bind-Value="order.FirstName" For="@(() => order.FirstName)" InputType="InputType.Hidden" />
+                            <MudTextField Label="First name" HelperText="Max. 8 characters"
+                                          @bind-Value="order.FirstName" For="@(() => order.FirstName)" />
+                            <MudTextField Label="Last name" HelperText="Max. 8 characters"
+                                          @bind-Value="order.LastName" For="@(() => order.LastName)" />
+                            <MudTextField Label="Email" Class="mt-3"
+                                          @bind-Value="order.Email" For="@(() => order.Email)" InputType="InputType.Email" />
+                            <MudTextField Label="Phone" HelperText="Enter your phone number" Class="mt-3"
+                                          @bind-Value="order.Phone" For="@(() => order.Phone)" InputType="InputType.Telephone" />
+                         <MudTextField Label="Unit" HelperText="Enter your Unit" Class="mt-3"
+                                          @bind-Value="order.Unit" For="@(() => order.Unit)" InputType="InputType.Text" />
+                            <MudTextField Label="Address" HelperText="Enter your address" Class="mt-3"
+                                              @bind-Value="order.Address" For="@(() => order.Address)" InputType="InputType.Text" />
+                            <MudTextField Label="City" HelperText="Enter your City" Class="mt-3"
+                                          @bind-Value="order.City" For="@(() => order.City)" InputType="InputType.Text" />
+                            <MudTextField Label="Provice" HelperText="Enter your Provice" Class="mt-3"
+                                          @bind-Value="order.Province" For="@(() => order.Province)" InputType="InputType.Text" />
+                            <MudTextField Label="Postcode" HelperText="Enter your PostCode" Class="mt-3"
+                                          @bind-Value="order.PostCode" For="@(() => order.PostCode)" InputType="InputType.Text" />
+                            
+                        </MudCardContent>
+                       
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12" sm="5">
+                    <MudPaper Class="pa-4 mud-height-full">
+                        <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                        @if (success)
+                        {
+                            <MudText Color="Color.Success">Success</MudText>
+                        }
+                        else
+                        {
+                            <MudText Color="@Color.Error">
+                                <ValidationSummary />
+                            </MudText>
+                        }
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.body2" Align="Align.Center">
+                        Fill out the form correctly to see the success message.
+                    </MudText>
+                </MudItem>
+            </MudGrid>
+       
     </MudContainer>
     <MudContainer Class="my-3">
         <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Start" GutterBottom="true" Style="color:rgba(112, 0, 0, 1);">Place Order</MudText>
@@ -59,16 +128,121 @@
         </MudGrid>
         <MudDivider Class="mt-5 border-2" Style="border-color:rgba(112, 0, 0, 1);" />
     </MudContainer>
-
+    <MudCardActions>
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Register</MudButton>
+    </MudCardActions>
 </MudContainer>
-
+ </EditForm>
+        
 @code {
-    [Parameter]
-    public string Id { get; set; }
+    private const decimal TaxRate = 0.15m;
+    private const decimal DeliveryFee = 6.00m;
+    int customerId;
+    int merchantId;
+    int itemId;
+    int cartId;
+    decimal subtotal;
 
-    protected override void OnInitialized()
+    private List<GetCartItemsResponseDTO> cartItems = new();
+    private CreateOrderDTO order = new CreateOrderDTO();
+    bool success;
+    protected async Task OnInitialized()
     {
-        // 使用 Id 参数进行一些操作
-        Console.WriteLine($"Selected restaurant ID: {Id}");
+        await GetCustomerId();
+        await LoadCartItems();
+        await GetMerchantId();
+        order.CustomerId = customerId;
+        order.MerchantId = merchantId;
+        order.OrderItems = cartItems;
+        order.TotalAmount = GetTotalAmount();
+
     }
+    private async Task LoadCartItems()
+    {
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("API");
+            var response = await httpClient.GetFromJsonAsync<GetCartReponseDTO>($"api/cart/getCart/{customerId}");
+
+            if (response != null)
+            {
+                order.CartId = response.CartId;
+               
+                cartItems = response.CartItems;
+                subtotal = cartItems.Sum(ci => ci.Quantity * ci.ItemPrice);
+                itemId = cartItems.FirstOrDefault().ItemId;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading cart: {ex.Message}");
+        }
+        
+    }
+
+    private async Task GetCustomerId()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+    
+        if (user.Identity.IsAuthenticated)
+        {
+            // Retrieve the CustomerId from claims, assuming it is stored as a claim
+            var customerIdClaim = user.FindFirst("CustomerId");
+
+            if (customerIdClaim != null)
+            {
+                // Parse CustomerId as needed (e.g., to int)
+                customerId = int.Parse(customerIdClaim.Value);
+                Console.WriteLine($"CustomerId: {customerId}");
+            }
+            else
+            {
+                Console.WriteLine("CustomerId claim not found.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("User is not authenticated.");
+        };
+    }
+
+    private async Task GetMerchantId()
+    {
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("API");
+            var response = await httpClient.GetFromJsonAsync<ViewItemDTO>($"api/items/{itemId}");
+
+            if (response != null)
+            {
+                merchantId = response.MerchantId;
+              
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading cart: {ex.Message}");
+        }
+    }
+
+    private decimal GetTaxAmount()
+    {
+        return subtotal * TaxRate;
+    }
+    private decimal GetTotalAfterTax()
+    {
+        return subtotal + GetTaxAmount();
+    }
+    private decimal GetTotalAmount()
+    {
+        return GetTotalAfterTax() + DeliveryFee;
+    }
+    private void OrderCreationSubmit()
+    {
+
+     
+    }
+
 }
