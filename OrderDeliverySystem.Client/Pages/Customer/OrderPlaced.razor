@@ -155,7 +155,7 @@
         order.MerchantId = merchantId;
         order.OrderItems = cartItems;
         order.TotalAmount = GetTotalAmount();
-
+        return;
     }
     private async Task LoadCartItems()
     {
@@ -167,7 +167,7 @@
             if (response != null)
             {
                 order.CartId = response.CartId;
-               
+
                 cartItems = response.CartItems;
                 subtotal = cartItems.Sum(ci => ci.Quantity * ci.ItemPrice);
                 itemId = cartItems.FirstOrDefault().ItemId;
@@ -177,7 +177,7 @@
         {
             Console.WriteLine($"Error loading cart: {ex.Message}");
         }
-        
+        return;
     }
 
     private async Task GetCustomerId()
@@ -185,7 +185,7 @@
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-    
+
         if (user.Identity.IsAuthenticated)
         {
             // Retrieve the CustomerId from claims, assuming it is stored as a claim
@@ -206,6 +206,7 @@
         {
             Console.WriteLine("User is not authenticated.");
         };
+        return;
     }
 
     private async Task GetMerchantId()
@@ -225,6 +226,7 @@
         {
             Console.WriteLine($"Error loading cart: {ex.Message}");
         }
+        return;
     }
 
     private decimal GetTaxAmount()

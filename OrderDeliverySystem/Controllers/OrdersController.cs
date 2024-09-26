@@ -4,6 +4,8 @@ using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
 using OrderDeliverySystem.Share.Data.Models;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Http.HttpResults;
+using static OrderDeliverySystem.Share.Data.Constants;
 
 namespace OrderDeliverySystemApi.Controllers
 {
@@ -286,7 +288,7 @@ namespace OrderDeliverySystemApi.Controllers
             _context.Orders.Remove(order);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok("Success");
         }
 
         // Helper method to check if an order exists
@@ -303,15 +305,18 @@ namespace OrderDeliverySystemApi.Controllers
                 .Include(o => o.OrderItems)
                 .Include(o => o.Merchant)
                 .Include(o => o.DeliveryWorker);
+                    
 
+            int theId;
             switch (role.ToLower())
             {
                 case "customer":
-                    query = query.Where(o => o.CustomerId == id); break;
+
+                    query = query.Where(o => o.Customer != null && o.Customer.User.UserId == id); break;
                 case "merchant":
-                    query = query.Where(o => o.MerchantId == id); break;
+                    query = query.Where(o => o.Merchant != null && o.Merchant.User.UserId == id); break;
                 case "worker":
-                    query = query.Where(o => o.WorkerId == id); break;
+                    query = query.Where(o => o.DeliveryWorker != null && o.DeliveryWorker.User.UserId == id); break;
             }
 
             if (recent)
@@ -368,15 +373,18 @@ namespace OrderDeliverySystemApi.Controllers
                             Email = o.Customer.User.Email,
                             Phone = o.Customer.User.Phone,
                             Role = o.Customer.User.Role,
-                            Addresses = o.Customer.User.Addresses.Select(a => new AddressModelDTO1
-                            {
-                                Type = a.Type,
-                                Unit = a.Unit,
-                                Address = a.Address,
-                                City = a.City,
-                                Province = a.Province,
-                                Postcode = a.Postcode,
-                            }).ToList()
+                            Addresses = o.Customer.User.Addresses
+                                .Where(a => a.AddressId == o.PickupAddressId)
+                                .Select(a => new AddressModelDTO1
+                                {
+                                    AddressId = a.AddressId,
+                                    Type = a.Type,
+                                    Unit = a.Unit,
+                                    Address = a.Address,
+                                    City = a.City,
+                                    Province = a.Province,
+                                    Postcode = a.Postcode,
+                                }).Take(1).ToList()
                         }
                     },
                     Merchant = new MerchantDTO1

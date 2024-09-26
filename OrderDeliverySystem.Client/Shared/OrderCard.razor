@@ -6,7 +6,7 @@
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
-
+<MudContainer Class="my-5">
 <MudGrid>
     <MudItem xs="12" sm="12" md="12" Class="d-flex justify-content-between align-items-center border-b-4 border-solid" Style="border-color:rgba(112, 0, 0, 1);">
         <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">OrderId: @Order.OrderId</MudText>
@@ -22,14 +22,24 @@
                 <MudText Class="pb-2" Typo="Typo.h5">@Order.Merchant.BusinessName</MudText>
                 <div Class="pb-2">
                 <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.AccessTime"></MudIcon>
-                <MudText Class="d-inline-block" Typo="Typo.body2">Time: @Order.Merchant.PreparingTime mins</MudText>
+                        <MudText Class="d-inline-block" Typo="Typo.body2">Time: @(Order.Merchant.PreparingTime + 20) ~ @(Order.Merchant.PreparingTime + 35) mins</MudText>
                 </div>
                 <div Class="pb-2">
                 <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.LocationOn"></MudIcon>
+                @if (Order != null && Order.Merchant != null && Order.Merchant.User != null && Order.Merchant.User.Addresses!=null)
+                {
                     @foreach (var address in Order.Merchant.User.Addresses)
                     {
-                        <MudText Class="d-inline-block" Typo="Typo.body2">Address: @address.FullAddress</MudText>
+                        if (@address.Unit != null)
+                        {
+                                <MudText Class="d-inline-block" Typo="Typo.body2"> @address.Unit, @address.Address,  @address.City</MudText>
+                        }
+                        else
+                        {
+                                <MudText Class="d-inline-block" Typo="Typo.body2">@address.Address,  @address.City</MudText>
+                        }
                     }
+                }
                 </div>
             </MudItem>
         </MudGrid>
@@ -37,7 +47,10 @@
     <MudItem xs="12" sm="12" md="5" Class="d-flex justify-content-center align-item-center"  GutterBottom="true">
        <div>
         <MudText Typo="Typo.body1" Align="Align.Center" >Order Time: @Order.CreatedAt.ToString("MM/dd/yy hh:mm tt")</MudText>
-        <MudText Typo="Typo.body1" Align="Align.Center" >Arrival time: 09/14/2024 19:25</MudText>
+                @if (Order != null && Order.Merchant != null && Order.Merchant.PreparingTime != null)
+                {
+                <MudText Typo="Typo.body1" Align="Align.Center">Arrival time:@(Order.CreatedAt.AddMinutes(30 + (double)Order.Merchant.PreparingTime).ToString("MM/dd/yy hh:mm tt"))</MudText>
+                }
         <MudText Typo="Typo.body1" Align="Align.Center" >Status: @Order.Status</MudText>
         <MudLink OnClick="GoTracking"> <MudText Typo="Typo.body1" Align="Align.Center" >Delivery Tracking-></MudText></MudLink>
         </div>
@@ -71,18 +84,32 @@
     </MudItem>
 
 </MudGrid>
-
+</MudContainer>
 
 @code {
     [Parameter]
-    public OrderDTO Order{ get; set; }
+    public OrderDTO Order { get; set; } = new OrderDTO();
 
+    private string fullAddress = string.Empty;
+    private string time = string.Empty;
     private const decimal TaxRate = 0.15m;
     private const decimal DeliveryFee = 6.00m;
 
     protected override void OnInitialized()
     {
-        
+        if (Order != null && Order.Merchant != null && Order.Merchant.User != null && Order.Merchant.User.Addresses!=null)
+        {
+            foreach (var address in Order.Merchant.User.Addresses)
+            {
+                if (address.Unit != null)
+                {
+                    fullAddress = $"{address.Unit}, {address.Address}";
+                }
+               
+            }
+           
+        }
+       
         Console.WriteLine($"Selected restaurant ID: {Order.OrderId}");
     }
 
