@@ -13,10 +13,19 @@
 @inject NavigationManager NavigationManager
 @inject IProfileService ProfileService
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject ILogger<CustomerProfile> logger
 @inject IJSRuntime JSRuntime
-@rendermode InteractiveServer
+@rendermode InteractiveAuto
 
+<br>
+<br />
+<br />
+<br />
+@if (isLoading)
+{
+    <p>Loading profile...</p>
+}
+else if (model != null)
+{
 <MudContainer>
     <EditForm Model="@model" OnValidSubmit="HandleUpdateProfile" FormName="profileForm">
         <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
@@ -137,31 +146,34 @@
             </MudItem>
 
             <MudItem xs="12" Class="object-center">
-                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Warning" OnClick="@(()=>HandleUpdateProfile())">Update Profile</MudButton>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Profile</MudButton>
             </MudItem>
         </MudGrid>
     </EditForm>
 </MudContainer>
+}
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+
+    [Parameter]
+    public int UserId { get; set; }
+
+
     private UserProfileDTO model = new(); // Ensure model is initialized
+    private ClaimsPrincipal user;
+
 
     public bool ShowErrors { get; set; } = false;
     public IEnumerable<string> Errors { get; set; } = new List<string>();
 
-    private string userId = "5";
+    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        // var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        // var user = authState.User;
-        // model = (await this.ProfileService.GetCustomer(userId)).Data;
-
-        // if (user.Identity != null && user.Identity.IsAuthenticated)
-        // {
-        //     userId = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
-        //     model = (await this.ProfileService.GetCustomer(userId)).Data;
-        // }
-        await LogToBrowserConsole("OnInitializedAsync called");
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+        await LogToBrowserConsole($"OnInitializedAsync");
         await LoadUserProfile();
     }
 
@@ -169,37 +181,28 @@
     {
         try
         {
-            await LogToBrowserConsole("Starting LoadUserProfile");
-            var httpClient = httpClientFactory.CreateClient("API");
-            var uri = $"api/Profile/{userId}";
-            await LogToBrowserConsole($"Uri: {uri}");
-            httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-            var response = await httpClient.GetAsync(uri);
-            var profile = await httpClient.GetFromJsonAsync<UserProfileDTO>($"api/Profile/{userId}");
-            await LogToBrowserConsole($"Response: {System.Text.Json.JsonSerializer.Serialize(response)}");
-            await LogToBrowserConsole($"profile: {profile}");
-
-            if (response.IsSuccessStatusCode)
+            if (authenticationState is not null)
             {
-                await LogToBrowserConsole("Starting ReadAsStringAsync");
-                var stringData = await response.Content.ReadAsStringAsync();
-                await LogToBrowserConsole($"Starting convert: {stringData}");
-                var model = System.Text.Json.JsonSerializer.Deserialize<UserProfileDTO>(stringData);
-                await LogToBrowserConsole($"Response Data: {model}");
-            }
-            else
-            {
-                await LogToBrowserConsole("No response received.");
+                if (user is not null)
+                {
+                    if (user.IsInRole("Admin"))
+                    {
+                        model = await ProfileService.GetCustomer(UserId);
+                    }
+                    else if (user.IsInRole("Customer"))
+                    {
+                        model = await ProfileService.GetCustomer();
+                    }
+                    isLoading = false;
+                    StateHasChanged();
+                }
             }
         }
         catch (Exception ex)
         {
             await LogToBrowserConsole($"Error loading: {ex.Message}");
         }
-        finally
-        {
-            StateHasChanged();
-        }
+
     }
 
     private async Task HandleUpdateProfile()

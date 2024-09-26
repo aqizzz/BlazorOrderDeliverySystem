@@ -1,11 +1,9 @@
-﻿using Azure;
-using Blazored.LocalStorage;
+﻿using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using OrderDeliverySystem.Client.Infrastructure.Extensions;
 using OrderDeliverySystem.Share.Data;
-using OrderDeliverySystem.Share.Data.Models;
 using OrderDeliverySystem.Share.DTOs;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
@@ -16,7 +14,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
         private readonly AuthenticationStateProvider authenticationStateProvider;
         private readonly IHttpClientFactory httpClientFactory;
 
-        private const string GetCustomerPath = "api/Profile/";
+        private const string GetCustomerPath = "api/Profile";
         private const string EditCustomerPath = "api/Profile/edit";
         //private const string ChangePasswordPath = "api/Auth/me/change-password";
 
@@ -29,17 +27,45 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
             this.authenticationStateProvider = authenticationStateProvider;
             this.httpClientFactory = httpClientFactory;
         }
-        public async Task<Result<UserProfileDTO>> GetCustomer(string id)
+        public async Task<UserProfileDTO> GetCustomer()
         {
+            var token = await localStorage.GetItemAsync<string>("authToken");
             var httpClient = this.httpClientFactory.CreateClient("API");
-            return await httpClient.GetAsync(GetCustomerPath + id).ToResult<UserProfileDTO>();
+
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+
+            return await httpClient.GetFromJsonAsync<UserProfileDTO>(GetCustomerPath);
+        }
+
+        public async Task<UserProfileDTO> GetCustomer(int userId)
+        {
+            var token = await localStorage.GetItemAsync<string>("authToken");
+            var httpClient = this.httpClientFactory.CreateClient("API");
+
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+            var path = GetCustomerPath + "/" + userId;
+
+            return await httpClient.GetFromJsonAsync<UserProfileDTO>(path);
         }
 
         public async Task<Result> UpdateCustomer(UserProfileDTO model)
         {
+            var token = await localStorage.GetItemAsync<string>("authToken");
             var httpClient = this.httpClientFactory.CreateClient("API");
+
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+
             return await httpClient
-                .PostAsJsonAsync(EditCustomerPath, model)
+                .PutAsJsonAsync(EditCustomerPath, model)
                 .ToResult();
         }
     }
