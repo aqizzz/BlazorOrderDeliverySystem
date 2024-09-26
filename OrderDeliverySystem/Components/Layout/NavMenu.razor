@@ -1,4 +1,4 @@
-﻿@using MudBlazor
+﻿﻿@using MudBlazor
 @using OrderDeliverySystem.Client.Shared
 @using OrderDeliverySystem.Client.Pages.Customer
 @using OrderDeliverySystem.Components
@@ -9,7 +9,7 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
-
+@inject IAuthService AuthService
 @rendermode InteractiveServer
 
 
@@ -22,7 +22,7 @@
         <MudButton Href="/restaurants">Restaurants</MudButton>
         <MudButton Href="/about-us">About Us</MudButton>
         <MudButton Href="/contact">Contact</MudButton>
-       
+
 
         @if (isCustomer)
         {
@@ -35,15 +35,15 @@
 
     </MudButtonGroup>
     <MudSpacer />
-   
+
     @if (isCustomer)
     {
 
-        <MudIconButton OnClick="OnExpandCartClick" Icon="@Icons.Material.Filled.AddShoppingCart" Style="color: rgba(168, 0, 0, 1);">@(_cartExpanded ?"" : "")</MudIconButton>
+        <MudIconButton OnClick="OnExpandCartClick" Icon="@Icons.Material.Filled.AddShoppingCart" Style="color: rgba(168, 0, 0, 1);">@(_cartExpanded ? "" : "")</MudIconButton>
         <MudIconButton Href="/customer-profile" Icon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" />
 
         <MudFab Style="color: rgba(168, 0, 0, 1);" Label="Log Out" OnClick="LogOut" />
-       
+
     }
     else
     {
@@ -56,7 +56,8 @@ else
     <MudButton Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/dashboard" Class="rounded-lg m-4" /></MudButton>
 
     <MudSpacer />
-    <AuthorizeView>@*Example of set with role: <AuthorizeView Roles="Admin">*@
+    <AuthorizeView>
+        @*Example of set with role: <AuthorizeView Roles="Admin">*@
         <Authorized>
             <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Log Out" OnClick="LogOut" />
         </Authorized>
@@ -67,18 +68,17 @@ else
 }
 
 
-    <MudCollapse Expanded="_cartExpanded" >
-        @if (_cartExpanded)
-        {
+<MudCollapse Expanded="_cartExpanded">
+    @if (_cartExpanded)
+    {
         <Cart OnClose="CloseCart" />
-        }
-    </MudCollapse>
+    }
+</MudCollapse>
 
 
 
+@code {
 
-@code{
- 
     ///bool isCustomer = false;
     //string _role = "Admin";
     //string _role = "Merchant";
@@ -99,8 +99,7 @@ else
         isDeliveryWorker = user.IsInRole("DeliveryWorker");
         isGuest = (!isAdmin || !isCustomer || !isMerchant || !isDeliveryWorker);
     }*@
-    [Inject]
-    private IAuthService AuthService { get; set; }
+
     bool _cartExpanded = false;
     private bool isAdmin;
     private bool isCustomer;
@@ -113,7 +112,7 @@ else
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        
+
         isAdmin = user.IsInRole("Admin");
         isCustomer = user.IsInRole("Customer");
         isMerchant = user.IsInRole("Merchant");
@@ -129,9 +128,9 @@ else
 
     private void CloseCart()
     {
-        _cartExpanded = false; 
+        _cartExpanded = false;
     }
-      
+
     public async Task LogOut()
     {
         if (AuthService != null)
@@ -146,7 +145,7 @@ else
         NavigationManager.NavigateTo("/login");
     }
 
-   
 
-    
+
+
 }

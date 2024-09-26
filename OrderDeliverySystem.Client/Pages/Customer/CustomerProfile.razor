@@ -1,5 +1,5 @@
-﻿@page "/customer"
-
+﻿@page "/customer-profile"
+@attribute [Authorize]
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Authorization;
 @using MudBlazor
@@ -13,8 +13,8 @@
 @inject NavigationManager NavigationManager
 @inject IProfileService ProfileService
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject ILogger<CustomerProfile> logger
 @inject IJSRuntime JSRuntime
+@inject IAuthorizationService AuthorizationService
 @rendermode InteractiveAuto
 <br><br /><br /><br />
 @if (isLoading)
@@ -134,33 +134,51 @@ else if (model != null)
 </MudContainer>
 }
 @code {
+    private ClaimsPrincipal user;
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+
+    [Parameter]
+    public int UserId { get; set; }
+
     private UserProfileDTO model = new(); // Ensure model is initialized
 
     public bool ShowErrors { get; set; } = false;
     public IEnumerable<string> Errors { get; set; } = new List<string>();
 
-    private string userId = "5";
     private bool isLoading = true;
 
     private async Task LoadUserProfile()
     {
         try
         {
-            var httpClient = httpClientFactory.CreateClient("API");
-            httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-            model = await httpClient.GetFromJsonAsync<UserProfileDTO>($"api/Profile/{userId}");
- 
-            isLoading = false;
-            StateHasChanged();
+            if (authenticationState is not null)
+            {
+                if (user is not null)
+                {
+                    if (user.IsInRole("Admin"))
+                    {
+                        model = await ProfileService.GetCustomer(UserId);
+                    }
+                    else if (user.IsInRole("Customer"))
+                    {
+                        model = await ProfileService.GetCustomer();
+                    }
+                    isLoading = false;
+                    StateHasChanged();
+                }
+            }
         }
         catch (Exception ex)
         {
             await LogToBrowserConsole($"Error loading: {ex.Message}");
         }
-
     }
+
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
         await LoadUserProfile();
     }
 
