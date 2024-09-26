@@ -1,5 +1,6 @@
 @using MudBlazor
 @inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -13,32 +14,29 @@
     <MudAppBar Height="Auto" Class="p-3 bg-white">
         <NavMenu />
     </MudAppBar>
-    @if (_role != "Customer" && _role != "Guest" )
-    {
+
+    @if (isAdmin || isMerchant || isDeliveryWorker){
         <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Style="min-height:700px;">
-         <LeftNavBar />
+            <LeftNavBar />
         </MudDrawer>
-        <MudMainContent Class="mt-1" Style="min-height:700px;">
-          
+        <MudMainContent Class="my-1" Style="min-height:700px;">
+
             @Body
         </MudMainContent>
-       
     }
     else
     {
-        <MudMainContent Class="mt-1" Style="min-height:700px;">
-          
+        <MudMainContent Class="my-1" Style="min-height:700px;">
+
             @Body
-           
+
         </MudMainContent>
-
-
     }
    
-    <MudAppBar Bottom="true" Class="bg-light p-5" Style="height:250px;" Fixed="false">
+    <MudPaper Bottom="true" Class="mt-4 bg-light p-5"  Fixed="false">
        
         <Footer />
-    </MudAppBar>
+    </MudPaper>
     <div id="blazor-error-ui">
         An unhandled error has occurred.
         <a href="" class="reload">Reload</a>
@@ -52,7 +50,7 @@
     //string _role = "Admin";
     //string _role = "Merchant";
     //string _role = "Guest";
-    string _role = "Customer";
+    //string _role = "Customer";
     // string _role = "Worker";
 
 
@@ -72,7 +70,23 @@
         isDeliveryWorker = user.IsInRole("Worker");
         isGuest = (!isAdmin || !isCustomer || !isMerchant || !isDeliveryWorker);
     }*@
-   
+
+    private bool isAdmin;
+    private bool isCustomer;
+    private bool isMerchant;
+    private bool isDeliveryWorker;
+    private bool isGuest;
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        isAdmin = user.IsInRole("Admin");
+        isCustomer = user.IsInRole("Customer");
+        isMerchant = user.IsInRole("Merchant");
+        isDeliveryWorker = user.IsInRole("Worker");
+        isGuest = (!isAdmin || !isCustomer || !isMerchant || !isDeliveryWorker);
+    }
   
     bool _drawerOpen = true;
     
