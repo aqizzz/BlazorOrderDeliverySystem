@@ -13,6 +13,10 @@
 
 <MudContainer>
     <MudText Typo="Typo.h6" Style="color: rgba(112, 0, 0, 1);">Classic Breakfast Dishes</MudText>
+    @foreach (var item in Items)
+    {
+        <div>@item.ItemId</div>
+    }
     <MudDivider Class="mb-4" />
 
     <!-- Item 1: Chicken Sandwich -->
@@ -67,6 +71,7 @@
     </MudPaper>
 </MudContainer>
 
+
 @code {
     [Parameter]
     public int userId { get; set; }
@@ -81,15 +86,15 @@
     private ViewItemDTO selectedItem1 = null;
     private HashSet<ViewItemDTO> selectedItems = new HashSet<ViewItemDTO>();
 
-    private IEnumerable<ViewItemDTO> Items = new List<ViewItemDTO>();
+    private List<ViewItemDTO> Items = new List<ViewItemDTO>();
 
     protected override async Task OnInitializedAsync()
     {
         // Items = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>("/api/items");
         try
         {
-            var httpClient = HttpClientFactory.CreateClient("ApiClient");
-            Items = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>("api/items/{}");
+            var httpClient = HttpClientFactory.CreateClient("API");
+            Items = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>("api/items/merchant/{userId}");
         }
         catch (Exception ex)
         {
