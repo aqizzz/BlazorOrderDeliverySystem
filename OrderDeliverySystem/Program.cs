@@ -11,7 +11,6 @@ using OrderDeliverySystem.Share.Data.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using System;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using OrderDeliverySystem.Client.Infrastructure;
@@ -90,6 +89,7 @@ builder.Services.AddHttpClient("API", client =>
 });
 
 builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddAuthorizationCore();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<ApiAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();

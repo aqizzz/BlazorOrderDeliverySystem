@@ -1,12 +1,14 @@
-﻿@using MudBlazor
+﻿@using Microsoft.AspNetCore.Authorization
+@using MudBlazor
 @using OrderDeliverySystem.Client.Shared
 @using OrderDeliverySystem.Client.Pages.Customer
 @using OrderDeliverySystem.Components
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using System.ComponentModel.DataAnnotations
 @inject IHttpClientFactory HttpClientFactory
-@inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IAuthorizationService AuthorizationService
 @rendermode InteractiveServer
 
 
@@ -72,6 +74,7 @@ else
         </NotAuthorized>
     </AuthorizeView>
 }
+<MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Login" Href="/password" />
 
 
     <MudCollapse Expanded="_cartExpanded" >
@@ -92,9 +95,20 @@ else
     [Inject]
     private IAuthService AuthService { get; set; }
 
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        // if (authenticationState is not null)
+        // {
+        //     var authState = await authenticationState;
+        //     var user = authState?.User;
+        // }
     }
 
 
@@ -122,8 +136,4 @@ else
         StateHasChanged();
         NavigationManager.NavigateTo("/");
     }
-
-   
-
-    
 }

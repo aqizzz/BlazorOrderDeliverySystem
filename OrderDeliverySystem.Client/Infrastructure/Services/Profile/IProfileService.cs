@@ -5,7 +5,8 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
 {
     public interface IProfileService
     {
-        Task<Result<UserProfileDTO>> GetCustomer(string id);
+        Task<UserProfileDTO> GetCustomer();
+        Task<UserProfileDTO> GetCustomer(int userId);
         Task<Result> UpdateCustomer(UserProfileDTO model);
     }
 }
