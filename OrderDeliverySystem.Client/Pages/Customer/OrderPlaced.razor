@@ -1,5 +1,5 @@
 @page "/order-now"
-@attribute [Authorize(Roles = "Customer")]
+@*@attribute [Authorize(Roles = "Customer")]*@
 @using System.Text.RegularExpressions
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authorization;
@@ -26,7 +26,14 @@
    <MudContainer Class="my-3">
         <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Start" GutterBottom="true" Style="color:rgba(112, 0, 0, 1);">Customer Info</MudText>
         <MudDivider Class=" border-2" Style="border-color:rgba(112, 0, 0, 1);" />
-        
+            <MudForm>
+                <MudRadioGroup @bind-Value="SelectedOption">
+                    <MudRadio Value="@("Radio 1")" Color="Color.Primary">Default Address</MudRadio>
+                    <MudRadio Value="@("Radio 2")" Color="Color.Secondary">Secondary</MudRadio>
+                    <MudRadio Value="@("Radio 3")">Default</MudRadio>
+                    <MudRadio Value="@("Radio 4")" Color="Color.Primary" Disabled="true">Disabled</MudRadio>
+                </MudRadioGroup>
+            </MudForm>
             <MudGrid>
                 <MudItem xs="12" sm="7">
                     <MudCard>
@@ -135,6 +142,13 @@
  </EditForm>
         
 @code {
+
+    public string SelectedOption { get; set; }
+
+    private void Reset()
+    {
+        SelectedOption = null;
+    }
     private const decimal TaxRate = 0.15m;
     private const decimal DeliveryFee = 6.00m;
     int customerId;
