@@ -6,8 +6,6 @@
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Authorization
-@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
-
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
@@ -16,7 +14,7 @@
 @rendermode InteractiveServer
 
 
-@if (_role == "Customer" || _role == "Guest")
+@if (isCustomer || isGuest)
 {
     <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/" Class="rounded-lg m-4" /></MudLink>
 
@@ -27,7 +25,7 @@
         <MudButton Href="/contact">Contact</MudButton>
        
 
-        @if (isUser)
+        @if (isCustomer)
         {
             <MudButton Href="/my-orders">My Orders</MudButton>
         }
@@ -39,7 +37,7 @@
     </MudButtonGroup>
     <MudSpacer />
    
-    @if (isUser)
+    @if (isCustomer)
     {
 
         <MudIconButton OnClick="OnExpandCartClick" Icon="@Icons.Material.Filled.AddShoppingCart" Style="color: rgba(168, 0, 0, 1);">@(_cartExpanded ?"" : "")</MudIconButton>
@@ -59,16 +57,6 @@ else
     <MudButton Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/dashboard" Class="rounded-lg m-4" /></MudButton>
 
     <MudSpacer />
-    @*@if ()
-     {
-         <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Log Out" OnClick="LogOut" />
-
-     }
-     else
-     {
-         <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Login" Href="/login" />
-
-     }*@
     <AuthorizeView>@*Example of set with role: <AuthorizeView Roles="Admin">*@
         <Authorized>
             <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Log Out" OnClick="LogOut" />
@@ -92,20 +80,16 @@ else
 
 
 @code{
-    bool isUser = true;
-    bool isCustomer = false;
+ 
+    ///bool isCustomer = false;
     //string _role = "Admin";
     //string _role = "Merchant";
     //string _role = "Guest";
-    string _role = "Customer";
+    //string _role = "Customer";
     // string _role = "Worker";
 
 
-    @*private bool isAdmin;
-    private bool isCustomer;
-    private bool isMerchant;
-    private bool isDeliveryWorker;
-    private bool isGuest;
+    @*
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -117,9 +101,6 @@ else
         isDeliveryWorker = user.IsInRole("DeliveryWorker");
         isGuest = (!isAdmin || !isCustomer || !isMerchant || !isDeliveryWorker);
     }*@
-
-    bool _cartExpanded = false;
-
     [Inject]
     private IAuthService AuthService { get; set; }
 
