@@ -2,6 +2,7 @@
 @inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 
@@ -11,28 +12,68 @@
 <MudSnackbarProvider/>
 
 <MudLayout>
-    <MudAppBar Height="Auto" Class="p-3 bg-white">
+    <MudHidden Class="my-10" Breakpoint="Breakpoint.MdAndUp" Invert="true">
+         <MudAppBar Height="Auto" Class="p-3 bg-white">
         <NavMenu />
-    </MudAppBar>
-
-    @if (isAdmin || isMerchant || isDeliveryWorker){
-        <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Style="min-height:700px;">
-            <LeftNavBar />
-        </MudDrawer>
-        <MudMainContent Class="my-1" Style="min-height:700px;">
-
-            @Body
-        </MudMainContent>
-    }
-    else
-    {
-        <MudMainContent Class="my-1" Style="min-height:700px;">
-
-            @Body
-
-        </MudMainContent>
-    }
+        </MudAppBar>
+    </MudHidden>
    
+        
+    <MudHidden Class="my-10" Breakpoint="Breakpoint.SmAndDown" Invert="true">
+        <MudAppBar Elevation="1" Dense="@_dense">
+            <AuthorizeView Roles="Admin,Merchant,Worker">
+                <Authorized>
+                    <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/dashboard" Class="rounded-lg m-4" /></MudLink>
+                </Authorized>
+               <NotAuthorized>
+                    <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/" Class="rounded-lg m-4" /></MudLink>
+                </NotAuthorized>
+            </AuthorizeView>
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.End" OnClick="@ToggleDrawer" />
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/MudBlazor/MudBlazor" Target="_blank" />
+        </MudAppBar>
+        <MudDrawer @bind-Open="@_open" Anchor="Anchor.Top" Elevation="1" Variant="@DrawerVariant.Temporary" OverlayAutoClose="true">
+            <MudDrawerHeader>
+                <AuthorizeView Roles="Admin,Merchant,Worker">
+                    <Authorized>
+                        <MudLink Href="/"><MudImage Src="images/logo.png" Width="50" Height="20" Alt="Swedish Farm House" Href="/dashboard" Class="rounded-lg m-4" /></MudLink>
+                    </Authorized>
+                    <NotAuthorized>
+                        <MudLink Href="/"><MudImage Src="images/logo.png" Width="50" Height="20" Alt="Swedish Farm House" Href="/" Class="rounded-lg m-4" /></MudLink>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </MudDrawerHeader>
+            <MudNavMenu>
+                <MudNavLink Match="NavLinkMatch.All">Store</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All">Library</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All">Community</MudNavLink>
+                <MudNavLink OnClick="_ => _open = false">Close Drawer</MudNavLink>
+            </MudNavMenu>
+        </MudDrawer>
+    </MudHidden>
+   
+
+   <AuthorizeView Roles="Admin,Merchant,Worker">
+
+       <Authorized>
+            <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Style="min-height:700px;">
+                <LeftNavBar />
+            </MudDrawer>
+            <MudMainContent Class="my-1" Style="min-height:700px;">
+
+                @Body
+            </MudMainContent>
+       </Authorized>
+    
+    <NotAuthorized>
+    <MudMainContent Class="my-1" Style="min-height:700px;">
+
+            @Body
+
+        </MudMainContent>
+    </NotAuthorized>
+    </AuthorizeView>
     <MudPaper Bottom="true" Class="mt-4 bg-light p-5"  Fixed="false">
        
         <Footer />
@@ -47,47 +88,27 @@
 </MudLayout>
 
 @code {
-    //string _role = "Admin";
-    //string _role = "Merchant";
-    //string _role = "Guest";
-    //string _role = "Customer";
-    // string _role = "Worker";
+
+    [Inject]
+    private IAuthService AuthService { get; set; }
 
 
-   @* private bool isAdmin;
-    private bool isCustomer;
-    private bool isMerchant;
-    private bool isDeliveryWorker;
-    private bool isGuest;
-    protected override async Task OnInitializedAsync()
-    {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        
-        isAdmin = user.IsInRole("Admin");
-        isCustomer = user.IsInRole("Customer");
-        isMerchant = user.IsInRole("Merchant");
-        isDeliveryWorker = user.IsInRole("Worker");
-        isGuest = (!isAdmin || !isCustomer || !isMerchant || !isDeliveryWorker);
-    }*@
 
-    private bool isAdmin;
-    private bool isCustomer;
-    private bool isMerchant;
-    private bool isDeliveryWorker;
-    private bool isGuest;
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        isAdmin = user.IsInRole("Admin");
-        isCustomer = user.IsInRole("Customer");
-        isMerchant = user.IsInRole("Merchant");
-        isDeliveryWorker = user.IsInRole("Worker");
-        isGuest = (!isAdmin || !isCustomer || !isMerchant || !isDeliveryWorker);
+
     }
-  
+    private bool _open = false;
+    private bool _dense = false;
+    private DrawerClipMode _clipMode = DrawerClipMode.Never;
+
+    private void ToggleDrawer()
+    {
+        _open = !_open;
+    }
     bool _drawerOpen = true;
     
     void DrawerToggle()
