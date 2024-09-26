@@ -2,7 +2,7 @@
 @inject OrderService OrderService
 
 @using OrderDeliverySystem.Client.Shared
-
+@inject IJSRuntime JSRuntime
 @using System.ComponentModel.DataAnnotations
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using OrderDeliverySystem.Client.Infrastructure.Services.Orders;
@@ -67,9 +67,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        int customerId = 13;
-        recentOrders = await OrderService.GetOrdersByRoleAsync("customer", customerId, true);
-        orderHistory = await OrderService.GetOrdersByRoleAsync("customer", customerId, false);
+       
+        int userId = 17;
+        recentOrders = await OrderService.GetOrdersByRoleAsync("customer", userId, true);
+        orderHistory = await OrderService.GetOrdersByRoleAsync("customer", userId, false);
     }
     private void ShowOrderDetails(OrderDTO order)
     {
