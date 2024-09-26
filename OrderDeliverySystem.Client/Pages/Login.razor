@@ -6,7 +6,8 @@
 @inject NavigationManager NavigationManager
 @inject IAuthService AuthService
 @rendermode InteractiveServer
-
+<MudContainer Class="my-10">
+   
 <h3>Login</h3>
 
 @* Display message to user if it's not empty *@
@@ -32,12 +33,14 @@
         <InputText id="password" @bind-Value="model.Password" type="password" class="form-control" />
         <ValidationMessage For="@(() => model.Password)" />
     </div>
-
-    <button type="submit" class="btn btn-primary mt-3">Login</button>
+    <div class="form-group text-center">
+        <button type="submit" class="btn btn-danger mt-3">Login</button>
+       </div>
 </EditForm>
 
 <p class="text-center mt-4">Don't have account? <a href="/register">Create one now</a></p>
 
+</MudContainer>
 @code {
     // Create an instance of LoginModel to bind form data
     private readonly LoginRequestDTO model = new LoginRequestDTO();

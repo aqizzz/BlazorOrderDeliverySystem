@@ -1,14 +1,20 @@
-﻿@using OrderDeliverySystem.Client.Shared
+﻿@using MudBlazor
+@using OrderDeliverySystem.Client.Shared
 @using OrderDeliverySystem.Client.Pages.Customer
 @using OrderDeliverySystem.Components
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Authorization
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+@inject IAuthService AuthService
 @rendermode InteractiveServer
 
 
-@if (isCustomer)
+@if (_role == "Customer" || _role == "Guest")
 {
     <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/" Class="rounded-lg m-4" /></MudLink>
 
@@ -17,6 +23,8 @@
         <MudButton Href="/restaurants">Restaurants</MudButton>
         <MudButton Href="/about-us">About Us</MudButton>
         <MudButton Href="/contact">Contact</MudButton>
+       
+
         @if (isUser)
         {
             <MudButton Href="/my-orders">My Orders</MudButton>
@@ -31,8 +39,6 @@
    
     @if (isUser)
     {
-
-
 
         <MudIconButton OnClick="OnExpandCartClick" Icon="@Icons.Material.Filled.AddShoppingCart" Style="color: rgba(168, 0, 0, 1);">@(_cartExpanded ?"" : "")</MudIconButton>
         <MudIconButton Href="/customer-profile" Icon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" />
@@ -68,7 +74,7 @@ else
     <MudCollapse Expanded="_cartExpanded" >
         @if (_cartExpanded)
         {
-            <Cart/>
+        <Cart OnClose="CloseCart" />
         }
     </MudCollapse>
 
@@ -77,7 +83,30 @@ else
 
 @code{
     bool isUser = true;
-    bool isCustomer = true;
+    //string _role = "Admin";
+    //string _role = "Merchant";
+    //string _role = "Guest";
+    string _role = "Customer";
+    // string _role = "Worker";
+
+
+    @*private bool isAdmin;
+    private bool isCustomer;
+    private bool isMerchant;
+    private bool isDeliveryWorker;
+    private bool isGuest;
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        isAdmin = user.IsInRole("Admin");
+        isCustomer = user.IsInRole("Customer");
+        isMerchant = user.IsInRole("Merchant");
+        isDeliveryWorker = user.IsInRole("DeliveryWorker");
+        isGuest = (!isAdmin || !isCustomer || !isMerchant || !isDeliveryWorker);
+    }*@
+
     bool _cartExpanded = false;
 
 
@@ -85,20 +114,19 @@ else
     {
         _cartExpanded = !_cartExpanded;
     }
+
+    private void CloseCart()
+    {
+        _cartExpanded = false; 
+    }
     public async Task LogOut()
     {
-        Console.WriteLine(isUser); 
-        isUser = false;
-        isCustomer = true;
-        StateHasChanged();
-        NavigationManager.NavigateTo("/");
+        CloseCart();
+        await this.AuthService.Logout();
     }
     public async Task LogIn()
     {
-        isUser = true;
-        isCustomer = true;
-        StateHasChanged();
-        NavigationManager.NavigateTo("/");
+        NavigationManager.NavigateTo("/login");
     }
 
    

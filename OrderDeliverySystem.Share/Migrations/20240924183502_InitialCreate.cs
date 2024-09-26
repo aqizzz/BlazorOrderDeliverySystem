@@ -38,7 +38,7 @@ namespace OrderDeliverySystem.Share.Migrations
                     AddressId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Type = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Unit = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     City = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -83,7 +83,7 @@ namespace OrderDeliverySystem.Share.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     WorkerAvailability = table.Column<bool>(type: "bit", nullable: false),
-                    CommissionRate = table.Column<decimal>(type: "decimal(15,2)", precision: 15, scale: 2, nullable: true),
+                    CommissionRate = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: true),
                     LastTaskAssigned = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -353,9 +353,11 @@ namespace OrderDeliverySystem.Share.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Addresses_UserId",
+                name: "IX_Addresses_UserId_Type",
                 table: "Addresses",
-                column: "UserId");
+                columns: new[] { "UserId", "Type" },
+                unique: true,
+                filter: "[Type] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CartItems_CartId",

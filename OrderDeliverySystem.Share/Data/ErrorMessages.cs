@@ -11,6 +11,9 @@ namespace OrderDeliverySystem.Share.Data
         public const string StringLengthErrorMessage
             = "The {0} must be at least {2} characters long.";
 
+        public const string StringMaxLengthErrorMessage
+            = "The {0} must be at most {1} characters long.";
+
         public const string PasswordsDoNotMatchErrorMessage
             = "The password and confirmation password do not match.";
 
@@ -25,5 +28,8 @@ namespace OrderDeliverySystem.Share.Data
 
         public const string InvalidPasswordFormatErrorMessage
             = "Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character";
+
+        public const string InvalidBitFormatErrorMessage
+            = "Input must be a bit(0 or 1).";
     }
 }

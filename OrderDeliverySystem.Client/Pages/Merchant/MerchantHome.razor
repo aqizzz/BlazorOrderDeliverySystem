@@ -1,52 +1,95 @@
-﻿@page "/merchant/{id}"
-
+﻿@page "/merchant/{userId:int}"
+@using MudBlazor
+@using OrderDeliverySystem.Share.DTOs
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
-
-
-<MudContainer Class="my-10">
-    <MudText Class="pt-4" Typo="Typo.h3" Align="Align.Center" GutterBottom="true">Restaurant @Id</MudText>
-    <MudTabs TabHeaderClass="d-flex justify-content-center mt-10"  Elevation="1" Rounded="true" PanelClass="pa-6" ActiveTabClass="border-solid border-2 mud-border-primary" >
-        <MudTabPanel>
-            <ChildContent>
-                <MudText>Custom tab content only</MudText>
-            </ChildContent>
-            <TabContent>
-                About
-            </TabContent>
-        </MudTabPanel>
-        <MudTabPanel>
-            <ChildContent>
-                <Menus/>
-            </ChildContent>
-            <TabContent>
-               Menus
-            </TabContent>
-        </MudTabPanel>
-        <MudTabPanel Text="Item Three">
-            <ChildContent>
-                <MudText>Custom wrapper content only</MudText>
-            </ChildContent>
-            <TabContent>
-                Reviews
-            </TabContent>
-            
-        </MudTabPanel>
-    </MudTabs>
+@if (merchant != null)
+{
   
 
+    <MudContainer Class="my-10">
 
-</MudContainer>
+        <MudText Class="pt-4" Typo="Typo.h3" Align="Align.Center" GutterBottom="true">@(merchant?.BusinessName ?? "Unknown Merchant")</MudText>
+        <MudTabs TabHeaderClass="d-flex justify-content-center mt-10" Elevation="1" Rounded="true" PanelClass="pa-6" ActiveTabClass="border-solid border-2 mud-border-primary">
+            <MudTabPanel>
+                <ChildContent>
+                    <MudText>Custom tab content only</MudText>
+                </ChildContent>
+                <TabContent>
+                    About
+                </TabContent>
+            </MudTabPanel>
+            <MudTabPanel>
+                <ChildContent>
+                    <AddCartTemp userId="@merchant.UserId"/>
+                </ChildContent>
+                <TabContent>
+                    Menus
+                </TabContent>
+            </MudTabPanel>
+            <MudTabPanel Text="Item Three">
+                <ChildContent>
+                    <MudText>Custom wrapper content only</MudText>
+                </ChildContent>
+                <TabContent>
+                    Reviews
+                </TabContent>
+
+            </MudTabPanel>
+        </MudTabs>
+
+
+
+    </MudContainer>
+    <MudText>Merchant: @merchant.BusinessName</MudText>
+
+}
+else
+{
+    <p>Loading...</p>
+}
 
 @code {
+   
     [Parameter]
-    public string Id { get; set; }
+    public int userId { get; set; }
+    private MerchantProfileDTO? merchant;
 
-    protected override void OnInitialized()
+ 
+    private bool isLoading = true;
+  
+    protected override async Task OnInitializedAsync()
     {
-        // 使用 Id 参数进行一些操作
-        Console.WriteLine($"Selected restaurant ID: {Id}");
+        await LoadMerchantItems();
+    }
+
+    private async Task LoadMerchantItems()
+    {
+        try
+        {
+            
+                
+        var httpClient = HttpClientFactory.CreateClient("API");
+            var response = await httpClient.GetFromJsonAsync<MerchantProfileDTO>($"api/profile/merchant/{userId}");
+
+        if (response != null)
+        {
+            merchant = response;
+
+        }
+         
+           
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading cart: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
     }
 }

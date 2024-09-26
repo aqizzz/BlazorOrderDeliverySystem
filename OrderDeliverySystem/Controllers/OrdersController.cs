@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
 using OrderDeliverySystem.Share.Data.Models;
+using Microsoft.IdentityModel.Tokens;
 
 namespace OrderDeliverySystemApi.Controllers
 {
@@ -44,9 +45,10 @@ namespace OrderDeliverySystemApi.Controllers
 
 
         [HttpPost("create")]
-        public async Task<ActionResult<Order>> CreateOrder(AppCreateOrderDTO orderDto)
+        public async Task<ActionResult<Order>> CreateOrder(CreateOrderDTO orderDto)
         {
             // Fetch required entities from the database (Merchant and Customer)
+           
             var merchant = await _context.Merchants.FindAsync(orderDto.MerchantId);
             if (merchant == null)
             {
@@ -58,18 +60,85 @@ namespace OrderDeliverySystemApi.Controllers
             {
                 return NotFound($"Customer with ID {orderDto.CustomerId} not found.");
             }
+           
+            var worker = await _context.DeliveryWorkers
+                .Where(w => w.WorkerAvailability == true && w.LastTaskAssigned != null) // Ensure worker is available and has a task history
+                .OrderBy(w => w.LastTaskAssigned) // Get the worker with the oldest LastTaskAssigned date
+                .FirstOrDefaultAsync();
+            if (worker == null)
+            {
+                return NotFound($"No worker was found.");
+            }
+
+            var customerAddresses = await _context.Addresses
+                .Where(a => a.UserId == customer.UserId)
+                .ToListAsync(); // ToListAsync if it's a collection
+            var isExist = false;
+            int dropoffAddressId=0;
+
+
+            if (customerAddresses == null)
+            {
+                return NotFound($"Customer with ID {orderDto.CustomerId} not found.");
+            }
+            else
+            {
+                foreach (var address in customerAddresses)
+                {
+                   if(address == null) continue;
+                   if (address.Unit!=null && address.Address != null && address.City != null && address.Province != null && address.Postcode != null)
+                    {
+                        if (address.Unit.Equals(orderDto.Unit) && address.Address.Equals(orderDto.Address) && address.City.Equals(orderDto.City) && address.Province.Equals(orderDto.Province) && address.Postcode.Equals(orderDto.PostCode))
+                        {
+                            isExist = true;
+                            dropoffAddressId = address.AddressId;
+                            break;
+                        }
+                    }
+                        
+                }
+            }
+           
+            if (!isExist) {
+                AddressModel newAddress = new AddressModel()
+                {
+                    UserId = customer.UserId,
+                    User = customer.User,
+                    Type = "",
+                    Unit = orderDto.Unit,
+                    Address = orderDto.Address,
+                    City = orderDto.City,
+                    Province = orderDto.Province,
+                    Postcode = orderDto.PostCode
+                };
+
+                _context.Addresses.Add(newAddress);
+                await _context.SaveChangesAsync();
+                dropoffAddressId = newAddress.AddressId;
+            }
+            if (dropoffAddressId <= 0)
+            {
+                return NotFound($"Address with ID {dropoffAddressId} not found.");
+            }
+            var meechantAddress = await _context.Addresses.FindAsync(orderDto.MerchantId);
+
+
+            if (meechantAddress == null)
+            {
+                return NotFound($"Customer with ID {orderDto.CustomerId} not found.");
+            }
 
             var order = new Order
             {
                 CustomerId = orderDto.CustomerId,
                 MerchantId = orderDto.MerchantId,
-                WorkerId = orderDto.WorkerId,
-                PickupAddressId = orderDto.PickupAddressId,
-                DropoffAddressId = orderDto.DropoffAddressId,
+                WorkerId = worker.WorkerId,
+                PickupAddressId = meechantAddress.AddressId,
+                DropoffAddressId = dropoffAddressId,
                 TotalAmount = orderDto.TotalAmount,
-                Status = orderDto.Status,
-                CreatedAt = orderDto.CreatedAt,
-                UpdatedAt = orderDto.UpdatedAt,
+                Status = "Pending",
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
                 Merchant = merchant,
                 Customer = customer,
 

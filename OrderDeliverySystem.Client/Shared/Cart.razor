@@ -1,25 +1,171 @@
-﻿@using OrderDeliverySystem.Client.Shared
-
+﻿@page "/cart"
+@using OrderDeliverySystem.Client.Shared
+@using OrderDeliverySystem.Share.DTOs.CartDTO
+@using MudBlazor
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
-<MudPaper Class="pa-16 ma-2" Elevation="3" Style="position:absolute;top: 70px;right: -20px;z-index: 1000;">
-    <!-- content here-->
+<MudPaper Class="pa-4" Elevation="3" Style="position: absolute; top: 70px; right: 20px; z-index: 1000; width: 400px;">
+    <div class="d-flex justify-content-between align-items-center">
+        <MudText Typo="Typo.h6" Style="color:rgba(112, 0, 0, 1);">My Cart</MudText>
+        <MudIconButton Icon="@Icons.Material.Filled.Close" Style="color: rgba(112, 0, 0, 1);" OnClick="OnClose" />
+    </div>
 
-    <!-- content here-->
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="PlaceOrder">Placed Order</MudButton>
+    <MudDivider Class="mb-2" Style="border-color:rgba(112, 0, 0, 1);" />
 
+    @if (isLoading)
+    {
+        <MudText Typo="Typo.body1">Loading...</MudText>
+    }
+    else if (cartItems != null && cartItems.Any())
+    {
+        @foreach (var item in cartItems)
+        {
+            <MudItem Class="d-flex align-items-center mb-2">
+                <MudAvatar Image="@item.ItemPic" Size="Size.Medium" Class="mr-2" />
+                <div class="flex-grow-1">
+                    <MudText Typo="Typo.subtitle1">@item.ItemName</MudText>
+                </div>
+                <div class="d-flex align-items-center">
+                    <MudButton Variant="Variant.Filled" Size="Size.Small" Style="min-width: 25px; height: 25px; background-color:rgba(112, 0, 0, 1); color:white;" OnClick="() => DecreaseQuantity(item.ItemId)" Class="mr-1">-</MudButton>
+                    <MudText Class="mx-2">@item.Quantity</MudText>
+                    <MudButton Variant="Variant.Filled" Size="Size.Small" Style="min-width: 25px; height: 25px; background-color:rgba(112, 0, 0, 1); color:white;" OnClick="() => IncreaseQuantity(item.ItemId)" Class="ml-1">+</MudButton>
+                </div>
+                <MudText Typo="Typo.subtitle1" Class="ml-3">@FormatCurrency(item.ItemPrice)</MudText>
+            </MudItem>
+        }
 
+        <MudDivider Class="my-3" Style="border-color:rgba(112, 0, 0, 1);" />
 
+        <MudText Typo="Typo.subtitle2" Align="Align.End">Total (Before tax): @FormatCurrency(subtotal)</MudText>
+
+        <MudGrid Justify="Justify.Center" Style="margin-top: 20px;">
+            <MudItem xs="12" sm="6" class="d-flex justify-center">
+                <MudButton Variant="Variant.Filled" Size="Size.Small" Style="background-color:rgba(112, 0, 0, 1); color:white;" OnClick="PlaceOrder">
+                    Place Order
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    }
+    else
+    {
+        <MudText Typo="Typo.body1" Style="color:rgba(112, 0, 0, 1);">Your cart is empty.</MudText>
+    }
 </MudPaper>
 
-
 @code {
-    string cartId = "1";
- 
-    private void PlaceOrder(){
-        NavigationManager.NavigateTo($"/order/{cartId}");
+    [Parameter] public EventCallback OnClose { get; set; } 
+
+    string cusotmerId = "3"; 
+    private List<GetCartItemsResponseDTO> cartItems = new();
+    private decimal subtotal;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCartItems();
     }
 
+    private async Task LoadCartItems()
+    {
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("API");
+            var response = await httpClient.GetFromJsonAsync<GetCartReponseDTO>($"api/cart/getCart/{cusotmerId}");
+
+            if (response != null)
+            {
+                cartItems = response.CartItems;
+                subtotal = cartItems.Sum(ci => ci.Quantity * ci.ItemPrice);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading cart: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task IncreaseQuantity(int itemId)
+    {
+        var item = cartItems.FirstOrDefault(ci => ci.ItemId == itemId);
+        if (item != null)
+        {
+            item.Quantity++;
+            await UpdateCartItem(item.ItemId, item.Quantity);
+        }
+    }
+
+    private async Task DecreaseQuantity(int itemId)
+    {
+        var item = cartItems.FirstOrDefault(ci => ci.ItemId == itemId);
+        if (item != null)
+        {
+            if (item.Quantity > 1)
+            {
+                item.Quantity--;
+                await UpdateCartItem(item.ItemId, item.Quantity);
+            }
+            else
+            {
+                await RemoveItem(item.ItemId); 
+            }
+        }
+    }
+
+    private async Task UpdateCartItem(int itemId, int quantity)
+    {
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("API");
+            var updateDto = new AddUpdateCartItemsRequestDTO(itemId, quantity);
+
+            var response = await httpClient.PutAsJsonAsync($"api/cart/updateCart/{cusotmerId}", updateDto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                subtotal = cartItems.Sum(ci => ci.Quantity * ci.ItemPrice);
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating item: {ex.Message}");
+        }
+    }
+
+    private async Task RemoveItem(int itemId)
+    {
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("API");
+            var response = await httpClient.DeleteAsync($"api/cart/deleteItem/{cusotmerId}/{itemId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                cartItems = cartItems.Where(ci => ci.ItemId != itemId).ToList();
+                subtotal = cartItems.Sum(ci => ci.Quantity * ci.ItemPrice);
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error removing item: {ex.Message}");
+        }
+    }
+
+    private void PlaceOrder()
+    {
+        NavigationManager.NavigateTo($"/order-now");
+    }
+
+    public string FormatCurrency(decimal value)
+    {
+        return value.ToString("C2", System.Globalization.CultureInfo.CurrentCulture);
+    }
 }

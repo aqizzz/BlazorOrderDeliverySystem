@@ -7,27 +7,23 @@
         internal Result(bool succeeded, List<string> errors)
         {
             this.Succeeded = succeeded;
-            this.errors = errors;
+            this.errors = errors ?? new List<string>();
         }
 
         public bool Succeeded { get; }
 
-        public List<string> Errors
-            => this.Succeeded
-                ? new List<string>()
-                : this.errors;
+        public IReadOnlyList<string> Errors => this.errors.AsReadOnly();
 
-        public static Result Success
-            => new Result(true, new List<string>());
+        public static Result Success => new Result(true, new List<string>());
 
         public static Result Failure(IEnumerable<string> errors)
-            => new Result(false, errors.ToList());
+            => new Result(false, errors?.ToList() ?? new List<string>());
 
         public static implicit operator Result(string error)
             => Failure(new List<string> { error });
 
         public static implicit operator Result(List<string> errors)
-            => Failure(errors.ToList());
+            => Failure(errors);
 
         public static implicit operator Result(bool success)
             => success ? Success : Failure(new[] { "Unsuccessful operation." });
@@ -42,15 +38,13 @@
 
         private Result(bool succeeded, TData data, List<string> errors)
             : base(succeeded, errors)
-            => this.data = data;
+        {
+            this.data = data;
+        }
 
-        public TData Data
-            => this.Succeeded
-                ? this.data
-                : throw new InvalidOperationException(
-                    $"{nameof(this.Data)} is not available with a failed result. Use {this.Errors} instead.");
+        public TData Data => this.Succeeded ? this.data : default;
 
-        public static Result<TData> SuccessWith(TData data)
+        public new static Result<TData> SuccessWith(TData data)
             => new Result<TData>(true, data, new List<string>());
 
         public new static Result<TData> Failure(IEnumerable<string> errors)

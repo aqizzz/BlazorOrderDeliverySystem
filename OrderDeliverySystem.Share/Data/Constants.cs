@@ -17,10 +17,17 @@
 
         public class Address
         {
+            public const int MaxUnitLength = 20;
             public const int MaxAddressLength = 255;
             public const int MaxCityLength = 100;
             public const int MaxProvinceLength = 2;
             public const int MaxPostalCodeLength = 7;
+        }
+
+        public class Merchant
+        {
+            public const int MaxBusinessNameLength = 20;
+            public const int MaxPicLength = 255;
         }
     }
 }
