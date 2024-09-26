@@ -18,54 +18,42 @@
     </div>
 
     <MudDivider Class="my-2" />
-    @if (isAdmin)
-    {
-        <MudNavLink Href="/user-management" Icon="@Icons.Material.Filled.Dashboard">User Management</MudNavLink>
-        <MudNavLink Href="/review-list" Icon="@Icons.Material.Filled.Dashboard">Review  Management</MudNavLink>
-        <MudNavLink Href="/password" Icon="@Icons.Material.Filled.Receipt">Password Reset</MudNavLink>
-    }
-    @if (isMerchant)
-    {
+    <AuthorizeView Roles="Admin">
+        <Authorized>
+                <MudNavLink Href="/user-management" Icon="@Icons.Material.Filled.Dashboard">User Management</MudNavLink>
+                <MudNavLink Href="/review-list" Icon="@Icons.Material.Filled.Dashboard">Review  Management</MudNavLink>
+                <MudNavLink Href="/password" Icon="@Icons.Material.Filled.Receipt">Password Reset</MudNavLink>
+        </Authorized>
+    </AuthorizeView>
+
+<AuthorizeView Roles="Merchant">
+    <Authorized>
         <MudNavLink Href="/merchant-profile" Icon="@Icons.Material.Filled.Dashboard">Profile Management</MudNavLink>
         <MudNavLink Href="/product-list" Icon="@Icons.Material.Filled.Dashboard">Product Management</MudNavLink>
         <MudNavLink Href="/order-list" Icon="@Icons.Material.Filled.Dashboard">Order Management</MudNavLink>
         <MudNavLink Href="/review-list" Icon="@Icons.Material.Filled.Dashboard">Review Management</MudNavLink>
         <MudNavLink Href="/password" Icon="@Icons.Material.Filled.Receipt">Password Reset</MudNavLink>
-    }
-    @if (isDeliveryWorker)
-    {
+    </Authorized>
+</AuthorizeView>
+
+<AuthorizeView Roles="Worker">
+    <Authorized>
         <MudNavLink Href="/worker-profile" Icon="@Icons.Material.Filled.Dashboard">Profile Management</MudNavLink>
         <MudNavLink Href="/order-list" Icon="@Icons.Material.Filled.Dashboard">Order</MudNavLink>
         <MudNavLink Href="/history-orders" Icon="@Icons.Material.Filled.Dashboard">Histiry Order</MudNavLink>
         <MudNavLink Href="/password" Icon="@Icons.Material.Filled.Receipt">Password Reset</MudNavLink>
-    }
-
+    </Authorized>
+</AuthorizeView>
+ 
 </MudNavMenu>
 
 </MudContainer>
 @code {
-
-    string _role = "Admin";
-    //string _role = "Merchant";
-    //string _role = "Guest";
-    //string _role = "Customer";
-    // string _role = "Worker";
-
-    private bool isAdmin;
-    private bool isCustomer;
-    private bool isMerchant;
-    private bool isDeliveryWorker;
-    private bool isGuest;
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        isAdmin = user.IsInRole("Admin");
-        isCustomer = user.IsInRole("Customer");
-        isMerchant = user.IsInRole("Merchant");
-        isDeliveryWorker = user.IsInRole("Worker");
-        isGuest = (!isAdmin || !isCustomer || !isMerchant || !isDeliveryWorker);
     }
 }
 

@@ -9,6 +9,7 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+@inject NavigationManager Navigation
 
 @rendermode InteractiveServer
 
@@ -36,18 +37,20 @@
         <MudIconButton OnClick="OnExpandCartClick" Icon="@Icons.Material.Filled.AddShoppingCart" Style="color: rgba(168, 0, 0, 1);">@(_cartExpanded ? "" : "")</MudIconButton>
         <MudIconButton Href="/customer-profile" Icon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" />
     </Authorized>
+        <NotAuthorized>
+            <MudButtonGroup Color="Color.Dark" Variant="Variant.Text">
+                <MudButton Href="/restaurants">Restaurants</MudButton>
+                <MudButton Href="/about-us">About Us</MudButton>
+                <MudButton Href="/contact">Contact</MudButton>
+                <MudButton Href="/register">Sign Up</MudButton>
+            </MudButtonGroup>
+            <MudSpacer />
+        </NotAuthorized>
 </AuthorizeView>
-<AuthorizeView>
-     
-    <NotAuthorized>
-        <MudButtonGroup Color="Color.Dark" Variant="Variant.Text">
-            <MudButton Href="/restaurants">Restaurants</MudButton>
-            <MudButton Href="/about-us">About Us</MudButton>
-            <MudButton Href="/contact">Contact</MudButton>
-            <MudButton Href="/register">Sign Up</MudButton>
-        </MudButtonGroup>
-    </NotAuthorized>
-</AuthorizeView>
+
+  
+       
+ 
 
 
 <AuthorizeView>
@@ -101,10 +104,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+       
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-     
+
     }
     bool _menuExpanded = true;
 
@@ -121,14 +125,15 @@
     {
         _cartExpanded = false; 
     }
-      
+
     public async Task LogOut()
     {
         if (AuthService != null)
         {
             await AuthService.Logout();
             CloseCart();
-            NavigationManager.NavigateTo("/");
+            Navigation.NavigateTo("/", forceLoad: true);
+            StateHasChanged();
         }
     }
     public async Task LogIn()

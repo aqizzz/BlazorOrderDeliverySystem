@@ -5,7 +5,7 @@
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-
+@inject IJSRuntime JSRuntime
 <MudThemeProvider/>
 <MudPopoverProvider/>
 <MudDialogProvider/>
@@ -20,7 +20,7 @@
    
         
     <MudHidden Class="my-10" Breakpoint="Breakpoint.SmAndDown" Invert="true">
-        <MudAppBar Elevation="1" Dense="@_dense">
+        <MudAppBar Elevation="1" Dense="@_dense" Height="Auto" Class="p-3 bg-white">
             <AuthorizeView Roles="Admin,Merchant,Worker">
                 <Authorized>
                     <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/dashboard" Class="rounded-lg m-4" /></MudLink>
@@ -29,32 +29,35 @@
                     <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/" Class="rounded-lg m-4" /></MudLink>
                 </NotAuthorized>
             </AuthorizeView>
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.End" OnClick="@ToggleDrawer" />
             <MudSpacer />
-            <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/MudBlazor/MudBlazor" Target="_blank" />
+            <MudIconButton Icon="@Icons.Material.Filled.Menu"  Edge="Edge.End" OnClick="@ToggleDrawer" Style="color: rgba(168, 0, 0, 1);" />
+
+           
         </MudAppBar>
         <MudDrawer @bind-Open="@_open" Anchor="Anchor.Top" Elevation="1" Variant="@DrawerVariant.Temporary" OverlayAutoClose="true">
             <MudDrawerHeader>
                 <AuthorizeView Roles="Admin,Merchant,Worker">
                     <Authorized>
-                        <MudLink Href="/"><MudImage Src="images/logo.png" Width="50" Height="20" Alt="Swedish Farm House" Href="/dashboard" Class="rounded-lg m-4" /></MudLink>
+                        <MudLink Href="/"><MudImage Src="images/logo.png" Width="70" Height="40" Alt="Swedish Farm House" Href="/dashboard" Class="rounded-lg m-4" /></MudLink>
                     </Authorized>
                     <NotAuthorized>
-                        <MudLink Href="/"><MudImage Src="images/logo.png" Width="50" Height="20" Alt="Swedish Farm House" Href="/" Class="rounded-lg m-4" /></MudLink>
+                        <MudLink Href="/"><MudImage Src="images/logo.png" Width="70" Height="40" Alt="Swedish Farm House" Href="/" Class="rounded-lg m-4" /></MudLink>
                     </NotAuthorized>
                 </AuthorizeView>
+                 <MudSpacer />
+                <MudIconButton Href="/customer-profile" Icon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" />
             </MudDrawerHeader>
             <MudNavMenu>
                 <MudNavLink Match="NavLinkMatch.All">Store</MudNavLink>
                 <MudNavLink Match="NavLinkMatch.All">Library</MudNavLink>
                 <MudNavLink Match="NavLinkMatch.All">Community</MudNavLink>
-                <MudNavLink OnClick="_ => _open = false">Close Drawer</MudNavLink>
+                <MudNavLink OnClick="_ => _open = false">Close Menu</MudNavLink>
             </MudNavMenu>
         </MudDrawer>
     </MudHidden>
-   
 
-   <AuthorizeView Roles="Admin,Merchant,Worker">
+    <AuthorizeView Roles="Admin,Merchant,Worker">
+ 
 
        <Authorized>
             <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Style="min-height:700px;">
@@ -74,6 +77,7 @@
         </MudMainContent>
     </NotAuthorized>
     </AuthorizeView>
+    
     <MudPaper Bottom="true" Class="mt-4 bg-light p-5"  Fixed="false">
        
         <Footer />
@@ -92,10 +96,12 @@
     [Inject]
     private IAuthService AuthService { get; set; }
 
+   
 
 
     protected override async Task OnInitializedAsync()
     {
+      
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
