@@ -57,7 +57,7 @@
 @code {
     [Parameter] public EventCallback OnClose { get; set; } 
 
-    string cusotmerId = "1"; 
+    string cusotmerId = "3"; 
     private List<GetCartItemsResponseDTO> cartItems = new();
     private decimal subtotal;
     private bool isLoading = true;
@@ -161,7 +161,7 @@
 
     private void PlaceOrder()
     {
-        NavigationManager.NavigateTo($"/order/{cusotmerId}");
+        NavigationManager.NavigateTo($"/order-now");
     }
 
     public string FormatCurrency(decimal value)

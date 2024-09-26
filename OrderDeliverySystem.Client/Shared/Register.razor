@@ -7,6 +7,10 @@
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 @rendermode InteractiveAuto
+
+<MudContainer Class="my-10">
+   
+
 <div class="container d-flex flex-column align-items-center justify-content-center min-vh-100">
 <h3>Register</h3>
 @if (!string.IsNullOrEmpty(message))
@@ -46,6 +50,7 @@
 
 </div>
 
+</MudContainer>
 @code {
     // Model for user registration
     private readonly CustomerRegisterDTO user = new CustomerRegisterDTO();
