@@ -1,27 +1,40 @@
-﻿@inject IHttpClientFactory HttpClientFactory
+﻿@using OrderDeliverySystem.Client.Shared
+@using OrderDeliverySystem.Share.DTOs
+@inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
+@if (merchantObject != null)
+{
 
 <MudButton OnClick="Transfer" Color="Color.Primary">
-
     <MudCard Class="px-4 py-3">
-        <MudCardMedia  Image="images/Merchant.png" Height="150" Size=""/>
+            @*@if (!string.IsNullOrEmpty(merchantObject?.MerchantPic))
+            {
+            <MudCardMedia Image="@merchantObject.MerchantPic" Height="150" Size="" />
+            }
+            else
+            {
+            // Fallback to a default image if MerchantPic is null or empty
+            <MudCardMedia Image="images/Merchant.png" Height="150" Size="" /> // Change this to the path of your default image
+            }*@
+            <MudCardMedia Image="images/Merchant.png" Height="150"/>
         <MudCardContent>
             <MudGrid>
                 <MudItem xs="12">
-                        <MudText Typo="Typo.h5">Merchant @RestaurantId</MudText>
+
+                        <MudText Typo="Typo.h5">@merchantObject.BusinessName</MudText>
                 </MudItem>
                 <MudItem xs="2">
                     <MudIcon Class="inline-block" Icon="@Icons.Material.Outlined.AccessTime">.</MudIcon>
                 </MudItem>
                 <MudItem xs="10">
-                    <MudText Typo="Typo.body2">Time: 40 ~ 50 mins</MudText>
+                    <MudText Typo="Typo.body2">Lead Time: @time mins</MudText>
                 </MudItem>
                 <MudItem xs="2">
                     <MudIcon Class="inline-block" Icon="@Icons.Material.Outlined.LocationOn"></MudIcon>
                 </MudItem>
                 <MudItem xs="10">
-                    <MudText Typo="Typo.body2">Address: This Merchant's Address'</MudText>
+                    <MudText Typo="Typo.body2">Address: @address </MudText>
                 </MudItem>
             </MudGrid>
        
@@ -32,15 +45,53 @@
         </MudCardActions>-->
     </MudCard>
 </MudButton>
-
+}
+else
+{
+    <div>"Merchant object is null.</div>
+}
 @code {
     [Parameter]
-    public string RestaurantId { get; set; }
+    public MerchantProfileDTO merchantObject { get; set; }
+
+
+    string address ="";
+    int time;
+    protected override async Task OnInitializedAsync()
+    {
+        @if (merchantObject != null)
+        {
+            if (merchantObject.Unit != "")
+            {
+                address =  $"{merchantObject.Unit},{merchantObject.Address}";
+            }
+            else
+            {
+                address = $"{merchantObject.Address}";
+            }
+
+            
+                time = merchantObject.PreparingTime??0;
+            
+            
+        }else{
+            address = "Address not available"; 
+            time =0;
+        }
+    }
+
+
 
 
     private void Transfer()
     {
-        NavigationManager.NavigateTo($"/merchant/{RestaurantId}");
+        if(merchantObject != null){
+            int userId = merchantObject.UserId;
+            NavigationManager.NavigateTo($"/merchant/{userId}");
+        }
+           
+        
+       
         // 这里可以执行其他逻辑
     }
 }

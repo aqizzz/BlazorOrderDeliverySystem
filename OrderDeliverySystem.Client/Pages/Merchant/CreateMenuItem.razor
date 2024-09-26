@@ -1,0 +1,49 @@
+﻿@* <h3>CreateMenuItem</h3>
+
+@page "/create-menu-item"
+@inject HttpClient Http
+@using MudBlazor
+@using System.Net.Http.Json
+@using OrderDeliverySystem.Share.DTOs
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5">Create New Menu Item</MudText>
+
+    <EditForm Model="@newItem" OnValidSubmit="HandleValidSubmit">
+        <MudTextField @bind-Value="newItem.ItemName" Label="Item Name" Required="true" />
+        <MudTextField @bind-Value="newItem.ItemDescription" Label="Description" />
+        <MudNumericField @bind-Value="newItem.ItemPrice" Label="Price" Required="true" />
+        <MudTextField @bind-Value="newItem.ItemPic" Label="Image URL" />
+        <MudSwitch @bind-Checked="newItem.ItemIsAvailable" Label="Available" />
+
+        <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Primary">Create Item</MudButton>
+    </EditForm>
+
+    <MudSnackbarProvider />
+</MudPaper>
+
+@code {
+    private CreateItemDTO newItem = new CreateItemDTO();
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/items", newItem);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Item created successfully!", Severity.Success);
+                newItem = new CreateItemDTO(); // Reset form
+            }
+            else
+            {
+                Snackbar.Add("Failed to create item", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+} *@
