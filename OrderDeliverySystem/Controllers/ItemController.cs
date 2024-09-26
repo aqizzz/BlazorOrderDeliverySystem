@@ -131,7 +131,7 @@ namespace OrderDeliverySystem.Controllers
             // 创建新Item对象并设置属性
             var newItem = new Item
             {
-                MerchantId = int.Parse(merchantId),
+                MerchantId = newItemDto.MerchantId,
                 ItemName = newItemDto.ItemName,
                 ItemDescription = newItemDto.ItemDescription,
                 ItemPrice = newItemDto.ItemPrice,
