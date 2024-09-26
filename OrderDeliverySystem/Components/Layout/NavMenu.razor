@@ -2,6 +2,7 @@
 @using OrderDeliverySystem.Client.Shared
 @using OrderDeliverySystem.Client.Pages.Customer
 @using OrderDeliverySystem.Components
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using System.ComponentModel.DataAnnotations
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
@@ -52,17 +53,24 @@ else
     <MudButton Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/dashboard" Class="rounded-lg m-4" /></MudButton>
 
     <MudSpacer />
-    @if (isUser)
-    {
-        <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Log Out" OnClick="LogOut" />
+    @*@if ()
+     {
+         <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Log Out" OnClick="LogOut" />
 
-    }
-    else
-    {
-        <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Login" Href="/login" />
+     }
+     else
+     {
+         <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Login" Href="/login" />
 
-    }
-    
+     }*@
+    <AuthorizeView>@*Example of set with role: <AuthorizeView Roles="Admin">*@
+        <Authorized>
+            <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Log Out" OnClick="LogOut" />
+        </Authorized>
+        <NotAuthorized>
+            <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Login" Href="/login" />
+        </NotAuthorized>
+    </AuthorizeView>
 }
 
 
@@ -78,8 +86,16 @@ else
 
 @code{
     bool isUser = true;
-    bool isCustomer = true;
+    bool isCustomer = false;
     bool _cartExpanded = false;
+
+    [Inject]
+    private IAuthService AuthService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
 
 
     private void OnExpandCartClick()
@@ -93,11 +109,11 @@ else
     }
     public async Task LogOut()
     {
-        Console.WriteLine(isUser); 
-        isUser = false;
-        isCustomer = true;
-        StateHasChanged();
-        NavigationManager.NavigateTo("/");
+        if (AuthService != null)
+        {
+            await AuthService.Logout();
+            NavigationManager.NavigateTo("/");
+        }
     }
     public async Task LogIn()
     {
