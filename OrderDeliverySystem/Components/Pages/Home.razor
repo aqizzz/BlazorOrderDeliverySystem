@@ -1,11 +1,20 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
+@using OrderDeliverySystem.Client.Pages.Admin
+@using OrderDeliverySystem.Client.Pages.Merchant
+@using OrderDeliverySystem.Client.Pages.DeliveryWorker
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
-@if (isCustomer)
+
+
+@if (_role == "Customer" || _role == "Guest")
 {
+  
     <MudContainer Class="my-10">
+      
         <div style="position: relative; display: inline-block;">
             <MudImage Src="images/banner1.png" Alt="Swedish Farm House" Elevation="15" Class="rounded-lg mt-3" Style="width:100%" />
             <div Class="rounded-lg mt-3" style="position: absolute; top: 0; left: 0; width: 100%; height: 98%; background-color: rgba(50, 50, 50, 0.6);"></div>
@@ -22,13 +31,48 @@
 }
 else
 {
-    <MudContainer Class="my-10">
-        <div>this is main content</div>
+    
+    <MudContainer Class="my-10 d-flex justify-content-center align-items-center">
+    <MudPaper Class="pa-16 ma-2" Elevation="3">
+            
+            <MudText Typo="Typo.h3">Welcome to Dashboard</MudText>
+
+    </MudPaper>
     </MudContainer>
+       
+
+       
+        
+
+        
+   
 }
 
 
 @code {
-    public string Role { get; set; }
-    bool isCustomer = true;
+    //string _role = "Admin";
+    //string _role = "Merchant";
+    //string _role = "Guest";
+    string _role = "Customer";
+   // string _role = "Worker";
+
+
+    @*private bool isAdmin;
+    private bool isCustomer;
+    private bool isMerchant;
+    private bool isDeliveryWorker;
+    private bool isGuest;
+    private bool isManager;
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        isAdmin = user.IsInRole("Admin");
+        isCustomer = user.IsInRole("Customer");
+        isMerchant = user.IsInRole("Merchant");
+        isDeliveryWorker = user.IsInRole("DeliveryWorker");
+        isGuest = (!isAdmin || !isCustomer || !isMerchant || !isDeliveryWorker);
+        isManager = (isAdmin || isCustomer || isMerchant || isDeliveryWorker);
+    }*@
 }

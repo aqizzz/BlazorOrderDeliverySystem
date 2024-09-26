@@ -5,6 +5,9 @@ using OrderDeliverySystem.Share.DTOs;
 using OrderDeliverySystem.Share.Data.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using System.Collections.Generic;
+using static OrderDeliverySystem.Share.Data.Constants;
+using System.Collections.Immutable;
 
 namespace OrderDeliverySystem.Controllers
 {
@@ -88,6 +91,61 @@ namespace OrderDeliverySystem.Controllers
             return Ok(profile);
         }
 
+
+
+        [HttpGet("merchants")]
+        //[Authorize(Roles = "Admin, Merchant")]
+        public async Task<ActionResult<IEnumerable<MerchantProfileDTO>>> GetMerchants()
+        {
+            var merchants = await context.Merchants.ToListAsync(); // Execute the query
+
+            if (merchants == null || !merchants.Any()) // Check if the list is null or empty
+            {
+                return NotFound("Merchant not found");
+            }
+
+
+            var results = new List<MerchantProfileDTO>();
+            var userIds = merchants.Select(m => m.UserId).ToList();
+            var addresses = await context.Addresses
+        .Where(a => userIds.Contains(a.UserId))
+        .ToListAsync();
+
+            var users = await context.Users
+       .Where(a => userIds.Contains(a.UserId))
+       .ToListAsync();
+
+            foreach (var merchant in merchants)
+            {
+                var user = users.FirstOrDefault(a => a.UserId == merchant.UserId);
+                var address = addresses.FirstOrDefault(a => a.UserId == merchant.UserId);
+
+                var profile = new MerchantProfileDTO
+                {
+                    UserId = merchant.UserId,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Phone = user.Phone,
+                    Email = user.Email,
+                    BusinessName = merchant.BusinessName ?? "New Business",
+                    MerchantPic = merchant.MerchantPic ?? "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png",
+                    MerchantDescription = merchant.MerchantDescription ?? "",
+                    PreparingTime = merchant.PreparingTime ?? 0,
+                    Unit = address?.Unit ?? "",
+                    Address = address?.Address ?? "",
+                    City = address?.City ?? "",
+                    Province = address?.Province ?? "",
+                    Postcode = address?.Postcode ?? ""
+                };
+
+                results.Add(profile);
+            }
+
+
+
+            return Ok(results);
+        }
+
         [HttpGet("merchant/{userId}")]
         //[Authorize(Roles = "Admin, Merchant")]
         public async Task<IActionResult> GetMerchantInfo(int? userId)
@@ -109,7 +167,7 @@ namespace OrderDeliverySystem.Controllers
 
             var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == userId && a.Type == "Main");
 
-            MerchantProfileDTO profile = new()
+            MerchantProfileDTO profile = new MerchantProfileDTO()
             {
                 UserId = user.UserId,
                 FirstName = user.FirstName,

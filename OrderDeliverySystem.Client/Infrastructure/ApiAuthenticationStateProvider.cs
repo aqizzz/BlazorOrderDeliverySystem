@@ -19,12 +19,12 @@ namespace OrderDeliverySystem.Client.Infrastructure
             this.localStorage = localStorage;
         }
 
-        public void MarkUserAsAuthenticated(string userName)
+        public void MarkUserAsAuthenticated(string userEmail)
         {
             var authenticatedUser = new ClaimsPrincipal(
                 new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.Name, userName)
+                    new Claim(ClaimTypes.Email, userEmail)
                 }, "apiauth"));
 
             var authState = Task.FromResult(new AuthenticationState(authenticatedUser));
@@ -50,8 +50,25 @@ namespace OrderDeliverySystem.Client.Infrastructure
             }
 
             this.httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", savedToken);
+           
+        
+            var claims = this.ParseClaimsFromJwt(savedToken);
 
-            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(this.ParseClaimsFromJwt(savedToken), "jwt")));
+            var identity = new ClaimsIdentity(claims, "jwt");
+            var userId = claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+            var userRole = claims.FirstOrDefault(c => c.Type == "role")?.Value;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                identity.AddClaim(new Claim("UserId", userId));
+            }
+
+            if (!string.IsNullOrEmpty(userRole))
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Role, userRole));
+            }
+
+            return new AuthenticationState(new ClaimsPrincipal(identity));
         }
 
         private IEnumerable<Claim> ParseClaimsFromJwt(string jwt)

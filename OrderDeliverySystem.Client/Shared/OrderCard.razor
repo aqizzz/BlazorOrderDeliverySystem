@@ -82,7 +82,7 @@
 
     protected override void OnInitialized()
     {
-        // 使用 Id 参数进行一些操作
+        
         Console.WriteLine($"Selected restaurant ID: {Order.OrderId}");
     }
 
@@ -96,7 +96,7 @@
     private void GoTracking()
     {
         NavigationManager.NavigateTo($"/tracking/{Order.OrderId}");
-        // 这里可以执行其他逻辑
+       
     }
 
     private decimal GetTaxAmount()

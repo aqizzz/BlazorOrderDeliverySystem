@@ -1,11 +1,18 @@
 ﻿@page "/restaurants"
 @using MudBlazor
 @using OrderDeliverySystem.Client.Shared
+@using OrderDeliverySystem.Share.DTOs
+@inject IHttpClientFactory HttpClientFactory
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
  <MudContainer Class="my-10" MaxWidth="MaxWidth.Large">
 
     <MudText Class="pt-4" Typo="Typo.h3" Align="Align.Center" GutterBottom="true">Restaurants</MudText>
     <MudText Align="Align.Center">Some long pricing text should go here maybe? who knows what text you would want here, i guess i cant fill it in for you.</MudText>
+   
+   
     <MudGrid Class="mt-2">
         <MudItem xs="12" sm="12" md="12" Class="d-flex justify-content-center align-items-end mb-2">
             <div class="w-50 mb-4">
@@ -13,18 +20,15 @@
             </div>
         </MudItem>
         <MudDivider Style="color:rgba(112, 0, 0, 1);border-color:rgba(112, 0, 0, 1);border-width:3px;" />
-        <MudItem xs="12" sm="6" md="3">
-            <RestaurantCard RestaurantId="1" />
-        </MudItem>
-        <MudItem xs="12" sm="6" md="3">
-            <RestaurantCard RestaurantId="2" />
-        </MudItem>
-        <MudItem xs="12" sm="12" md="3">
-            <RestaurantCard RestaurantId="3" />
-        </MudItem>
-        <MudItem xs="12" sm="12" md="3">
-            <RestaurantCard RestaurantId="4" />
-        </MudItem>
+        @foreach (var merchant in merchants)
+        {
+            <MudItem xs="12" sm="6" md="3">
+
+                <RestaurantCard merchantObject="@merchant" />
+            </MudItem> 
+        }
+        
+       
     </MudGrid>
 
 </MudContainer>
@@ -44,6 +48,37 @@
         {
             // click enter to search
             OnSearch();
+        }
+    }
+
+    private List<MerchantProfileDTO> merchants = new List<MerchantProfileDTO>();
+    private bool isLoading = true;
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMerchantItems();
+    }
+
+    private async Task LoadMerchantItems()
+    {
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("API");
+            var response = await httpClient.GetFromJsonAsync<List<MerchantProfileDTO>>($"api/profile/merchants");
+
+            if (response != null)
+            {
+                merchants = response;
+
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading cart: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
         }
     }
 }
