@@ -21,8 +21,8 @@
         <MudTextField @bind-Value="newItem.ItemPic" Label="Image URL" />
         <MudSwitch @bind-Checked="newItem.ItemIsAvailable" Label="Available" T="bool" />
 
-        <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateItem">Create Item</MudButton>
-        <MudButton Type="button" Variant="Variant.Filled" Color="Color.Secondary" >Cancel</MudButton>
+        <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateItem">Submit</MudButton>
+        <MudButton Type="button" Variant="Variant.Filled" Color="Color.Secondary" >Reset</MudButton>
     </EditForm>
 
     <MudSnackbarProvider />
@@ -43,7 +43,7 @@
             var httpClient = HttpClientFactory.CreateClient("API");
             // Call API to create item
              // var response = await Http.PostAsJsonAsync($"api/items/merchant/{merchantId}", newItem);
-             var response = await Http.PostAsJsonAsync("https://localhost:7027/api/items/merchant/{merchantId}", newItem);
+             var response = await Http.PostAsJsonAsync($"https://localhost:7027/api/items", newItem);
 
             if (response.IsSuccessStatusCode)
             {
