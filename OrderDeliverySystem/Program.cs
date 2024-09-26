@@ -89,10 +89,13 @@ builder.Services.AddHttpClient("API", client =>
     return handler;
 });
 
+builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddScoped<ApiAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -125,6 +128,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
 builder.Services.AddControllers();
 
 
