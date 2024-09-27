@@ -5,9 +5,6 @@ using OrderDeliverySystem.Share.DTOs;
 using OrderDeliverySystem.Share.Data.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using System.Collections.Generic;
-using static OrderDeliverySystem.Share.Data.Constants;
-using System.Collections.Immutable;
 
 namespace OrderDeliverySystem.Controllers
 {

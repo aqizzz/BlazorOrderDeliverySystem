@@ -38,7 +38,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
 
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
 
-            var response = await httpClient.GetFromJsonAsync<UserProfileDTO>(GetCustomerPath);
+            return await httpClient.GetFromJsonAsync<UserProfileDTO>(GetCustomerPath);
         }
 
         public async Task<UserProfileDTO> GetCustomerProfile(int userId)

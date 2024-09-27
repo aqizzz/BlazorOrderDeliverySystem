@@ -9,6 +9,7 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+@inject AuthService AuthService
 @rendermode InteractiveAuto
 
 
@@ -77,8 +78,6 @@ else
 
 
 @code {
-    [Inject]
-    public AuthService AuthService { get; set; }
 
     ///bool isCustomer = false;
     //string _role = "Admin";
