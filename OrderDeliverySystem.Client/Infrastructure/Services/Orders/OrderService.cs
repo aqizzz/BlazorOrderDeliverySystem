@@ -2,6 +2,8 @@
 using System.Net.Http;
 using System.Net.Http.Json;
 using Azure.Messaging;
+using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components.Authorization;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -11,14 +13,31 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 {
     public class OrderService
     {
-        private readonly HttpClient _httpClient;
-        private const string Base = "https://localhost:7027/api/Orders/";
+        private readonly ILocalStorageService localStorage;
+        private readonly AuthenticationStateProvider authenticationStateProvider;
+        private readonly IHttpClientFactory httpClientFactory;
+        private readonly TokenHelper tokenHelper;
 
-		public OrderService(HttpClient httpClient)
+        private const string GetCustomerPath = "api/Profile";
+        private const string EditCustomerPath = "api/Profile/edit";
+        private const string GetWorkerPath = "api/Profile/worker";
+        private const string EditWorkerPath = "api/Profile/edit/worker";
+        private const string GetMerchantPath = "api/Profile/merchant";
+        private const string EditMerchantPath = "api/Profile/edit/merchant";
+
+
+        public OrderService(
+           ILocalStorageService localStorage,
+           AuthenticationStateProvider authenticationStateProvider,
+           IHttpClientFactory httpClientFactory,
+           TokenHelper tokenHelper)
         {
-            _httpClient = httpClient;
+            this.localStorage = localStorage;
+            this.authenticationStateProvider = authenticationStateProvider;
+            this.httpClientFactory = httpClientFactory;
+            this.tokenHelper = tokenHelper;
         }
-         public async Task<List<OrderDTO>> GetOrdersByRoleAsync(string role, int id, bool recent)
+        public async Task<List<OrderDTO>> GetOrdersByRoleAsync(string role, int id, bool recent)
         {
             var uri = $"{Base}{role}/{id}?recent={recent.ToString().ToLower()}";
             Console.WriteLine($"making request to { uri}");

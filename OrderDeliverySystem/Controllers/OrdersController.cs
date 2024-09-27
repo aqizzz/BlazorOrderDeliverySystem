@@ -6,6 +6,7 @@ using OrderDeliverySystem.Share.Data.Models;
 using Microsoft.IdentityModel.Tokens;
 using Radzen.Blazor.Rendering;
 using static OrderDeliverySystem.Share.Data.Constants;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace OrderDeliverySystemApi.Controllers
 {
@@ -414,6 +415,7 @@ namespace OrderDeliverySystemApi.Controllers
                     {
                         OrderItemId = oi.OrderItemId,
                         ItemId = oi.ItemId,
+                        ItemName = oi.Item.ItemName,
                         OrderId = oi.OrderId,
                         Quantity = oi.Quantity
                     }).ToList()
@@ -435,6 +437,7 @@ namespace OrderDeliverySystemApi.Controllers
               IQueryable<Order> query = _context.Orders
                 .Include(o => o.Customer)
                 .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Item)
                 .Include(o => o.Merchant)
                 .Include(o => o.DeliveryWorker);
             
@@ -523,8 +526,10 @@ namespace OrderDeliverySystemApi.Controllers
                     {
                         OrderItemId = oi.OrderItemId,
                         ItemId = oi.ItemId,
+                        ItemName = oi.Item.ItemName,
                         OrderId = oi.OrderId,
                         Quantity = oi.Quantity
+
                     }).ToList()
                 })
                 .Skip((pageNumber - 1) * pageSize)
