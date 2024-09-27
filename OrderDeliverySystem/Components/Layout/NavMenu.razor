@@ -118,6 +118,14 @@ else
         isMerchant = user.IsInRole("Merchant");
         isDeliveryWorker = user.IsInRole("DeliveryWorker");
         isGuest = (!isAdmin || !isCustomer || !isMerchant || !isDeliveryWorker);
+
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        _cartExpanded = false;
+        StateHasChanged();
     }
 
 
@@ -145,7 +153,10 @@ else
         NavigationManager.NavigateTo("/login");
     }
 
-
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
 
 
 }
