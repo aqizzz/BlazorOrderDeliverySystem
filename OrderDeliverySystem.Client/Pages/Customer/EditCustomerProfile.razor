@@ -1,4 +1,4 @@
-﻿@page "/customer/edit"
+﻿@page "/customer-profile/edit"
 
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Authorization;
@@ -41,8 +41,7 @@ else if (model != null)
                 </MudItem>
                 <MudItem xs="8">
                     <MudField Underline="false">
-                        <MudTextField id="firstName" @bind-Value="model.FirstName" Variant="Variant.Filled" />
-                        <ValidationMessage For="@(() => model.FirstName)" />
+                            <MudTextField id="firstName" @bind-Value="model.FirstName" For="@(() => model.FirstName)" Variant="Variant.Filled" />
                     </MudField>
                 </MudItem>
                 <MudItem xs="2">
@@ -53,8 +52,7 @@ else if (model != null)
                 </MudItem>
                 <MudItem xs="8">
                     <MudField Underline="false">
-                        <MudTextField id="lastName" @bind-Value="model.LastName" Variant="Variant.Filled" />
-                        <ValidationMessage For="@(() => model.LastName)" />
+                            <MudTextField id="lastName" @bind-Value="model.LastName" For="@(() => model.LastName)" Variant="Variant.Filled" />
                     </MudField>
                 </MudItem>
                 <MudItem xs="2">
@@ -65,8 +63,7 @@ else if (model != null)
                 </MudItem>
                 <MudItem xs="8">
                     <MudField Underline="false">
-                        <MudTextField id="email" @bind-Value="model.Email" Variant="Variant.Filled" />
-                        <ValidationMessage For="@(() => model.Email)" />
+                            <MudTextField id="email" @bind-Value="model.Email" For="@(() => model.Email)" Variant="Variant.Filled" />
                     </MudField>
                 </MudItem>
                 <MudItem xs="2">
@@ -77,8 +74,7 @@ else if (model != null)
                 </MudItem>
                 <MudItem xs="8">
                     <MudField Underline="false">
-                        <MudTextField id="phone" @bind-Value="model.Phone" Variant="Variant.Filled" />
-                        <ValidationMessage For="@(() => model.Phone)" />
+                            <MudTextField id="phone" @bind-Value="model.Phone" For="@(() => model.Phone)" Variant="Variant.Filled" />
                     </MudField>
                 </MudItem>
                 <MudItem xs="2">
@@ -89,8 +85,7 @@ else if (model != null)
                 </MudItem>
                 <MudItem xs="8">
                     <MudField Underline="false">
-                        <MudTextField id="unit" @bind-Value="model.Unit" Variant="Variant.Filled" />
-                        <ValidationMessage For="@(() => model.Unit)" />
+                            <MudTextField id="unit" @bind-Value="model.Unit" For="@(() => model.Unit)" Variant="Variant.Filled" />
                     </MudField>
                 </MudItem>
                 <MudItem xs="2">
@@ -101,8 +96,7 @@ else if (model != null)
                 </MudItem>
                 <MudItem xs="8">
                     <MudField Underline="false">
-                        <MudTextField id="address" @bind-Value="model.Address" Variant="Variant.Filled" />
-                        <ValidationMessage For="@(() => model.Address)" />
+                        <MudTextField id="address" @bind-Value="model.Address" For="@(() => model.Address)" Variant="Variant.Filled" />
                     </MudField>
                 </MudItem>
                 <MudItem xs="2">
@@ -113,8 +107,7 @@ else if (model != null)
                 </MudItem>
                 <MudItem xs="8">
                     <MudField Underline="false">
-                        <MudTextField id="city" @bind-Value="model.City" Variant="Variant.Filled" />
-                        <ValidationMessage For="@(() => model.City)" />
+                        <MudTextField id="city" @bind-Value="model.City" For="@(() => model.City)" Variant="Variant.Filled" />
                     </MudField>
                 </MudItem>
                 <MudItem xs="2">
@@ -125,8 +118,7 @@ else if (model != null)
                 </MudItem>
                 <MudItem xs="8">
                     <MudField Underline="false">
-                        <MudTextField id="province" @bind-Value="model.Province" Variant="Variant.Filled" />
-                        <ValidationMessage For="@(() => model.Province)" />
+                            <MudTextField id="province" @bind-Value="model.Province" For="@(() => model.Province)"  Variant="Variant.Filled" />
                     </MudField>
                 </MudItem>
                 <MudItem xs="2">
@@ -137,8 +129,7 @@ else if (model != null)
                 </MudItem>
                 <MudItem xs="8">
                     <MudField Underline="false">
-                        <MudTextField id="postcode" @bind-Value="model.Postcode" Variant="Variant.Filled" />
-                        <ValidationMessage For="@(() => model.Postcode)" />
+                        <MudTextField id="postcode" @bind-Value="model.Postcode" For="@(() => model.Postcode)" Variant="Variant.Filled" />
                     </MudField>
                 </MudItem>
             </MudGrid>
@@ -187,11 +178,12 @@ else if (model != null)
                 {
                     if (user.IsInRole("Admin"))
                     {
-                        model = await ProfileService.GetCustomer(UserId);
+                        model = await ProfileService.GetCustomerProfile(UserId);
                     }
                     else if (user.IsInRole("Customer"))
                     {
-                        model = await ProfileService.GetCustomer();
+                        model= await ProfileService.GetCustomerProfile();
+
                     }
                     isLoading = false;
                     StateHasChanged();
@@ -210,7 +202,7 @@ else if (model != null)
         try
         {
             await LogToBrowserConsole($"Update Data: {model}");
-            var result = await this.ProfileService.UpdateCustomer(model); // Update customer data
+            var result = await this.ProfileService.UpdateCustomerProfile(model); // Update customer data
             
 
             if (result.Succeeded)

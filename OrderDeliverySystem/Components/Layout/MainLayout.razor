@@ -86,9 +86,6 @@
 
 @code {
 
-    [Inject]
-    private IAuthService AuthService { get; set; }
-
     
     protected override async Task OnInitializedAsync()
     {
@@ -124,7 +121,4 @@
             _ => Color.Error
         };
     }
-}
-@code {
-    
 }

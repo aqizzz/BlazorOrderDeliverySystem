@@ -14,65 +14,65 @@
 @rendermode InteractiveServer
 
 <MudHidden Class="my-10" Breakpoint="Breakpoint.MdAndUp" Invert="true">
-<AuthorizeView Roles="Admin,Merchant,Worker">
-    <Authorized>
-        <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/dashboard" Class="rounded-lg m-4" /></MudLink>
+    <AuthorizeView Roles="Admin,Merchant,Worker">
+        <Authorized>
+            <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/dashboard" Class="rounded-lg m-4" /></MudLink>
             <MudSpacer />
             <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Log Out" OnClick="LogOut" />
-    </Authorized>
-   <NotAuthorized>
-        <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/" Class="rounded-lg m-4" /></MudLink>
+        </Authorized>
+        <NotAuthorized>
+            <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/" Class="rounded-lg m-4" /></MudLink>
             <MudSpacer />
-    </NotAuthorized>
+        </NotAuthorized>
 
-</AuthorizeView>
+    </AuthorizeView>
 
 
-    
-<AuthorizeView Roles="Customer">
-    <Authorized>
-        <MudButtonGroup Color="Color.Dark" Variant="Variant.Text">
-            <MudButton Href="/restaurants">Restaurants</MudButton>
-            <MudButton Href="/about-us">About Us</MudButton>
-            <MudButton Href="/contact">Contact</MudButton>
-            <MudButton Href="/my-orders">My Orders</MudButton>
-        </MudButtonGroup>
+
+    <AuthorizeView Roles="Customer">
+        <Authorized>
+            <MudButtonGroup Color="Color.Dark" Variant="Variant.Text">
+                <MudButton Href="/restaurants">Restaurants</MudButton>
+                <MudButton Href="/about-us">About Us</MudButton>
+                <MudButton Href="/contact">Contact</MudButton>
+                <MudButton Href="/my-orders">My Orders</MudButton>
+            </MudButtonGroup>
             <MudSpacer />
-        <MudIconButton OnClick="OnExpandCartClick" Icon="@Icons.Material.Filled.AddShoppingCart" Style="color: rgba(168, 0, 0, 1);">@(_cartExpanded ? "" : "")</MudIconButton>
-        <MudIconButton Href="/customer-profile" Icon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" />
+            <MudIconButton OnClick="OnExpandCartClick" Icon="@Icons.Material.Filled.AddShoppingCart" Style="color: rgba(168, 0, 0, 1);">@(_cartExpanded ? "" : "")</MudIconButton>
+            <MudIconButton Href="/customer-profile" Icon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" />
             <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Log Out" OnClick="LogOut" />
-    </Authorized>
-    
-</AuthorizeView>
+        </Authorized>
 
-<AuthorizeView Roles="Customer,Admin,Merchant,Worker">
-    <NotAuthorized>
-        <MudButtonGroup Color="Color.Dark" Variant="Variant.Text">
-            <MudButton Href="/restaurants">Restaurants</MudButton>
-            <MudButton Href="/about-us">About Us</MudButton>
-            <MudButton Href="/contact">Contact</MudButton>
-            <MudButton Href="/register">Sign Up</MudButton>
-        </MudButtonGroup>
-        <MudSpacer />
+    </AuthorizeView>
+
+    <AuthorizeView Roles="Customer,Admin,Merchant,Worker">
+        <NotAuthorized>
+            <MudButtonGroup Color="Color.Dark" Variant="Variant.Text">
+                <MudButton Href="/restaurants">Restaurants</MudButton>
+                <MudButton Href="/about-us">About Us</MudButton>
+                <MudButton Href="/contact">Contact</MudButton>
+                <MudButton Href="/register">Sign Up</MudButton>
+            </MudButtonGroup>
+            <MudSpacer />
             <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Login" Href="/login" />
-    </NotAuthorized>
-</AuthorizeView>
-       
-    
+        </NotAuthorized>
+    </AuthorizeView>
+
+
 </MudHidden>
 
-    <MudCollapse Expanded="_cartExpanded" >
-        @if (_cartExpanded)
-        {
+<MudCollapse Expanded="_cartExpanded">
+    @if (_cartExpanded)
+    {
         <Cart OnClose="CloseCart" />
-        }
-    </MudCollapse>
+    }
+</MudCollapse>
 
 
 
 
-@code{
- 
+@code {
+
     ///bool isCustomer = false;
     //string _role = "Admin";
     //string _role = "Merchant";
@@ -118,7 +118,7 @@
 
     private void CloseCart()
     {
-        _cartExpanded = false; 
+        _cartExpanded = false;
     }
 
     public async Task LogOut()
@@ -135,7 +135,7 @@
         NavigationManager.NavigateTo("/login");
     }
 
-   
 
-    
+
+
 }
