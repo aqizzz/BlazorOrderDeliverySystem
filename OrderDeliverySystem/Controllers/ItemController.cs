@@ -54,20 +54,20 @@ namespace OrderDeliverySystem.Controllers
         }
 
         // GET: api/items/merchant/{merchantId}
-        [HttpGet("merchant/{merchantId}")]
-        public async Task<ActionResult<IEnumerable<ViewItemDTO>>> GetItemsByMerchant(int merchantId, int pageNumber = 1, int pageSize = 10)
+        [HttpGet("merchant/{userId}")]
+        public async Task<ActionResult<IEnumerable<ViewItemDTO>>> GetItemsByMerchant(int userId, int pageNumber = 1, int pageSize = 10)
         {
             var items = await _context.Items
                 .Include(i => i.Merchant)
-                .Where(i => i.Merchant.UserId == merchantId && i.ItemIsAvailable == true)
+                .Where(i => i.Merchant.UserId == userId && i.ItemIsAvailable == true)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
             if (items == null || items.Count == 0)
             {
-                _logger.LogInformation($"No items found for merchant {merchantId}.");
-                return NotFound($"No available items found for merchant {merchantId}.");
+                _logger.LogInformation($"No items found for merchant {userId}.");
+                return NotFound($"No available items found for merchant {userId}.");
             }
 
             // 将 Item 实体转换为 ViewItemDTO
