@@ -1,6 +1,13 @@
 ﻿@page "/user-management"
 <h3>Users</h3>
-
+<MudContainer Class="my-10  d-flex justify-content-center align-content-center border-2"  MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
+        <MudPaper Class="pa-16 ma-2 " Elevation="3" Width="100%">
+@for(var i=0;i<100;i++){
+    
+    <MudText>This is test lint @(i+1)</MudText>
+}
+    </MudPaper>
+</MudContainer>
 @code {
 
 }

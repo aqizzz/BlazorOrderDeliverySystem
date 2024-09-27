@@ -28,10 +28,10 @@
 
 <AuthorizeView Roles="Merchant">
     <Authorized>
-        <MudNavLink Href="/merchant-profile" Icon="@Icons.Material.Filled.Dashboard">Profile Management</MudNavLink>
-        <MudNavLink Href="/product-list" Icon="@Icons.Material.Filled.Dashboard">Product Management</MudNavLink>
-        <MudNavLink Href="/order-list" Icon="@Icons.Material.Filled.Dashboard">Order Management</MudNavLink>
-        <MudNavLink Href="/review-list" Icon="@Icons.Material.Filled.Dashboard">Review Management</MudNavLink>
+        <MudNavLink Href="/merchant" Icon="@Icons.Material.Filled.Dashboard">Profile Management</MudNavLink>
+        <MudNavLink Href="/merchant-items" Icon="@Icons.Material.Filled.Dashboard">Product Management</MudNavLink>
+        <MudNavLink Href="/merchant-orders" Icon="@Icons.Material.Filled.Dashboard">Order Management</MudNavLink>
+        <MudNavLink Href="/merchant-reviews" Icon="@Icons.Material.Filled.Dashboard">Review Management</MudNavLink>
         <MudNavLink Href="/password" Icon="@Icons.Material.Filled.Receipt">Password Reset</MudNavLink>
     </Authorized>
 </AuthorizeView>
@@ -39,8 +39,8 @@
 <AuthorizeView Roles="Worker">
     <Authorized>
         <MudNavLink Href="/worker-profile" Icon="@Icons.Material.Filled.Dashboard">Profile Management</MudNavLink>
-        <MudNavLink Href="/order-list" Icon="@Icons.Material.Filled.Dashboard">Order</MudNavLink>
-        <MudNavLink Href="/history-orders" Icon="@Icons.Material.Filled.Dashboard">Histiry Order</MudNavLink>
+        <MudNavLink Href="/worker-order" Icon="@Icons.Material.Filled.Dashboard">Order</MudNavLink>
+        <MudNavLink Href="/worker-history-orders" Icon="@Icons.Material.Filled.Dashboard">Histiry Order</MudNavLink>
         <MudNavLink Href="/password" Icon="@Icons.Material.Filled.Receipt">Password Reset</MudNavLink>
     </Authorized>
 </AuthorizeView>

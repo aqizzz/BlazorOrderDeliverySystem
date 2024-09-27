@@ -1,20 +1,18 @@
 @page "/order-now"
-@*@attribute [Authorize(Roles = "Customer")]*@
 @using System.Text.RegularExpressions
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authorization;
-@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using OrderDeliverySystem.Client.Shared.Common
 @using OrderDeliverySystem.Client.Shared
 @using OrderDeliverySystem.Share.DTOs
 @using OrderDeliverySystem.Share.DTOs.CartDTO
 @using OrderDeliverySystem.Share.Data.Models
 @using Microsoft.AspNetCore.Components.Authorization
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
-
 
 
 <EditForm Model="@order" OnValidSubmit="OrderCreationSubmit">
@@ -34,23 +32,21 @@
                     <MudRadio Value="@("Radio 4")" Color="Color.Primary" Disabled="true">Disabled</MudRadio>
                 </MudRadioGroup>
             </MudForm>
-            <MudGrid>
-                <MudItem xs="12" sm="7">
+            <MudGrid Class="d-block">
+                 <MudItem xs="12" sm="7">
                     <MudCard>
                         <MudCardContent>
+                            @order.CustomerId
                             <MudTextField @bind-Value="order.CustomerId" For="@(() => order.CustomerId)" InputType="InputType.Hidden" />
                             <MudTextField @bind-Value="order.MerchantId" For="@(() => order.MerchantId)" InputType="InputType.Hidden" />
                             <MudTextField @bind-Value="order.CartId" For="@(() => order.CartId)" InputType="InputType.Hidden" />
-                            <MudTextField @bind-Value="order.FirstName" For="@(() => order.FirstName)" InputType="InputType.Hidden" />
                             <MudTextField Label="First name" HelperText="Max. 8 characters"
                                           @bind-Value="order.FirstName" For="@(() => order.FirstName)" />
                             <MudTextField Label="Last name" HelperText="Max. 8 characters"
                                           @bind-Value="order.LastName" For="@(() => order.LastName)" />
-                            <MudTextField Label="Email" Class="mt-3"
-                                          @bind-Value="order.Email" For="@(() => order.Email)" InputType="InputType.Email" />
                             <MudTextField Label="Phone" HelperText="Enter your phone number" Class="mt-3"
                                           @bind-Value="order.Phone" For="@(() => order.Phone)" InputType="InputType.Telephone" />
-                         <MudTextField Label="Unit" HelperText="Enter your Unit" Class="mt-3"
+                            <MudTextField Label="Unit" HelperText="Enter your Unit" Class="mt-3"
                                           @bind-Value="order.Unit" For="@(() => order.Unit)" InputType="InputType.Text" />
                             <MudTextField Label="Address" HelperText="Enter your address" Class="mt-3"
                                               @bind-Value="order.Address" For="@(() => order.Address)" InputType="InputType.Text" />
@@ -64,21 +60,6 @@
                         </MudCardContent>
                        
                     </MudCard>
-                </MudItem>
-                <MudItem xs="12" sm="5">
-                    <MudPaper Class="pa-4 mud-height-full">
-                        <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
-                        @if (success)
-                        {
-                            <MudText Color="Color.Success">Success</MudText>
-                        }
-                        else
-                        {
-                            <MudText Color="@Color.Error">
-                                <ValidationSummary />
-                            </MudText>
-                        }
-                    </MudPaper>
                 </MudItem>
                 <MudItem xs="12">
                     <MudText Typo="Typo.body2" Align="Align.Center">
@@ -140,15 +121,10 @@
     </MudCardActions>
 </MudContainer>
  </EditForm>
-        
+
 @code {
-
-    public string SelectedOption { get; set; }
-
-    private void Reset()
-    {
-        SelectedOption = null;
-    }
+   
+   
     private const decimal TaxRate = 0.15m;
     private const decimal DeliveryFee = 6.00m;
     int customerId;
@@ -160,7 +136,12 @@
     private List<GetCartItemsResponseDTO> cartItems = new();
     private CreateOrderDTO order = new CreateOrderDTO();
     bool success;
-    protected async Task OnInitialized()
+
+    [Inject]
+    private IAuthService AuthService { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
     {
         await GetCustomerId();
         await LoadCartItems();
@@ -169,14 +150,25 @@
         order.MerchantId = merchantId;
         order.OrderItems = cartItems;
         order.TotalAmount = GetTotalAmount();
+        await base.OnInitializedAsync();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
 
     }
+    public string SelectedOption { get; set; }
+
+    private void Reset()
+    {
+        SelectedOption = null;
+    }
+   
+
     private async Task LoadCartItems()
     {
         try
         {
             var httpClient = HttpClientFactory.CreateClient("API");
-            var response = await httpClient.GetFromJsonAsync<GetCartReponseDTO>($"api/cart/getCart/{customerId}");
+            var response = await httpClient.GetFromJsonAsync<GetCartReponseDTO>($"api/cart/getCartByUser");
 
             if (response != null)
             {

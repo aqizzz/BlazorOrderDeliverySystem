@@ -125,9 +125,9 @@
     {
         if (AuthService != null)
         {
-            StateHasChanged();
             await AuthService.Logout();
-
+            Navigation.NavigateTo("/", forceLoad: true);
+            StateHasChanged();
         }
     }
     public async Task LogIn()

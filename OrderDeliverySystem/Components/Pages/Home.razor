@@ -14,12 +14,16 @@
 
 <AuthorizeView Roles="Admin,Merchant,Worker">
     <Authorized>
-        <MudContainer Class="my-10 d-flex justify-content-center align-items-center">
-            <MudPaper Class="pa-16 ma-2" Elevation="3">
+        <MudContainer Class="my-10 d-flex justify-content-center align-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
+            <MudPaper Class="pa-16 ma-2 d-flex justify-content-center align-content-center" Elevation="3" Width="100%" >
+                <MudPaper Class="pa-16 ma-2" Elevation="0">
 
-                <MudText Typo="Typo.h3">Welcome to Dashboard</MudText>
+                    <MudText Typo="Typo.h3">Welcome to Dashboard</MudText>
+
+                </MudPaper>
 
             </MudPaper>
+           
         </MudContainer>
     </Authorized>
 
