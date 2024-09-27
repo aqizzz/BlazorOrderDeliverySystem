@@ -1,4 +1,4 @@
-﻿@page "/worker"
+﻿@page "/worker-profile"
 
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Authorization;
@@ -13,7 +13,6 @@
 @inject NavigationManager NavigationManager
 @inject IProfileService ProfileService
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject ILogger<WorkerProfile> logger
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveAuto
 <br>
@@ -114,24 +113,44 @@ else if (model != null)
     </MudContainer>
 }
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+
     private WorkerProfileDTO model = new WorkerProfileDTO { WorkerAvailability = false };
+
+    private ClaimsPrincipal user;
+
+    [Parameter]
+    public int UserId { get; set; }
 
     public bool ShowErrors { get; set; } = false;
     public IEnumerable<string> Errors { get; set; } = new List<string>();
 
-    private string userId = "2"; // Adjust as necessary
+    private int userId = 2; // Adjust as necessary
     private bool isLoading = true;
 
     private async Task LoadWorkerProfile()
     {
         try
         {
-            var httpClient = httpClientFactory.CreateClient("API");
-            httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-            model = await httpClient.GetFromJsonAsync<WorkerProfileDTO>($"api/Profile/worker/{userId}");
+            if (authenticationState is not null)
+            {
+                if (user is not null)
+                {
+                    if (user.IsInRole("Admin"))
+                    {
+                        model = await ProfileService.GetWorkerProfile(UserId);
 
-            isLoading = false;
-            StateHasChanged();
+                    }
+                    else if (user.IsInRole("Worker"))
+                    {
+                        model = await ProfileService.GetWorkerProfile();
+
+                    }
+                    isLoading = false;
+                    StateHasChanged();
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -141,6 +160,8 @@ else if (model != null)
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await authenticationState;
+        user = authState.User;
         await LoadWorkerProfile();
     }
 

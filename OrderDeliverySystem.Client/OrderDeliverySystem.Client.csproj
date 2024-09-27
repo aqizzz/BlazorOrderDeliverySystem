@@ -40,10 +40,4 @@
 	  <None Include="Pages\ItemList.razor" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Content Update="Pages\Worker\WorkerProfile.razor">
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	  </Content>
-	</ItemGroup>
-
 </Project>

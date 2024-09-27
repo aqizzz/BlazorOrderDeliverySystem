@@ -1,0 +1,269 @@
+﻿@page "/worker-profile/edit"
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Authorization;
+@using MudBlazor
+@using Newtonsoft.Json
+@using OrderDeliverySystem.Share.DTOs
+@using OrderDeliverySystem.Client.Shared.Common
+@using System.Security.Claims
+@using OrderDeliverySystem.Client.Infrastructure.Services.Profile
+@using System.Text.Json
+@inject IHttpClientFactory httpClientFactory
+@inject NavigationManager NavigationManager
+@inject IProfileService ProfileService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveAuto
+
+<br>
+<br />
+<br />
+<br />
+@if (isLoading)
+{
+    <p>Loading profile...</p>
+}
+else if (model != null)
+{
+    <MudContainer>
+        <EditForm Model="@model" OnValidSubmit="HandleUpdateProfile" FormName="profileForm">
+            <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
+            <DataAnnotationsValidator />
+
+                <div Style="display:none;">
+                    <MudTextField id="userId" @bind-Value="model.UserId" ReadOnly="true" />
+                </div>
+                <MudGrid>
+                    <MudItem xs="2">
+                        <MudField Label="Firstname:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                            <MudTextField id="firstName" @bind-Value="model.FirstName" For="@(() => model.FirstName)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
+
+                    <MudItem xs="2">
+                        <MudField Label="Lastname:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                            <MudTextField id="lastName" @bind-Value="model.LastName" For="@(() => model.LastName)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
+
+                    <MudItem xs="2">
+                        <MudField Label="Email:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                            <MudTextField id="email" @bind-Value="model.Email" For="@(() => model.Email)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
+
+                    <MudItem xs="2">
+                        <MudField Label="Phone:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                            <MudTextField id="phone" @bind-Value="model.Phone" For="@(() => model.Phone)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
+
+                    <MudItem xs="2">
+                        <MudField Label="Unit:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                            <MudTextField id="unit" @bind-Value="model.Unit" For="@(() => model.Unit)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
+
+                    <MudItem xs="2">
+                        <MudField Label="Address:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                            <MudTextField id="address" @bind-Value="model.Address" For="@(() => model.Address)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
+
+                    <MudItem xs="2">
+                        <MudField Label="City:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                            <MudTextField id="city" @bind-Value="model.City" For="@(() => model.City)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
+
+                    <MudItem xs="2">
+                        <MudField Label="Province:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                            <MudTextField id="province" @bind-Value="model.Province" For="@(() => model.Province)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
+
+                    <MudItem xs="2">
+                        <MudField Label="Postcode:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                            <MudTextField id="postcode" @bind-Value="model.Postcode" For="@(() => model.Postcode)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
+
+                    <MudItem xs="2">
+                        <MudField Label="WorkerAvailability:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                            <MudSelect @bind-Value="model.WorkerAvailability"
+                                       Variant="Variant.Filled"
+                                       Dense="true"
+                                       Placeholder="@(model.WorkerAvailability ? "Available" :"Not Available")">
+                                    <MudSelectItem Value="true">Available</MudSelectItem>
+                                <MudSelectItem Value="false">Not Available</MudSelectItem>
+
+                            </MudSelect>
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
+
+                    <MudItem xs="2">
+                        <MudField Label="CommissionRate:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                            <AuthorizeView Roles="Admin">
+                                <Authorized Context="authContext">
+                                   <MudTextField id="commissionRate" @bind-Value="model.CommissionRate" For="@(() => model.CommissionRate)" Variant="Variant.Filled" />
+                                </Authorized>
+                                <NotAuthorized Context="authContext">
+                                    <MudTextField id="commissionRate" @bind-Value="model.CommissionRate" For="@(() => model.CommissionRate)" Variant="Variant.Filled" ReadOnly="true" />
+                                 </NotAuthorized>
+                            </AuthorizeView>
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
+
+                    <MudItem xs="2">
+                        <MudField Label="LastTaskAssigned:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                            <MudTextField id="lastTaskAssigned" @bind-Value="model.LastTaskAssigned" For="@(() => model.LastTaskAssigned)" Variant="Variant.Filled" ReadOnly="true"/>
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
+                <MudItem xs="12" Class="object-center">
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Profile</MudButton>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </MudContainer>
+}
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+
+    [Parameter]
+    public int UserId { get; set; }
+
+
+    private WorkerProfileDTO model = new WorkerProfileDTO { WorkerAvailability = false };
+    private ClaimsPrincipal user;
+
+
+    public bool ShowErrors { get; set; } = false;
+    public IEnumerable<string> Errors { get; set; } = new List<string>();
+
+    private int userId = 2;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+        await LoadUserProfile();
+    }
+
+    private async Task LoadUserProfile()
+    {
+        try
+        {
+            if (authenticationState is not null)
+            {
+                if (user is not null)
+                {
+                    if (user.IsInRole("Admin"))
+                    {
+                        model = await ProfileService.GetWorkerProfile(UserId);
+                    }
+                    else if (user.IsInRole("Worker"))
+                    {
+                        model = await ProfileService.GetWorkerProfile();
+
+                    }
+                    isLoading = false;
+                    StateHasChanged();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await LogToBrowserConsole($"Error loading: {ex.Message}");
+        }
+
+    }
+
+    private async Task HandleUpdateProfile()
+    {
+        try
+        {
+            await LogToBrowserConsole($"Update Data: {model}");
+            var result = await this.ProfileService.UpdateWorkerProfile(model); // Update customer data
+
+
+            if (result.Succeeded)
+            {
+                ShowErrors = false;
+            }
+            else
+            {
+                Errors = result.Errors;
+                ShowErrors = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
+        }
+    }
+
+    private async Task LogToBrowserConsole(string message) => await JSRuntime.InvokeVoidAsync("console.log", message);
+}

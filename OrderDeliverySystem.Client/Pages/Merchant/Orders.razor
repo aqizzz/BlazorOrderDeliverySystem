@@ -115,9 +115,9 @@
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        int customerId = 3;
+        int customerId = 2;
         
-        recentOrders = await Orderservice.GetOrdersByRoleAsync("customer", customerId, true);
+        recentOrders = await Orderservice.GetOrdersByRoleAsync("merchant", customerId, true);
 
     }
 

@@ -2,7 +2,7 @@
 @using MudBlazor
 @using OrderDeliverySystem.Client.Pages.Admin
 @using OrderDeliverySystem.Client.Pages.Merchant
-@using OrderDeliverySystem.Client.Pages.Worker
+@using OrderDeliverySystem.Client.Pages.DeliveryWorker
 @using Microsoft.AspNetCore.Components.Authorization
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -140,10 +140,6 @@
     //string _role = "Guest";
     //string _role = "Customer";
     // string _role = "Worker";
-
-
-    [Inject]
-    private IAuthService AuthService { get; set; }
     
 
     protected override async Task OnInitializedAsync()
