@@ -1,4 +1,4 @@
-﻿@using MudBlazor
+﻿﻿@using MudBlazor
 @using OrderDeliverySystem.Client.Shared
 @using OrderDeliverySystem.Client.Pages.Customer
 @using OrderDeliverySystem.Components
@@ -9,10 +9,10 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
-@inject NavigationManager Navigation
-
+@inject IAuthService AuthService
 @rendermode InteractiveServer
 
+<<<<<<< HEAD
 <MudHidden Class="my-10" Breakpoint="Breakpoint.MdAndUp" Invert="true">
 <AuthorizeView Roles="Admin,Merchant,Worker">
     <Authorized>
@@ -27,19 +27,38 @@
 
 </AuthorizeView>
 
+=======
 
-    
-<AuthorizeView Roles="Customer">
-    <Authorized>
-        <MudButtonGroup Color="Color.Dark" Variant="Variant.Text">
-            <MudButton Href="/restaurants">Restaurants</MudButton>
-            <MudButton Href="/about-us">About Us</MudButton>
-            <MudButton Href="/contact">Contact</MudButton>
+@if (isCustomer || isGuest)
+{
+    <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/" Class="rounded-lg m-4" /></MudLink>
+
+    <MudSpacer />
+    <MudButtonGroup Color="Color.Dark" Variant="Variant.Text">
+        <MudButton Href="/restaurants">Restaurants</MudButton>
+        <MudButton Href="/about-us">About Us</MudButton>
+        <MudButton Href="/contact">Contact</MudButton>
+
+
+        @if (isCustomer)
+        {
             <MudButton Href="/my-orders">My Orders</MudButton>
-        </MudButtonGroup>
-            <MudSpacer />
+        }
+        else
+        {
+            <MudButton Href="/register">Sign Up</MudButton>
+        }
+
+    </MudButtonGroup>
+    <MudSpacer />
+>>>>>>> dev
+
+    @if (isCustomer)
+    {
+
         <MudIconButton OnClick="OnExpandCartClick" Icon="@Icons.Material.Filled.AddShoppingCart" Style="color: rgba(168, 0, 0, 1);">@(_cartExpanded ? "" : "")</MudIconButton>
         <MudIconButton Href="/customer-profile" Icon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" />
+<<<<<<< HEAD
             <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Log Out" OnClick="LogOut" />
     </Authorized>
     
@@ -64,15 +83,46 @@
     <MudCollapse Expanded="_cartExpanded" >
         @if (_cartExpanded)
         {
+=======
+
+        <MudFab Style="color: rgba(168, 0, 0, 1);" Label="Log Out" OnClick="LogOut" />
+
+    }
+    else
+    {
+        <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Login" OnClick="LogIn" />
+    }
+
+}
+else
+{
+    <MudButton Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/dashboard" Class="rounded-lg m-4" /></MudButton>
+
+    <MudSpacer />
+    <AuthorizeView>
+        @*Example of set with role: <AuthorizeView Roles="Admin">*@
+        <Authorized>
+            <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Log Out" OnClick="LogOut" />
+        </Authorized>
+        <NotAuthorized>
+            <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Login" Href="/login" />
+        </NotAuthorized>
+    </AuthorizeView>
+}
+
+
+<MudCollapse Expanded="_cartExpanded">
+    @if (_cartExpanded)
+    {
+>>>>>>> dev
         <Cart OnClose="CloseCart" />
-        }
-    </MudCollapse>
+    }
+</MudCollapse>
 
 
 
+@code {
 
-@code{
- 
     ///bool isCustomer = false;
     //string _role = "Admin";
     //string _role = "Merchant";
@@ -93,24 +143,42 @@
         isDeliveryWorker = user.IsInRole("DeliveryWorker");
         isGuest = (!isAdmin || !isCustomer || !isMerchant || !isDeliveryWorker);
     }*@
-    [Inject]
-    private IAuthService AuthService { get; set; }
-    bool _cartExpanded = false;
 
+<<<<<<< HEAD
     protected override async Task OnInitializedAsync()
     {
         StateHasChanged();
+=======
+    bool _cartExpanded = false;
+    private bool isAdmin;
+    private bool isCustomer;
+    private bool isMerchant;
+    private bool isDeliveryWorker;
+    private bool isGuest;
+
+    protected override async Task OnInitializedAsync()
+    {
+>>>>>>> dev
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-    }
-    bool _menuExpanded = true;
+        isAdmin = user.IsInRole("Admin");
+        isCustomer = user.IsInRole("Customer");
+        isMerchant = user.IsInRole("Merchant");
+        isDeliveryWorker = user.IsInRole("DeliveryWorker");
+        isGuest = (!isAdmin || !isCustomer || !isMerchant || !isDeliveryWorker);
 
-    private void OnExpandMenuClick()
-    {
-        _menuExpanded = !_menuExpanded;
+        NavigationManager.LocationChanged += OnLocationChanged;
     }
+
+    private void OnLocationChanged(object sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        _cartExpanded = false;
+        StateHasChanged();
+    }
+
+
     private void OnExpandCartClick()
     {
         _cartExpanded = !_cartExpanded;
@@ -118,7 +186,7 @@
 
     private void CloseCart()
     {
-        _cartExpanded = false; 
+        _cartExpanded = false;
     }
 
     public async Task LogOut()
@@ -126,9 +194,14 @@
         if (AuthService != null)
         {
             await AuthService.Logout();
+<<<<<<< HEAD
             await AuthService.Logout();
             Navigation.NavigateTo("/", forceLoad: true);
             StateHasChanged();
+=======
+            CloseCart();
+            NavigationManager.NavigateTo("/");
+>>>>>>> dev
         }
     }
     public async Task LogIn()
@@ -136,7 +209,10 @@
         NavigationManager.NavigateTo("/login");
     }
 
-   
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
 
-    
+
 }
