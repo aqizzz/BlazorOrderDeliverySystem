@@ -26,9 +26,9 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 			return orders ?? new List<OrderDTO>();
 		}
 
-        public async Task<List<OrderDTO>> GetOrdersTableByRoleAsync(string role, int id, bool recent)
+        public async Task<List<OrderDTO>> GetOrdersTableByRoleAsync(string role, int id, bool recent )
         {
-            var uri = $"{Base}{role}/{id}?recent={recent.ToString().ToLower()}";
+            var uri = $"{Base}/table/{role}/{id}?recent={recent.ToString().ToLower()}";
             Console.WriteLine($"making request to {uri}");
             var orders = await _httpClient.GetFromJsonAsync<List<OrderDTO>>(uri);
             return orders ?? new List<OrderDTO>();

@@ -63,7 +63,7 @@
 
 </MudContainer>
 @code {
-    private int customerId=3;
+  
     private List<OrderDTO> recentOrders = new();
     private List<OrderDTO> orderHistory = new();
    // private OrderDTO? selectedOrder = new();
@@ -77,7 +77,7 @@
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        int customerId = 17;
+        int customerId = 3;
         recentOrders = await OrderService.GetOrdersByRoleAsync("customer", customerId, true);
         orderHistory = await OrderService.GetOrdersByRoleAsync("customer", customerId, false);
     }

@@ -429,29 +429,24 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
 
-        [HttpGet("{role}/{merchantId}")]
-        public async Task<IActionResult> GetOrdersTableByRole(string role ,int merchantId, bool recent, int pageNumber = 1, int pageSize = 10)
+        [HttpGet("table/{role}/{userId}")]
+        public async Task<IActionResult> GetOrdersTableByRole(string role ,int userId, bool recent, int pageNumber = 1, int pageSize = 10)
         {
               IQueryable<Order> query = _context.Orders
                 .Include(o => o.Customer)
                 .Include(o => o.OrderItems)
                 .Include(o => o.Merchant)
                 .Include(o => o.DeliveryWorker);
-            var items = await _context.Items
-                .Include(i => i.Merchant)
-                .Where(i => i.Merchant.UserId == merchantId && i.ItemIsAvailable == true)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+            
 
             switch (role.ToLower())
             {
                 case "customer":
-                    query = query.Where(o => o.Customer.UserId == merchantId); break;
+                    query = query.Where(o => o.Customer.UserId == userId); break;
                 case "merchant":
-                    query = query.Where(o => o.Merchant.UserId == merchantId); break;
+                    query = query.Where(o => o.Merchant.UserId == userId); break;
                 case "worker":
-                    query = query.Where(o => o.DeliveryWorker.UserId == merchantId); break;
+                    query = query.Where(o => o.DeliveryWorker.UserId == userId); break;
             }
 
             if (recent)
