@@ -15,83 +15,294 @@ namespace OrderDeliverySystem.Controllers
     [Route("api/[controller]")]
     public class ProfileController(AppDbContext context, IConfiguration config) : ControllerBase
     {
-        [HttpGet("{userId}")]
-        //[Authorize]
-        public async Task<IActionResult> GetUserInfo(int userId)
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetUserInfo()
         {
-            //var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-            //if (!User.IsInRole("Admin") && userId != loggedInUserId)
-            //{
-            //    return Forbid();
-            //}
-
-            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
-            if (user == null)
+            var profile = await GetUserProfile(userId);
+            if (profile == null)
                 return NotFound("User not found");
 
-            var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == userId && a.Type == "Main");
+            return Ok(profile);
+        }
 
-            UserProfileDTO profile = new()
+        [HttpGet("{userId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetUserInfo(int userId)
+        {
+            if (!User.IsInRole("Admin"))
             {
-                UserId = user.UserId,
-                FirstName = user.FirstName ?? "",
-                LastName = user.LastName ?? "",
-                Email = user.Email ?? "",
-                Phone = user.Phone ?? "",
-                Type = "Main",
-                Unit = address?.Unit ?? "",
-                Address = address?.Address ?? "",
-                City = address?.City ?? "",
-                Province = address?.Province ?? "",
-                Postcode = address?.Postcode ?? ""
-            };
+                return Forbid();
+            }
+
+            var profile = await GetUserProfile(userId);
+            if (profile == null)
+                return NotFound("User not found");
+
+            return Ok(profile);
+        }
+
+        [HttpGet("worker")]
+        [Authorize(Roles = "Worker")]
+        public async Task<IActionResult> GetWorkerInfo()
+        {
+            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            var profile = await GetWorkerProfileAsync(userId);
+
+            if (profile == null)
+            {
+                return NotFound("Worker not found");
+            }
 
             return Ok(profile);
         }
 
         [HttpGet("worker/{userId}")]
-        //[Authorize(Roles = "Admin, Worker")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetWorkerInfo(int userId)
         {
-            //var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-            //if (!User.IsInRole("Admin") && userId != loggedInUserId)
-            //{
-            //    return Forbid();
-            //}
-
-            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
-            if (user == null)
-                return NotFound("User not found");
-
-            var worker = await context.DeliveryWorkers.FirstOrDefaultAsync(d => d.UserId == userId);
-            if (worker == null)
-                return NotFound("Worker not found");
-
-            var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == userId && a.Type == "Main");
-
-            WorkerProfileDTO profile = new()
+            if (!User.IsInRole("Admin"))
             {
-                UserId = user.UserId,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Phone = user.Phone,
-                Email = user.Email,
-                WorkerAvailability = worker.WorkerAvailability,
-                CommissionRate= worker.CommissionRate,
-                LastTaskAssigned = worker.LastTaskAssigned,
-                Unit = address?.Unit ?? "",
-                Address = address?.Address ?? "",
-                City = address?.City ?? "",
-                Province = address?.Province ?? "",
-                Postcode = address?.Postcode ?? ""
-            };
+                return Forbid();
+            }
+
+            var profile = await GetWorkerProfileAsync(userId);
+
+            if (profile == null)
+            {
+                return NotFound("Worker not found");
+            }
 
             return Ok(profile);
         }
 
+        [HttpGet("merchant")]
+        public async Task<IActionResult> GetMerchantInfo()
+        {
+            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var profile = await GetMerchantProfileAsync(userId);
 
+            if (profile == null)
+            {
+                return NotFound("Merchant not found");
+            }
+
+            return Ok(profile);
+        }
+
+        [HttpGet("merchant/{userId}")]
+        public async Task<IActionResult> GetMerchantInfo(int userId)
+        {
+            var profile = await GetMerchantProfileAsync(userId);
+
+            if (profile == null)
+            {
+                return NotFound("Merchant not found");
+            }
+
+            return Ok(profile);
+        }
+
+        [HttpPut("edit")]
+        [Authorize(Roles = "Admin, Customer")]
+        public async Task<IActionResult> Edit([FromBody] UserProfileDTO dto)
+        {
+            var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            if (!User.IsInRole("Admin") && dto.UserId != loggedInUserId)
+            {
+                return Forbid();
+            }
+
+            if (dto == null)
+            {
+                return BadRequest("Profile data is required.");
+            }
+
+            using var transaction = await context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == dto.UserId);
+                if (user == null)
+                {
+                    return NotFound("User not found.");
+                }
+
+                var existingUserWithEmail = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.UserId != dto.UserId);
+                if (existingUserWithEmail != null)
+                    return Conflict("Email already exists for another user");
+
+                var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == dto.UserId && a.Type == "Main");
+                if (address == null)
+                {
+                    address = new AddressModel { User = user, UserId = dto.UserId, Type = "Main" };
+                    context.Addresses.Add(address); // Add the new Address entity to the context
+                }
+
+                user.FirstName = dto.FirstName;
+                user.LastName = dto.LastName;
+                user.Phone = dto.Phone;
+                user.Email = dto.Email;
+
+                address.Unit = dto.Unit;
+                address.Address = dto.Address;
+                address.City = dto.City;
+                address.Province = dto.Province;
+                address.Postcode = dto.Postcode;
+
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return Ok("Profile has been successfully updated");
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+
+                return StatusCode(500, "An error occurred while updating the profile");
+            }
+        }
+
+        [HttpPut("edit/worker")]
+        [Authorize(Roles = "Admin, Worker")]
+        public async Task<IActionResult> Edit(WorkerProfileDTO dto)
+        {
+            var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            if (!User.IsInRole("Admin") && dto.UserId != loggedInUserId)
+            {
+                return Forbid();
+
+            }
+
+            if (dto == null)
+            {
+                return BadRequest("Profile data is required.");
+            }
+
+
+            using var transaction = await context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == dto.UserId);
+                if (user == null)
+                    return NotFound("User not found");
+
+                var existingUserWithEmail = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.UserId != dto.UserId);
+                if (existingUserWithEmail != null)
+                    return Conflict("Email already exists for another user");
+
+                var worker = await context.DeliveryWorkers.FirstOrDefaultAsync(d => d.UserId == dto.UserId);
+                if (worker == null)
+                    return NotFound("Delivery worker not found");
+
+                var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == dto.UserId && a.Type == "Main");
+                if (address == null)
+                {
+                    address = new AddressModel { User = user, UserId = dto.UserId, Type = "Main" };
+                    context.Addresses.Add(address); // Add the new Address entity to the context
+                }
+
+                user.FirstName = dto.FirstName;
+                user.LastName = dto.LastName;
+                user.Phone = dto.Phone;
+                user.Email = dto.Email;
+
+                await context.SaveChangesAsync();
+
+                worker.CommissionRate = dto.CommissionRate;
+
+                await context.SaveChangesAsync();
+
+                address.Unit = dto.Unit;
+                address.Address = dto.Address;
+                address.City = dto.City;
+                address.Province = dto.Province;
+                address.Postcode = dto.Postcode;
+
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return Ok("Profile has been successfully updated");
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+
+                return StatusCode(500, "An error occurred while updating the profile");
+            }
+        }
+
+        [HttpPut("edit/merchant")]
+        [Authorize(Roles = "Admin, Merchant")]
+        public async Task<IActionResult> Edit(MerchantProfileDTO dto)
+        {
+            var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            if (!User.IsInRole("Admin") && dto.UserId != loggedInUserId)
+            {
+                return Forbid();
+            }
+
+            if (dto == null)
+            {
+                return BadRequest("Profile data is required.");
+            }
+
+
+            using var transaction = await context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == dto.UserId);
+                if (user == null)
+                    return NotFound("User not found");
+
+                var merchant = await context.Merchants.FirstOrDefaultAsync(m => m.UserId == dto.UserId);
+                if (merchant == null)
+                    return NotFound("Merchant not found");
+
+                var existingUserWithEmail = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.UserId != dto.UserId);
+                if (existingUserWithEmail != null)
+                    return Conflict("Email already exists for another user");
+
+                var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == dto.UserId && a.Type == "Main");
+                if (address == null)
+                {
+                    address = new AddressModel { User = user, UserId = dto.UserId, Type = "Main" };
+                    context.Addresses.Add(address); // Add the new Address entity to the context
+                }
+
+                user.FirstName = dto.FirstName;
+                user.LastName = dto.LastName;
+                user.Phone = dto.Phone;
+                user.Email = dto.Email;
+
+                merchant.BusinessName = dto.BusinessName;
+                merchant.MerchantPic = dto.MerchantPic;
+                merchant.MerchantDescription = dto.MerchantDescription;
+                merchant.PreparingTime = dto.PreparingTime;
+
+                address.Unit = dto.Unit;
+                address.Address = dto.Address;
+                address.City = dto.City;
+                address.Province = dto.Province;
+                address.Postcode = dto.Postcode;
+
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return Ok("Profile has been successfully updated");
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+
+                return StatusCode(500, "An error occurred while updating the profile");
+            }
+        }
 
         [HttpGet("merchants")]
         //[Authorize(Roles = "Admin, Merchant")]
@@ -145,29 +356,68 @@ namespace OrderDeliverySystem.Controllers
 
             return Ok(results);
         }
-
-        [HttpGet("merchant/{userId}")]
-        //[Authorize(Roles = "Admin, Merchant")]
-        public async Task<IActionResult> GetMerchantInfo(int? userId)
+        private async Task<UserProfileDTO?> GetUserProfile(int userId)
         {
-            //var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-            //if (!User.IsInRole("Admin") && userId != loggedInUserId)
-            //{
-            //    return Forbid();
-            //}
-
             var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
-            if (user == null)
-                return NotFound("User not found");
-
-            var merchant = await context.Merchants.FirstOrDefaultAsync(m => m.UserId == userId);
-            if (merchant == null)
-                return NotFound("Merchant not found");
+            if (user == null) return null;
 
             var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == userId && a.Type == "Main");
 
-            MerchantProfileDTO profile = new MerchantProfileDTO()
+            return new UserProfileDTO
+            {
+                UserId = user.UserId,
+                FirstName = user.FirstName ?? "",
+                LastName = user.LastName ?? "",
+                Email = user.Email ?? "",
+                Phone = user.Phone ?? "",
+                Type = "Main",
+                Unit = address?.Unit ?? "",
+                Address = address?.Address ?? "",
+                City = address?.City ?? "",
+                Province = address?.Province ?? "",
+                Postcode = address?.Postcode ?? ""
+            };
+        }
+        private async Task<WorkerProfileDTO?> GetWorkerProfileAsync(int userId)
+        {
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            if (user == null) return null;
+
+            var worker = await context.DeliveryWorkers.FirstOrDefaultAsync(d => d.UserId == userId);
+            if (worker == null) return null;
+
+            var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == userId && a.Type == "Main");
+
+            return new WorkerProfileDTO
+            {
+                UserId = user.UserId,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Phone = user.Phone,
+                Email = user.Email,
+                WorkerAvailability = worker.WorkerAvailability,
+                CommissionRate = worker.CommissionRate,
+                LastTaskAssigned = worker.LastTaskAssigned,
+                Unit = address?.Unit ?? "",
+                Address = address?.Address ?? "",
+                City = address?.City ?? "",
+                Province = address?.Province ?? "",
+                Postcode = address?.Postcode ?? ""
+            };
+        }
+
+        private async Task<MerchantProfileDTO?> GetMerchantProfileAsync(int userId)
+        {
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            if (user == null) return null;
+
+            
+            var merchant = await context.Merchants.FirstOrDefaultAsync(m => m.UserId == userId);
+            if (merchant == null) return null;
+
+            var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == userId && a.Type == "Main");
+
+            return new MerchantProfileDTO
             {
                 UserId = user.UserId,
                 FirstName = user.FirstName,
@@ -184,180 +434,6 @@ namespace OrderDeliverySystem.Controllers
                 Province = address?.Province ?? "",
                 Postcode = address?.Postcode ?? ""
             };
-
-            return Ok(profile);
-        }
-
-        [HttpPut("edit")]
-        //[Authorize(Roles = "Admin, Customer")]
-        public async Task<IActionResult> Edit(UserProfileDTO dto)
-        {
-            //var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-            //if (!User.IsInRole("Admin") && dto.UserId != loggedInUserId)
-            //{
-            //    return Forbid();
-            //}
-
-            using var transaction = await context.Database.BeginTransactionAsync();
-
-            try
-            {
-                var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == dto.UserId);
-
-                var existingUserWithEmail = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.UserId != dto.UserId);
-                if (existingUserWithEmail != null)
-                    return Conflict("Email already exists for another user");
-
-                var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == dto.UserId && a.Type == "Main");
-                if (address == null)
-                {
-                    address = new AddressModel { User = user, UserId = dto.UserId, Type = "Main" };
-                    context.Addresses.Add(address); // Add the new Address entity to the context
-                }
-
-                user.FirstName = dto.FirstName;
-                user.LastName = dto.LastName;
-                user.Phone = dto.Phone;
-                user.Email = dto.Email;
-
-                address.Unit = dto.Unit;
-                address.Address = dto.Address;
-                address.City = dto.City;
-                address.Province = dto.Province;
-                address.Postcode = dto.Postcode;
-
-                await context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                return Ok("Profile has been successfully updated");
-            }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync();
-
-                return StatusCode(500, "An error occurred while updating the profile");
-            }
-        }
-
-        [HttpPut("edit/worker")]
-        [Authorize(Roles = "Admin, Worker")]
-        public async Task<IActionResult> Edit(WorkerProfileDTO dto)
-        {
-            //var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-            //if (!User.IsInRole("Admin") && dto.UserId != loggedInUserId)
-            //{
-            //    return Forbid();
-            //}
-
-            using var transaction = await context.Database.BeginTransactionAsync();
-
-            try
-            {
-                var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == dto.UserId);
-                if (user == null)
-                    return NotFound("User not found");
-
-                var existingUserWithEmail = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.UserId != dto.UserId);
-                if (existingUserWithEmail != null)
-                    return Conflict("Email already exists for another user");
-
-                var worker = await context.DeliveryWorkers.FirstOrDefaultAsync(d => d.UserId == dto.UserId);
-                if (worker == null)
-                    return NotFound("Delivery worker not found");
-
-                var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == dto.UserId && a.Type == "Main");
-                if (address == null)
-                {
-                    address = new AddressModel { User = user, UserId = dto.UserId, Type = "Main" };
-                    context.Addresses.Add(address); // Add the new Address entity to the context
-                }
-
-                user.FirstName = dto.FirstName;
-                user.LastName = dto.LastName;
-                user.Phone = dto.Phone;
-                user.Email = dto.Email;
-
-                worker.CommissionRate = dto.CommissionRate;
-
-                address.Unit = dto.Unit;
-                address.Address = dto.Address;
-                address.City = dto.City;
-                address.Province = dto.Province;
-                address.Postcode = dto.Postcode;
-
-                await context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                return Ok("Profile has been successfully updated");
-            }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync();
-
-                return StatusCode(500, "An error occurred while updating the profile");
-            }
-        }
-
-        [HttpPut("edit/merchant")]
-        //[Authorize(Roles = "Admin, Merchant")]
-        public async Task<IActionResult> Edit(MerchantProfileDTO dto)
-        {
-            //var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-            //if (!User.IsInRole("Admin") && dto.UserId != loggedInUserId)
-            //{
-            //    return Forbid();
-            //}
-
-            using var transaction = await context.Database.BeginTransactionAsync();
-
-            try
-            {
-                var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == dto.UserId);
-                if (user == null)
-                    return NotFound("User not found");
-
-                var merchant = await context.Merchants.FirstOrDefaultAsync(m => m.UserId == dto.UserId);
-                if (merchant == null)
-                    return NotFound("Merchant not found");
-
-                var existingUserWithEmail = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.UserId != dto.UserId);
-                if (existingUserWithEmail != null)
-                    return Conflict("Email already exists for another user");
-
-                var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == dto.UserId && a.Type == "Main");
-                if (address == null)
-                {
-                    address = new AddressModel { User = user, UserId = dto.UserId, Type = "Main" };
-                    context.Addresses.Add(address); // Add the new Address entity to the context
-                }
-
-                user.FirstName = dto.FirstName;
-                user.LastName = dto.LastName;
-                user.Phone = dto.Phone;
-                user.Email = dto.Email;
-
-                merchant.BusinessName = dto.BusinessName;
-                merchant.MerchantPic = dto.MerchantPic;
-                merchant.MerchantDescription = dto.MerchantDescription;
-                merchant.PreparingTime = dto.PreparingTime;
-
-                address.Unit = dto.Unit;
-                address.Address = dto.Address;
-                address.City = dto.City;
-                address.Province = dto.Province;
-                address.Postcode = dto.Postcode;
-
-                await context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                return Ok("Profile has been successfully updated");
-            }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync();
-
-                return StatusCode(500, "An error occurred while updating the profile");
-            }
         }
     }
 }

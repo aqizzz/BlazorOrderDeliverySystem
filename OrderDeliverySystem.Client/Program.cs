@@ -6,7 +6,7 @@ using OrderDeliverySystem.Client.Infrastructure;
 using MudBlazor.Services;
 using OrderDeliverySystem.Client.Infrastructure.Services.Orders;
 using OrderDeliverySystem.Client.Infrastructure.Services.Profile;
-
+using OrderDeliverySystem.Client.Infrastructure.Services.Cart;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddMudServices();
@@ -20,7 +20,9 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<ApiAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
 builder.Services.AddAuthorizationCore();
+builder.Services.AddCascadingAuthenticationState();
 
+builder.Services.AddScoped<CartService>();
 //builder.Services.AddHttpClient("API", client =>
 //{
 //    client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
