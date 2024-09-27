@@ -1,4 +1,4 @@
-﻿@page "/merchant/{userId:int}"
+﻿
 @using OrderDeliverySystem.Share.DTOs.CartDTO
 @inject IHttpClientFactory HttpClientFactory
 @using MudBlazor
@@ -17,7 +17,7 @@
 
 <MudContainer>
     <MudText Typo="Typo.h6" Style="color: rgba(112, 0, 0, 1);">Classic Breakfast Dishes</MudText>
-    @userId
+    @merchantUserId
     @foreach (var item in Items)
     {
         @item.ItemId
@@ -46,7 +46,7 @@
 
 @code{
     [Parameter]
-    public int userId { get; set; }
+    public int merchantUserId { get; set; }
 
     [Inject]
     private IAuthService AuthService { get; set; }
@@ -80,7 +80,7 @@
         try
         {
             var httpClient = HttpClientFactory.CreateClient("API");
-            var response = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>($"api/items/merchant/{userId}");
+            var response = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>($"api/items/merchant/{merchantUserId}");
 
             if (response != null)
             {
