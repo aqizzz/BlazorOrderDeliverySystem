@@ -4,6 +4,8 @@ using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
 using OrderDeliverySystem.Share.Data.Models;
 using Microsoft.IdentityModel.Tokens;
+using Radzen.Blazor.Rendering;
+using static OrderDeliverySystem.Share.Data.Constants;
 
 namespace OrderDeliverySystemApi.Controllers
 {
@@ -23,7 +25,7 @@ namespace OrderDeliverySystemApi.Controllers
          {
          }*/
         [HttpGet("{id}")]
-        [Authorize(Roles = "Customer, Merchant, Delevery Worker")]
+       
         public async Task<ActionResult<Order>> GetOrder(int id)
         {
             var order = await _context.Orders
@@ -178,7 +180,7 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Merchant, Delevery Worker")]
+     
         public async Task<IActionResult> UpdateOrder(int id, Order updatedOrder)
         {
             if (id != updatedOrder.OrderId)
@@ -277,7 +279,7 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Merchant, Customer")]
+      
         public async Task<IActionResult> DeleteOrder(int id)
         {
             var order = await _context.Orders.FindAsync(id);
@@ -424,6 +426,117 @@ namespace OrderDeliverySystemApi.Controllers
             }*/
             return Ok(orders);
 
+        }
+
+
+        [HttpGet("{role}/{merchantId}")]
+        public async Task<IActionResult> GetOrdersTableByRole(string role ,int merchantId, bool recent, int pageNumber = 1, int pageSize = 10)
+        {
+              IQueryable<Order> query = _context.Orders
+                .Include(o => o.Customer)
+                .Include(o => o.OrderItems)
+                .Include(o => o.Merchant)
+                .Include(o => o.DeliveryWorker);
+            var items = await _context.Items
+                .Include(i => i.Merchant)
+                .Where(i => i.Merchant.UserId == merchantId && i.ItemIsAvailable == true)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            switch (role.ToLower())
+            {
+                case "customer":
+                    query = query.Where(o => o.Customer.UserId == merchantId); break;
+                case "merchant":
+                    query = query.Where(o => o.Merchant.UserId == merchantId); break;
+                case "worker":
+                    query = query.Where(o => o.DeliveryWorker.UserId == merchantId); break;
+            }
+
+            if (recent)
+            {
+                query = query.Where(o => o.Status != "Delivered");
+            }
+            else
+            {
+                query = query.Where(o => o.Status == "Delivered" || o.Status == "Cancelled");
+            }
+
+
+            // 将 Item 实体转换为 ViewItemDTO
+            var orders = await query
+                .OrderByDescending(o => o.CreatedAt)
+                .Select(o => new OrderDTO
+                {
+                    OrderId = o.OrderId,
+                    CustomerId = o.CustomerId,
+                    MerchantId = o.MerchantId,
+                    WorkerId = o.WorkerId,
+                    TotalAmount = o.TotalAmount,
+                    CreatedAt = o.CreatedAt,
+                    Status = o.Status,
+                    Customer = new CustomerDTO1
+                    {
+                        CustomerId = o.Customer.CustomerId,
+                        User = new UserDTO1
+                        {
+                            UserId = o.Customer.User.UserId,
+                            FirstName = o.Customer.User.FirstName,
+                            LastName = o.Customer.User.LastName,
+                            Email = o.Customer.User.Email,
+                            Phone = o.Customer.User.Phone,
+                            Role = o.Customer.User.Role,
+                            Addresses = o.Customer.User.Addresses.Select(a => new AddressModelDTO1
+                            {
+                                Type = a.Type,
+                                Unit = a.Unit,
+                                Address = a.Address,
+                                City = a.City,
+                                Province = a.Province,
+                                Postcode = a.Postcode,
+                            }).ToList()
+                        }
+                    },
+                    Merchant = new MerchantDTO1
+                    {
+                        MerchantId = o.Merchant.MerchantId,
+                        BusinessName = o.Merchant.BusinessName,
+                        MerchantPic = o.Merchant.MerchantPic,
+                        MerchantDescription = o.Merchant.MerchantDescription,
+                        PreparingTime = o.Merchant.PreparingTime,
+                        User = new UserDTO1
+                        {
+                            UserId = o.Merchant.User.UserId,
+                            FirstName = o.Merchant.User.FirstName,
+                            LastName = o.Merchant.User.LastName,
+                            Email = o.Merchant.User.Email,
+                            Phone = o.Merchant.User.Phone,
+                            Role = o.Merchant.User.Role,
+                            Addresses = o.Merchant.User.Addresses.Select(a => new AddressModelDTO1
+                            {
+                                Type = a.Type,
+                                Unit = a.Unit,
+                                Address = a.Address,
+                                City = a.City,
+                                Province = a.Province,
+                                Postcode = a.Postcode
+                            }).ToList()
+                        }
+                    },
+                    OrderItems = o.OrderItems.Select(oi => new AppOrderItem
+                    {
+                        OrderItemId = oi.OrderItemId,
+                        ItemId = oi.ItemId,
+                        OrderId = oi.OrderId,
+                        Quantity = oi.Quantity
+                    }).ToList()
+                })
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return Ok(orders);
         }
     }
 }
