@@ -222,7 +222,7 @@ else if (model != null)
                 {
                     if (user.IsInRole("Admin"))
                     {
-                        model = await ProfileService.GetWorkerProfile(userId);
+                        model = await ProfileService.GetWorkerProfile(UserId);
                     }
                     else if (user.IsInRole("Worker"))
                     {

@@ -183,20 +183,16 @@ else if (model != null)
         {
             if (authenticationState is not null)
             {
-                await LogToBrowserConsole($"authenticationState is not null");
                 if (user is not null)
                 {
-                    await LogToBrowserConsole($"user is not null");
                     if (user.IsInRole("Merchant"))
                     {
-                        await LogToBrowserConsole($"user is Merchant");
                         model = await ProfileService.GetMerchantProfile();
 
                     }
                     else
                     {
-                        await LogToBrowserConsole($"user is not Merchant");
-                        model = await ProfileService.GetMerchantProfile(userId);
+                        model = await ProfileService.GetMerchantProfile(UserId);
 
                     }
                     isLoading = false;
