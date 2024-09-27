@@ -28,6 +28,7 @@ else if (model != null)
         <div Style="display:none;">
             <MudField id="userId" Text="@model.UserId" />
         </div>
+     <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
     <MudGrid>
         <MudGrid>
             <MudItem xs="2">
@@ -158,11 +159,13 @@ else if (model != null)
                 {
                     if (user.IsInRole("Admin"))
                     {
-                        model = await ProfileService.GetCustomer(UserId);
+                        model = await ProfileService.GetCustomerProfile(UserId);
+
                     }
                     else if (user.IsInRole("Customer"))
                     {
-                        model = await ProfileService.GetCustomer();
+                        model = await ProfileService.GetCustomerProfile();
+
                     }
                     isLoading = false;
                     StateHasChanged();

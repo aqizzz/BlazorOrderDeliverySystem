@@ -9,8 +9,7 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
-@inject IAuthService AuthService
-@rendermode InteractiveServer
+@rendermode InteractiveAuto
 
 
 @if (isCustomer || isGuest)
@@ -78,6 +77,8 @@ else
 
 
 @code {
+    [Inject]
+    public AuthService AuthService { get; set; }
 
     ///bool isCustomer = false;
     //string _role = "Admin";
@@ -137,6 +138,7 @@ else
         {
             await AuthService.Logout();
             CloseCart();
+            StateHasChanged();
             NavigationManager.NavigateTo("/");
         }
     }

@@ -187,11 +187,12 @@ else if (model != null)
                 {
                     if (user.IsInRole("Admin"))
                     {
-                        model = await ProfileService.GetCustomer(UserId);
+                        model = await ProfileService.GetCustomerProfile(UserId);
                     }
                     else if (user.IsInRole("Customer"))
                     {
-                        model = await ProfileService.GetCustomer();
+                        model= await ProfileService.GetCustomerProfile();
+
                     }
                     isLoading = false;
                     StateHasChanged();
@@ -210,7 +211,7 @@ else if (model != null)
         try
         {
             await LogToBrowserConsole($"Update Data: {model}");
-            var result = await this.ProfileService.UpdateCustomer(model); // Update customer data
+            var result = await this.ProfileService.UpdateCustomerProfile(model); // Update customer data
             
 
             if (result.Succeeded)
