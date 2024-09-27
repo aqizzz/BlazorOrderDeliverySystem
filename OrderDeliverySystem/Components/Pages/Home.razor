@@ -1,8 +1,10 @@
 ﻿@page "/"
-@using Microsoft.AspNetCore.Components.Authorization
+@using MudBlazor
 @using OrderDeliverySystem.Client.Pages.Admin
 @using OrderDeliverySystem.Client.Pages.Merchant
 @using OrderDeliverySystem.Client.Pages.DeliveryWorker
+@using Microsoft.AspNetCore.Components.Authorization
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
@@ -11,6 +13,70 @@
 
 
 <AuthorizeView Roles="Admin,Merchant,Worker">
+    <Authorized>
+        <MudContainer Class="my-10 d-flex justify-content-center align-items-center">
+            <MudPaper Class="pa-16 ma-2" Elevation="3">
+
+                <MudText Typo="Typo.h3">Welcome to Dashboard</MudText>
+
+            </MudPaper>
+        </MudContainer>
+    </Authorized>
+
+</AuthorizeView>
+<AuthorizeView Roles="Customer">
+    <Authorized>
+        <MudContainer Class="my-10">
+
+            <div style="position: relative; display: inline-block;">
+                <MudImage Src="images/banner1.png" Alt="Swedish Farm House" Elevation="15" Class="rounded-lg mt-3" Style="width:100%" />
+                <div Class="rounded-lg mt-3" style="position: absolute; top: 0; left: 0; width: 100%; height: 98%; background-color: rgba(50, 50, 50, 0.6);"></div>
+                <MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
+                    <MudText Class="mt-3" style="width:90%;position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); color: white;font-size:100px;font-weight: bold;">
+                        Bringing Your Favourite
+                        <br />Dishes Home
+                    </MudText>
+                    <div Class="rounded-lg mt-3" style="position: absolute; bottom: 10%; right: 10%; ">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Inherit" Href="/restaurants" Style="width:350px;font-size:35px;color:white;">Order Now</MudButton>
+                    </div>
+                </MudHidden>
+                <MudHidden Breakpoint="Breakpoint.Md" Invert="true">
+                    <MudText Class="mt-3" style="width:90%;position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); color: white;font-size:75px;font-weight: bold;">
+                        Bringing Your Favourite
+                        <br />Dishes Home
+                    </MudText>
+                    <div Class="rounded-lg mt-3" style="position: absolute; bottom: 10%; right: 10%; ">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Inherit" Href="/restaurants" Style="width:250px;font-size:25px;color:white;">Order Now</MudButton>
+                    </div>
+                </MudHidden>
+                <MudHidden Breakpoint="Breakpoint.Sm" Invert="true">
+                    <MudText Class="mt-3" style="width:90%;position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); color: white;font-size:50px;font-weight: bold;">
+                        Bringing Your Favourite
+                        <br />Dishes Home
+                    </MudText>
+                    <div Class="rounded-lg mt-3" style="position: absolute; bottom: 10%; right: 10%; ">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Inherit" Href="/restaurants" Style="width:150px;font-size:15px;color:white;">Order Now</MudButton>
+                    </div>
+                </MudHidden>
+                <MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
+                    <MudText Class="mt-3" style="width:90%;position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); color: white;font-size:30px;font-weight: bold;">
+                        Bringing Your Favourite
+                        <br />Dishes Home
+                    </MudText>
+                    <div Class="rounded-lg mt-3" style="position: absolute; bottom: 10%; right: 10%; ">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Inherit" Href="/restaurants" Style="width:150px;font-size:15px;color:white;">Order Now</MudButton>
+                    </div>
+
+
+                </MudHidden>
+
+
+            </div>
+        </MudContainer>
+    </Authorized>
+
+</AuthorizeView>
+ <AuthorizeView>
     <NotAuthorized>
         <MudContainer Class="my-10">
 
@@ -60,17 +126,8 @@
             </div>
         </MudContainer>
     </NotAuthorized>
-    <Authorized>
-        <MudContainer Class="my-10 d-flex justify-content-center align-items-center">
-            <MudPaper Class="pa-16 ma-2" Elevation="3">
-
-                <MudText Typo="Typo.h3">Welcome to Dashboard</MudText>
-
-            </MudPaper>
-        </MudContainer>
-    </Authorized>
+    
 </AuthorizeView>
-  
 
 
 @code {
@@ -78,18 +135,22 @@
     //string _role = "Merchant";
     //string _role = "Guest";
     //string _role = "Customer";
-   // string _role = "Worker";
+    // string _role = "Worker";
 
 
+    [Inject]
+    private IAuthService AuthService { get; set; }
     
+
     protected override async Task OnInitializedAsync()
     {
+
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-
-        
+        return;
     }
+  
 
    
 }

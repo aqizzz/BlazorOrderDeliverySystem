@@ -3,7 +3,7 @@
 @using MudBlazor
 @inject HttpClient httpClient
 @using OrderDeliverySystem.Client.Shared
-@* @using OrderDeliverySystem.Share.Data.Models *@
+ @using OrderDeliverySystem.Share.Data.Models 
 @using OrderDeliverySystem.Share.DTOs
 @using OrderDeliverySystem.Client.Shared.Common
 @inject IHttpClientFactory HttpClientFactory
@@ -14,10 +14,8 @@
 <h3>Menus</h3>
 
 <MudContainer Class="my-10">
-
     <h3>ItemList</h3>
-
-    <!-- 表格显示部分 -->
+   表格显示部分 
     @* <MudTable Items="@Items" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped"  @bind-SelectedItem="selectedItem1"> *@
         <MudTable Items="@Items" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<ViewItemDTO,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
         <ToolBarContent>
@@ -43,7 +41,7 @@
             <MudTd DataLabel="Picture">@context.ItemPic</MudTd>          
             <MudTd DataLabel="Available">@context.ItemIsAvailable</MudTd>
 
-            @* add to cart button  *@
+         
             <MudTd DataLabel="Action">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => AddToCart(context)">
                     Add to Cart
@@ -55,10 +53,11 @@
             <MudTablePager />
         </PagerContent>
     </MudTable>
-    
+  
+ 
 
     <!-- Temporary debugging using foreach loop to display raw data -->
-    @* <div>
+   <div>
         <h3>Raw Data (for debugging)</h3>
         <ul>
             @foreach (var item in Items)
@@ -66,9 +65,9 @@
                 <li>@item.MerchantId - @item.ItemId - @item.ItemName - @item.ItemDescription - @item.ItemPrice - @item.ItemPic - @item.ItemIsAvailable</li>
             }
         </ul>
-    </div> *@
+    </div> 
 
- @*    <!-- 交互控件部分 -->
+   <!-- 交互控件部分 -->
     <div class="d-flex flex-wrap mt-4">
         <MudSwitch @bind-Value="hover" Color="Color.Primary">Hover</MudSwitch>
         <MudSwitch @bind-Value="dense" Color="Color.Secondary">Dense</MudSwitch>
@@ -78,7 +77,7 @@
         <div style="min-width:200px;">
             <MudText Class="align-self-center d-inline">Selected: @selectedItem1?.ItemName</MudText>
         </div>
-    </div> *@
+    </div> 
 
 </MudContainer>
 
