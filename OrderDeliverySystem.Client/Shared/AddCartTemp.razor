@@ -15,38 +15,37 @@
 @rendermode InteractiveServer
 
 
-<MudContainer>
-    <MudText Typo="Typo.h6" Style="color: rgba(112, 0, 0, 1);">Classic Breakfast Dishes</MudText>
-    @merchantUserId
+    <MudContainer>
+        <MudText Typo="Typo.h6" Style="color: rgba(112, 0, 0, 1);">Classic Breakfast Dishes</MudText>
+        @merchantId
     @foreach (var item in Items)
-    {
-        @item.ItemId
-
+        {       
         <MudPaper Class="pa-3 mb-3" Elevation="1">
-            <MudGrid>
-                <MudItem xs="2">
-                    <MudAvatar Image="/images/fries.png" Size="Size.Medium" Class="mr-2" />
-                </MudItem>
-                <MudItem xs="7">
-                    <MudText Typo="Typo.subtitle1">@item.ItemName
-                    </MudText>
-                    <MudText Typo="Typo.body2">@item.ItemDescription</MudText>
-                    <MudText Typo="Typo.body2">@item.ItemPrice</MudText>
-                </MudItem>
-                <MudItem xs="3" Class="d-flex align-items-center justify-center">
-                    <MudButton Variant="Variant.Filled" Style="background-color: rgba(112, 0, 0, 1); color: white;" OnClick="() => AddToCart(4, 1)">+</MudButton>
-                </MudItem>
-            </MudGrid>
+        <MudGrid>
+        <MudItem xs="2">
+        <MudAvatar Image="/images/fries.png" Size="Size.Medium" Class="mr-2" />
+        </MudItem>
+        <MudItem xs="7">
+        <MudText Typo="Typo.subtitle1">@item.ItemName
+        </MudText>
+        <MudText Typo="Typo.body2">@item.ItemDescription</MudText>
+        <MudText Typo="Typo.body2">@item.ItemPrice</MudText>
+        </MudItem>
+        <MudItem xs="3" Class="d-flex align-items-center justify-center">
+        <MudButton Variant="Variant.Filled" Style="background-color: rgba(112, 0, 0, 1); color: white;" OnClick="() => AddToCart(4, 1)">+</MudButton>
+        </MudItem>
+        </MudGrid>
         </MudPaper>
-    }
-    <MudDivider Class="mb-4" />
 
-</MudContainer>
+        <MudDivider Class="mb-4" />
+    }
+    </MudContainer>
+
 
 
 @code{
     [Parameter]
-    public int merchantUserId { get; set; }
+    public int userId { get; set; } = 0;
 
     [Inject]
     private IAuthService AuthService { get; set; }
@@ -55,14 +54,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-
+        await LoadMenuItems();
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
     }
 
     private int customerId = 3;
-
+    private int merchantId = 2;
     private bool dense = false;
     private bool hover = true;
     private bool striped = false;
@@ -79,13 +78,18 @@
     {
         try
         {
-            var httpClient = HttpClientFactory.CreateClient("API");
-            var response = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>($"api/items/merchant/{merchantUserId}");
-
-            if (response != null)
+            if(merchantId > 0)
             {
-                Items = response;
+                var httpClient = HttpClientFactory.CreateClient("API");
+                var response = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>($"api/items/merchant/{merchantId}");
+
+                if (response != null)
+                {
+                    Items = response;
+                }
             }
+          
+
         }
         catch (Exception ex)
         {
