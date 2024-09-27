@@ -30,7 +30,7 @@
 
 @code {
     private CreateItemDTO newItem = new CreateItemDTO();
-    private int merchantId = 2;
+    private int merchantId = 12;
 
     
 
@@ -64,58 +64,6 @@
             Snackbar.Add($"Error creating item: {ex.Message}", Severity.Error);
         }
 
-
-
-        // try
-        // {
-        //     Map DTO to Item entity
-        //     var item = new Item
-        //         {
-        //             ItemName = newItem.ItemName,
-        //             ItemDescription = newItem.ItemDescription,
-        //             ItemPrice = newItem.ItemPrice,
-        //             ItemIsAvailable = newItem.ItemIsAvailable,
-        //             MerchantId = 2, You can modify this to fetch the actual MerchantId
-        //             Merchant = null Assign null or fetch the actual Merchant object if necessary
-        //         };
-     
-
-        //     Save item to database
-        //     _context.Items.Add(item);
-        //     await _context.SaveChangesAsync();
-
-        //     Show success message
-        //     Snackbar.Add("Item successfully created!", Severity.Success);
-
-        //     Optionally reset the form or navigate away
-        //     newItem = new CreateItemDTO();
-        // }
-        // catch (Exception ex)
-        // {
-        //     Snackbar.Add($"Error creating item: {ex.Message}", Severity.Error);
-        // }
     }
 
-
-    // private async Task HandleValidSubmit()
-    // {
-    //     try
-    //     {
-    //         var response = await Http.PostAsJsonAsync("api/items", newItem);
-
-    //         if (response.IsSuccessStatusCode)
-    //         {
-    //             Snackbar.Add("Item created successfully!", Severity.Success);
-    //             newItem = new CreateItemDTO(); Reset form
-    //         }
-    //         else
-    //         {
-    //             Snackbar.Add("Failed to create item", Severity.Error);
-    //         }
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Snackbar.Add($"Error: {ex.Message}", Severity.Error);
-    //     }
-    // }
 }

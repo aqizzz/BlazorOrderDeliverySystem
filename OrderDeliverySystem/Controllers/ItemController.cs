@@ -116,46 +116,86 @@ namespace OrderDeliverySystem.Controllers
 
         // Merchant creates an item (requires login and merchant role)
         [HttpPost]
-        [Authorize(Roles = "Merchant")]
+        // [Authorize(Roles = "Merchant")]
+        /* public async Task<ActionResult<Item>> CreateItem(CreateItemDTO newItemDto)
+         {
+             // 获取当前登录用户的 ID
+             //  var merchantId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+             var merchantId = 2;
+             if (merchantId == null)
+             {
+                 _logger.LogWarning("Unauthorized access to item creation");
+                 return Unauthorized("You must be logged in as a merchant to create items.");
+             }
+
+             // 创建新Item对象并设置属性
+             var newItem = new Item
+             {
+                 MerchantId = newItemDto.MerchantId,
+                 ItemName = newItemDto.ItemName,
+                 ItemDescription = newItemDto.ItemDescription,
+                 ItemPrice = newItemDto.ItemPrice,
+                 ItemPic = newItemDto.ItemPic,
+                 ItemIsAvailable = newItemDto.ItemIsAvailable,
+                 Merchant = null // 或者提供适当的 Merchant 对象
+             };
+
+             // 验证 Item 信息
+             if (!ModelState.IsValid)
+             {
+                 _logger.LogError("Invalid item data");
+                 return BadRequest(ModelState);
+             }
+
+             // 添加 Item 到数据库并保存
+             _context.Items.Add(newItem);
+             await _context.SaveChangesAsync();
+
+             // _logger.LogInformation($"Item '{newItem.ItemName}' created by merchant {merchantId}.");
+
+             // 返回新创建的 Item 和 201 状态码
+             return CreatedAtAction(nameof(GetItem), new { id = newItem.ItemId }, newItem);
+         }
+ */
+
+        [HttpPost]
         public async Task<ActionResult<Item>> CreateItem(CreateItemDTO newItemDto)
         {
-            // 获取当前登录用户的 ID
-            var merchantId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (merchantId == null)
-            {
-                _logger.LogWarning("Unauthorized access to item creation");
-                return Unauthorized("You must be logged in as a merchant to create items.");
-            }
 
-            // 创建新Item对象并设置属性
+            var merchantId = 2;
+
             var newItem = new Item
             {
-                MerchantId = newItemDto.MerchantId,
+                MerchantId = merchantId, // Use the hardcoded merchant ID
                 ItemName = newItemDto.ItemName,
                 ItemDescription = newItemDto.ItemDescription,
                 ItemPrice = newItemDto.ItemPrice,
                 ItemPic = newItemDto.ItemPic,
                 ItemIsAvailable = newItemDto.ItemIsAvailable,
-                Merchant = null // 或者提供适当的 Merchant 对象
+                Merchant = null // You can assign a merchant if necessary
             };
 
-            // 验证 Item 信息
             if (!ModelState.IsValid)
             {
                 _logger.LogError("Invalid item data");
                 return BadRequest(ModelState);
             }
 
-            // 添加 Item 到数据库并保存
             _context.Items.Add(newItem);
             await _context.SaveChangesAsync();
 
             _logger.LogInformation($"Item '{newItem.ItemName}' created by merchant {merchantId}.");
-
-            // 返回新创建的 Item 和 201 状态码
             return CreatedAtAction(nameof(GetItem), new { id = newItem.ItemId }, newItem);
         }
+
+
+
+
+
+
+
+
 
         // PUT: api/items/{id}
         [HttpPut("{id}")]
