@@ -34,5 +34,10 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Cart
         {
             return await _httpClient.PostAsJsonAsync($"{BaseUrl}addCart/{customerId}", cartItems);
         }
+
+        public async Task<HttpResponseMessage> ClearCartItems(int customerId)
+        {
+            return await _httpClient.DeleteAsync($"{BaseUrl}clearCart/{customerId}");
+        }
     }
 }
