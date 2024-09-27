@@ -61,11 +61,11 @@
             </MudGrid>
                 <MudDivider Class="border-b-2 border-solid mt-4" Style="border-color:rgba(112, 0, 0, 1);"></MudDivider>
         </MudCollapse>
-            <gmp-map center="37.4220656,-122.0840897"
+           @* <gmp-map center="37.4220656,-122.0840897"
                      zoom="10"
                      map-id="DEMO_MAP_ID"
-                     style="height: 600px"></gmp-map>
-      
+            style="height: 600px"></gmp-map>*@
+  <GoogleMap/>
     </MudItem>
 </MudGrid>
 </MudContainer>
@@ -73,6 +73,7 @@
 @code {
     [Parameter]
     public string Id { get; set; }
+
 
     protected override void OnInitialized()
     {

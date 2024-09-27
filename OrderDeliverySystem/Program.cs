@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using OrderDeliverySystem.Client.Infrastructure;
 using MudBlazor.Services;
 using OrderDeliverySystem.Client.Infrastructure.Services.Orders;
+using OrderDeliverySystem.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -131,6 +132,8 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
 
+//Allows RealTime Location Sharing
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -173,5 +176,7 @@ app.MapRazorComponents<App>()
 
 app.MapControllers();
 
+//Routing for tracker
+app.MapHub<OrderTrackingHub>("/orderTrackingHub");
 
 app.Run();

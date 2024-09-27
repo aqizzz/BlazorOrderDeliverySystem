@@ -11,6 +11,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 {
     public class OrderService
     {
+        //To be changed
         private readonly HttpClient _httpClient;
         private const string Base = "https://localhost:7027/api/Orders/";
 
@@ -25,6 +26,13 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 			var orders = await _httpClient.GetFromJsonAsync<List<OrderDTO>>(uri);
 			return orders ?? new List<OrderDTO>();
 		}
+        public async Task<OrderDTO> GetOrderByIdAsync( int id)
+        {
+            var uri = $"{Base}/order/{id}";
+            Console.WriteLine($"making request to {uri}");
+            var order = await _httpClient.GetFromJsonAsync<OrderDTO>(uri);
+            return order ?? new OrderDTO();
+        }
 
         public async Task<Result> CreateOrderAsync(OrderDTO order)
         {
