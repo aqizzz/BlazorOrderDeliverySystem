@@ -5,9 +5,6 @@ using OrderDeliverySystem.Share.DTOs;
 using OrderDeliverySystem.Share.Data.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using System.Collections.Generic;
-using static OrderDeliverySystem.Share.Data.Constants;
-using System.Collections.Immutable;
 
 namespace OrderDeliverySystem.Controllers
 {
@@ -80,6 +77,7 @@ namespace OrderDeliverySystem.Controllers
         }
 
         [HttpGet("merchant")]
+        [Authorize]
         public async Task<IActionResult> GetMerchantInfo()
         {
             var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
@@ -398,6 +396,7 @@ namespace OrderDeliverySystem.Controllers
                 WorkerAvailability = worker.WorkerAvailability,
                 CommissionRate = worker.CommissionRate,
                 LastTaskAssigned = worker.LastTaskAssigned,
+                Type = "Main",
                 Unit = address?.Unit ?? "",
                 Address = address?.Address ?? "",
                 City = address?.City ?? "",
@@ -411,9 +410,9 @@ namespace OrderDeliverySystem.Controllers
             var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             if (user == null) return null;
 
-            
+
             var merchant = await context.Merchants.FirstOrDefaultAsync(m => m.UserId == userId);
-            if (merchant == null) return null;
+            //if (merchant == null) return null;
 
             var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == userId && a.Type == "Main");
 
@@ -428,6 +427,7 @@ namespace OrderDeliverySystem.Controllers
                 MerchantPic = merchant.MerchantPic ?? "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png",
                 MerchantDescription = merchant.MerchantDescription ?? "",
                 PreparingTime = merchant.PreparingTime ?? 0,
+                Type = "Main",
                 Unit = address?.Unit ?? "",
                 Address = address?.Address ?? "",
                 City = address?.City ?? "",

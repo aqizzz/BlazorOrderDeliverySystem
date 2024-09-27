@@ -1,6 +1,7 @@
 ﻿@page "/merchant/{userId:int}"
 @using MudBlazor
 @using OrderDeliverySystem.Share.DTOs
+@using OrderDeliverySystem.Client.Shared
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
@@ -23,7 +24,7 @@
             </MudTabPanel>
             <MudTabPanel>
                 <ChildContent>
-                    <AddCartTemp merchantUserId="@merchant.UserId"/>
+                    <AddCartTemp userId="@merchant.UserId"/>
                 </ChildContent>
                 <TabContent>
                     Menus

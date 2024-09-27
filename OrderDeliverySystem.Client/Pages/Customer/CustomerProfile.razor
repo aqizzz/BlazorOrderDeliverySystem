@@ -16,120 +16,122 @@
 @inject IJSRuntime JSRuntime
 @inject IAuthorizationService AuthorizationService
 @rendermode InteractiveAuto
-<br><br /><br /><br />
+
 @if (isLoading)
 {
     <p>Loading profile...</p>
 }
 else if (model != null)
 {
+    <div Style="display:none;">
+        <MudField id="userId" Text="@model.UserId" />
+    </div>
+<MudContainer Class="my-10 px-15 " >
+        <MudText Class="py-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My profile</MudText>
+        <MudDivider Style="color:rgba(112, 0, 0, 1);border-color:rgba(112, 0, 0, 1);border-width:3px;" />
+        <MudGrid xs="12" lg="12">
+             <MudItem xs="12">
+                          <MudGrid>
+                <MudItem xs="2">
+                        <MudField Label="Firstname:" AlignLabel="Align.Start" Underline="false" />
+                </MudItem>
+                <MudItem xs="8">
+                        <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
+                            <MudText >@model.FirstName</MudText>
+                    </MudField>
+                </MudItem>
+                <MudItem xs="2">
+                </MudItem>
 
-<MudContainer>
-        <div Style="display:none;">
-            <MudField id="userId" Text="@model.UserId" />
-        </div>
-    <MudGrid>
-        <MudGrid>
-            <MudItem xs="2">
-                    <MudField Label="Firstname:" AlignLabel="Align.Start" Underline="false" />
-            </MudItem>
-            <MudItem xs="8">
-                    <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
-                        <MudText >@model.FirstName</MudText>
-                </MudField>
-            </MudItem>
-            <MudItem xs="2">
-            </MudItem>
+                <MudItem xs="2">
+                    <MudField Label="Lastname:" AlignLabel="Align.Start" Underline="false" />
+                </MudItem>
+                <MudItem xs="8">
+                        <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
+                            <MudText >@model.LastName</MudText>
+                    </MudField>
+                </MudItem>
+                <MudItem xs="2">
+                </MudItem>
 
-            <MudItem xs="2">
-                <MudField Label="Lastname:" AlignLabel="Align.Start" Underline="false" />
-            </MudItem>
-            <MudItem xs="8">
-                    <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
-                        <MudText >@model.LastName</MudText>
-                </MudField>
-            </MudItem>
-            <MudItem xs="2">
-            </MudItem>
+                <MudItem xs="2">
+                    <MudField Label="Email:" AlignLabel="Align.Start" Underline="false" />
+                </MudItem>
+                <MudItem xs="8">
+                        <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
+                            <MudText >@model.Email</MudText>
+                    </MudField>
+                </MudItem>
+                <MudItem xs="2">
+                </MudItem>
 
-            <MudItem xs="2">
-                <MudField Label="Email:" AlignLabel="Align.Start" Underline="false" />
-            </MudItem>
-            <MudItem xs="8">
-                    <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
-                        <MudText >@model.Email</MudText>
-                </MudField>
-            </MudItem>
-            <MudItem xs="2">
-            </MudItem>
+                <MudItem xs="2">
+                    <MudField Label="Phone:" AlignLabel="Align.Start" Underline="false" />
+                </MudItem>
+                <MudItem xs="8">
+                        <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
+                            <MudText >@model.Phone</MudText>
+                    </MudField>
+                </MudItem>
+                <MudItem xs="2">
+                </MudItem>
 
-            <MudItem xs="2">
-                <MudField Label="Phone:" AlignLabel="Align.Start" Underline="false" />
-            </MudItem>
-            <MudItem xs="8">
-                    <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
-                        <MudText >@model.Phone</MudText>
-                </MudField>
-            </MudItem>
-            <MudItem xs="2">
-            </MudItem>
+                <MudItem xs="2">
+                    <MudField Label="Unit:" AlignLabel="Align.Start" Underline="false" />
+                </MudItem>
+                <MudItem xs="8">
+                        <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
+                            <MudText >@model.Unit</MudText>
+                    </MudField>
+                </MudItem>
+                <MudItem xs="2">
+                </MudItem>
 
-            <MudItem xs="2">
-                <MudField Label="Unit:" AlignLabel="Align.Start" Underline="false" />
-            </MudItem>
-            <MudItem xs="8">
-                    <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
-                        <MudText >@model.Unit</MudText>
-                </MudField>
-            </MudItem>
-            <MudItem xs="2">
-            </MudItem>
+                <MudItem xs="2">
+                    <MudField Label="Address:" AlignLabel="Align.Start" Underline="false" />
+                </MudItem>
+                <MudItem xs="8">
+                        <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
+                            <MudText>@model.Address</MudText>
+                    </MudField>
+                </MudItem>
+                <MudItem xs="2">
+                </MudItem>
 
-            <MudItem xs="2">
-                <MudField Label="Address:" AlignLabel="Align.Start" Underline="false" />
-            </MudItem>
-            <MudItem xs="8">
-                    <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
-                        <MudText>@model.Address</MudText>
-                </MudField>
-            </MudItem>
-            <MudItem xs="2">
-            </MudItem>
+                <MudItem xs="2">
+                    <MudField Label="City:" AlignLabel="Align.Start" Underline="false" />
+                </MudItem>
+                <MudItem xs="8">
+                        <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
+                            <MudText >@model.City</MudText>
+                    </MudField>
+                </MudItem>
+                <MudItem xs="2">
+                </MudItem>
 
-            <MudItem xs="2">
-                <MudField Label="City:" AlignLabel="Align.Start" Underline="false" />
-            </MudItem>
-            <MudItem xs="8">
-                    <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
-                        <MudText >@model.City</MudText>
-                </MudField>
-            </MudItem>
-            <MudItem xs="2">
-            </MudItem>
+                <MudItem xs="2">
+                    <MudField Label="Province:" AlignLabel="Align.Start" Underline="false" />
+                </MudItem>
+                <MudItem xs="8">
+                        <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
+                            <MudText>@model.Province</MudText>
+                    </MudField>
+                </MudItem>
+                <MudItem xs="2">
+                </MudItem>
 
-            <MudItem xs="2">
-                <MudField Label="Province:" AlignLabel="Align.Start" Underline="false" />
-            </MudItem>
-            <MudItem xs="8">
-                    <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
-                        <MudText>@model.Province</MudText>
-                </MudField>
-            </MudItem>
-            <MudItem xs="2">
-            </MudItem>
-
-            <MudItem xs="2">
-                <MudField Label="Postcode:" AlignLabel="Align.Start" Underline="false" />
-            </MudItem>
-            <MudItem xs="8">
-                    <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
-                        <MudText>@model.Postcode</MudText>
-                </MudField>
-            </MudItem>
-        </MudGrid>
-        <MudItem xs="2">
+                <MudItem xs="2">
+                    <MudField Label="Postcode:" AlignLabel="Align.Start" Underline="false" />
+                </MudItem>
+                <MudItem xs="8">
+                        <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
+                            <MudText>@model.Postcode</MudText>
+                    </MudField>
+                </MudItem>
+            </MudGrid>
+         </MudItem>
+        <MudItem xs="12">
         </MudItem>
-
     </MudGrid>
 </MudContainer>
 }
@@ -158,11 +160,13 @@ else if (model != null)
                 {
                     if (user.IsInRole("Admin"))
                     {
-                        model = await ProfileService.GetCustomer(UserId);
+                        model = await ProfileService.GetCustomerProfile(UserId);
+
                     }
                     else if (user.IsInRole("Customer"))
                     {
-                        model = await ProfileService.GetCustomer();
+                        model = await ProfileService.GetCustomerProfile();
+
                     }
                     isLoading = false;
                     StateHasChanged();
