@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OrderDeliverySystem.Client.Infrastructure.Services.Authentication;
+using OrderDeliverySystem.Client.Infrastructure.Services.Profile;
 using OrderDeliverySystem.Components;
 using OrderDeliverySystem.Middleware;
 using OrderDeliverySystem.Share.Data;
@@ -10,23 +11,21 @@ using OrderDeliverySystem.Share.Data.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using System;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using OrderDeliverySystem.Client.Infrastructure;
 using MudBlazor.Services;
 using OrderDeliverySystem.Client.Infrastructure.Services.Orders;
-
+using OrderDeliverySystem.Client.Infrastructure.Services.Cart;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();
-
+builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<OrderService>();
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -68,7 +67,7 @@ builder.Services.AddRazorComponents()
 var baseUrl = "https://orderdeliverysystemtesttestapi.azure-api.net";
 if (environment == "Development")
 {
-    baseUrl = "https://localhost:7027";
+    baseUrl = "https://localhost:7027/";
 }
 
 // Add HttpClient service for API calls
@@ -89,9 +88,14 @@ builder.Services.AddHttpClient("API", client =>
     return handler;
 });
 
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddAuthorizationCore();
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddScoped<ApiAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -124,7 +128,9 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
 builder.Services.AddControllers();
+
 
 var app = builder.Build();
 

@@ -1,10 +1,11 @@
-﻿@attribute [Authorize]
-@using OrderDeliverySystem.Client.Shared
-@using OrderDeliverySystem.Client.Pages
-@using OrderDeliverySystem.Components
+﻿@using MudBlazor
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
-@using Microsoft.AspNetCore.Authorization;
-@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+ <MudContainer Class="my-10" >
+
+
+ 
 <MudNavMenu Class="mud-width-full">
     <div class="d-flex justify-content-center">
         <MudImage Src="images/food.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/" Class="rounded-lg m-4" />
@@ -17,42 +18,42 @@
     </div>
 
     <MudDivider Class="my-2" />
-    @if (_role == "Admin")
-    {
-        <MudNavLink Href="/user-management" Icon="@Icons.Material.Filled.Dashboard">User Management</MudNavLink>
-        <MudNavLink Href="/reviewlist" Icon="@Icons.Material.Filled.Dashboard">Review  Management</MudNavLink>
+    <AuthorizeView Roles="Admin">
+        <Authorized>
+                <MudNavLink Href="/user-management" Icon="@Icons.Material.Filled.Dashboard">User Management</MudNavLink>
+                <MudNavLink Href="/review-list" Icon="@Icons.Material.Filled.Dashboard">Review  Management</MudNavLink>
+                <MudNavLink Href="/password" Icon="@Icons.Material.Filled.Receipt">Password Reset</MudNavLink>
+        </Authorized>
+    </AuthorizeView>
+
+<AuthorizeView Roles="Merchant">
+    <Authorized>
+        <MudNavLink Href="/merchant-profile" Icon="@Icons.Material.Filled.Dashboard">Profile Management</MudNavLink>
+        <MudNavLink Href="/product-list" Icon="@Icons.Material.Filled.Dashboard">Product Management</MudNavLink>
+        <MudNavLink Href="/order-list" Icon="@Icons.Material.Filled.Dashboard">Order Management</MudNavLink>
+        <MudNavLink Href="/review-list" Icon="@Icons.Material.Filled.Dashboard">Review Management</MudNavLink>
         <MudNavLink Href="/password" Icon="@Icons.Material.Filled.Receipt">Password Reset</MudNavLink>
-    }
-    else
-    {
-        @if (_role == "Merchant")
-        {
-            <MudNavLink Href="/profile" Icon="@Icons.Material.Filled.Dashboard">Profile Management</MudNavLink>
-            <MudNavLink Href="/productlist" Icon="@Icons.Material.Filled.Dashboard">Product Management</MudNavLink>
-            <MudNavLink Href="/orderlist" Icon="@Icons.Material.Filled.Dashboard">Order Management</MudNavLink>
-            <MudNavLink Href="/reviewlist" Icon="@Icons.Material.Filled.Dashboard">Review Management</MudNavLink>
-            <MudNavLink Href="/password" Icon="@Icons.Material.Filled.Receipt">Password Reset</MudNavLink>
-        }
-        else if (_role == "Merchant")
-        {
-            <MudNavLink Href="/profile" Icon="@Icons.Material.Filled.Dashboard">Profile Management</MudNavLink>
-            <MudNavLink Href="/recent-order" Icon="@Icons.Material.Filled.Dashboard">Order</MudNavLink>
-            <MudNavLink Href="/orderlist" Icon="@Icons.Material.Filled.Dashboard">Histiry Order</MudNavLink>
-            <MudNavLink Href="/password" Icon="@Icons.Material.Filled.Receipt">Password Reset</MudNavLink>
-        }
-        else
-        {
-              <div>You can not enter this page</div>
-    
-        }
-    }
-    
+    </Authorized>
+</AuthorizeView>
+
+<AuthorizeView Roles="Worker">
+    <Authorized>
+        <MudNavLink Href="/worker-profile" Icon="@Icons.Material.Filled.Dashboard">Profile Management</MudNavLink>
+        <MudNavLink Href="/order-list" Icon="@Icons.Material.Filled.Dashboard">Order</MudNavLink>
+        <MudNavLink Href="/history-orders" Icon="@Icons.Material.Filled.Dashboard">Histiry Order</MudNavLink>
+        <MudNavLink Href="/password" Icon="@Icons.Material.Filled.Receipt">Password Reset</MudNavLink>
+    </Authorized>
+</AuthorizeView>
+ 
 </MudNavMenu>
 
+</MudContainer>
 @code {
-    //string _role = "Admin";
-    string _role = "Merchant";
-    //string _role = "Delivery Worker";
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
 
+    }
 }
 

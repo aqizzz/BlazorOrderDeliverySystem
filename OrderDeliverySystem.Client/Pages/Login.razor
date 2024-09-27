@@ -4,10 +4,10 @@
 @using OrderDeliverySystem.Client.Shared.Common
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
+@inject NavigationManager Navigation
 @inject IAuthService AuthService
 @rendermode InteractiveServer
 <MudContainer Class="my-10">
-
    
 <h3>Login</h3>
 
@@ -34,12 +34,12 @@
         <InputText id="password" @bind-Value="model.Password" type="password" class="form-control" />
         <ValidationMessage For="@(() => model.Password)" />
     </div>
-
-    <button type="submit" class="btn btn-primary mt-3">Login</button>
+    <div class="form-group text-center">
+        <button type="submit" class="btn btn-danger mt-3">Login</button>
+       </div>
 </EditForm>
 
 <p class="text-center mt-4">Don't have account? <a href="/register">Create one now</a></p>
-
 
 </MudContainer>
 @code {
@@ -74,7 +74,9 @@
                 await Task.Delay(3000);
 
                 // Login successful, navigate to home page or dashboard
-                NavigationManager.NavigateTo("/");
+                
+                Navigation.NavigateTo("/", forceLoad: true);
+                StateHasChanged();
             }
             else
             {

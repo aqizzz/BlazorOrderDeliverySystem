@@ -32,6 +32,11 @@
 
 </MudContainer>*@
 @code {
+    [Parameter]
+    public string Role { get; set; }
+    [Parameter]
+    public string UserId { get; set; }
+
     bool _expanded = true;
 
     private void OnExpandCollapseClick()
