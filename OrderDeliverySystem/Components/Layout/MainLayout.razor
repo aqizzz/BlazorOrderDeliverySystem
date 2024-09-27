@@ -63,21 +63,14 @@
             <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Style="min-height:700px;">
                 <LeftNavBar />
             </MudDrawer>
-            <MudMainContent Class="my-1" Style="min-height:700px;">
-
-                @Body
-            </MudMainContent>
+          
        </Authorized>
-    
-    <NotAuthorized>
+ 
+    </AuthorizeView>
     <MudMainContent Class="my-1" Style="min-height:700px;">
 
-            @Body
-
-        </MudMainContent>
-    </NotAuthorized>
-    </AuthorizeView>
-    
+        @Body
+    </MudMainContent>
     <MudPaper Bottom="true" Class="mt-4 bg-light p-5"  Fixed="false">
        
         <Footer />
