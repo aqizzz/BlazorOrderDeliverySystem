@@ -1,73 +1,65 @@
-﻿﻿@using MudBlazor
+﻿@using MudBlazor
 @using OrderDeliverySystem.Client.Shared
 @using OrderDeliverySystem.Client.Pages.Customer
 @using OrderDeliverySystem.Components
-@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Authorization
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
-@inject IAuthService AuthService
-@rendermode InteractiveAuto
+@inject NavigationManager Navigation
 
+@rendermode InteractiveServer
 
-@if (isCustomer || isGuest)
-{
-    <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/" Class="rounded-lg m-4" /></MudLink>
-
-    <MudSpacer />
-    <MudButtonGroup Color="Color.Dark" Variant="Variant.Text">
-        <MudButton Href="/restaurants">Restaurants</MudButton>
-        <MudButton Href="/about-us">About Us</MudButton>
-        <MudButton Href="/contact">Contact</MudButton>
-
-
-        @if (isCustomer)
-        {
-            <MudButton Href="/my-orders">My Orders</MudButton>
-        }
-        else
-        {
-            <MudButton Href="/register">Sign Up</MudButton>
-        }
-
-    </MudButtonGroup>
-    <MudSpacer />
-
-    @if (isCustomer)
-    {
-
-        <MudIconButton OnClick="OnExpandCartClick" Icon="@Icons.Material.Filled.AddShoppingCart" Style="color: rgba(168, 0, 0, 1);">@(_cartExpanded ? "" : "")</MudIconButton>
-        <MudIconButton Href="/customer-profile" Icon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" />
-
-        <MudFab Style="color: rgba(168, 0, 0, 1);" Label="Log Out" OnClick="LogOut" />
-
-    }
-    else
-    {
-        <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Login" OnClick="LogIn" />
-    }
-
-}
-else
-{
-    <MudButton Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/dashboard" Class="rounded-lg m-4" /></MudButton>
-
-    <MudSpacer />
-    <AuthorizeView>
-        @*Example of set with role: <AuthorizeView Roles="Admin">*@
+<MudHidden Class="my-10" Breakpoint="Breakpoint.MdAndUp" Invert="true">
+    <AuthorizeView Roles="Admin,Merchant,Worker">
         <Authorized>
+            <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/dashboard" Class="rounded-lg m-4" /></MudLink>
+            <MudSpacer />
             <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Log Out" OnClick="LogOut" />
         </Authorized>
         <NotAuthorized>
+            <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/" Class="rounded-lg m-4" /></MudLink>
+            <MudSpacer />
+        </NotAuthorized>
+
+    </AuthorizeView>
+
+
+
+    <AuthorizeView Roles="Customer">
+        <Authorized>
+            <MudButtonGroup Color="Color.Dark" Variant="Variant.Text">
+                <MudButton Href="/restaurants">Restaurants</MudButton>
+                <MudButton Href="/about-us">About Us</MudButton>
+                <MudButton Href="/contact">Contact</MudButton>
+                <MudButton Href="/my-orders">My Orders</MudButton>
+            </MudButtonGroup>
+            <MudSpacer />
+            <MudIconButton OnClick="OnExpandCartClick" Icon="@Icons.Material.Filled.AddShoppingCart" Style="color: rgba(168, 0, 0, 1);">@(_cartExpanded ? "" : "")</MudIconButton>
+            <MudIconButton Href="/customer-profile" Icon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" />
+            <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Log Out" OnClick="LogOut" />
+        </Authorized>
+
+    </AuthorizeView>
+
+    <AuthorizeView Roles="Customer,Admin,Merchant,Worker">
+        <NotAuthorized>
+            <MudButtonGroup Color="Color.Dark" Variant="Variant.Text">
+                <MudButton Href="/restaurants">Restaurants</MudButton>
+                <MudButton Href="/about-us">About Us</MudButton>
+                <MudButton Href="/contact">Contact</MudButton>
+                <MudButton Href="/register">Sign Up</MudButton>
+            </MudButtonGroup>
+            <MudSpacer />
             <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Login" Href="/login" />
         </NotAuthorized>
     </AuthorizeView>
-}
-<MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Login" Href="/worker-profile" />
-<MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Login" Href="/worker-profile/edit" />
+
+
+</MudHidden>
 
 <MudCollapse Expanded="_cartExpanded">
     @if (_cartExpanded)
@@ -75,6 +67,7 @@ else
         <Cart OnClose="CloseCart" />
     }
 </MudCollapse>
+
 
 
 
@@ -100,36 +93,24 @@ else
         isDeliveryWorker = user.IsInRole("DeliveryWorker");
         isGuest = (!isAdmin || !isCustomer || !isMerchant || !isDeliveryWorker);
     }*@
-
+    [Inject]
+    private IAuthService AuthService { get; set; }
     bool _cartExpanded = false;
-    private bool isAdmin;
-    private bool isCustomer;
-    private bool isMerchant;
-    private bool isDeliveryWorker;
-    private bool isGuest;
 
     protected override async Task OnInitializedAsync()
     {
+        StateHasChanged();
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        isAdmin = user.IsInRole("Admin");
-        isCustomer = user.IsInRole("Customer");
-        isMerchant = user.IsInRole("Merchant");
-        isDeliveryWorker = user.IsInRole("DeliveryWorker");
-        isGuest = (!isAdmin || !isCustomer || !isMerchant || !isDeliveryWorker);
-
-        NavigationManager.LocationChanged += OnLocationChanged;
     }
+    bool _menuExpanded = true;
 
-    private void OnLocationChanged(object sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    private void OnExpandMenuClick()
     {
-        _cartExpanded = false;
-        StateHasChanged();
+        _menuExpanded = !_menuExpanded;
     }
-
-
     private void OnExpandCartClick()
     {
         _cartExpanded = !_cartExpanded;
@@ -144,10 +125,9 @@ else
     {
         if (AuthService != null)
         {
-            await AuthService.Logout();
-            CloseCart();
             StateHasChanged();
-            NavigationManager.NavigateTo("/");
+            await AuthService.Logout();
+
         }
     }
     public async Task LogIn()
@@ -155,10 +135,7 @@ else
         NavigationManager.NavigateTo("/login");
     }
 
-    public void Dispose()
-    {
-        NavigationManager.LocationChanged -= OnLocationChanged;
-    }
+
 
 
 }
