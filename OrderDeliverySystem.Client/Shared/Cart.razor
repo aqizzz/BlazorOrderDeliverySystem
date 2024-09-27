@@ -59,8 +59,7 @@
 @code {
     [Parameter] public EventCallback OnClose { get; set; }
 
-
-    string customerId = "3";
+    string cusotmerId = "3"; 
     private List<GetCartItemsResponseDTO> cartItems = new();
     private decimal subtotal;
     private bool isLoading = true;
@@ -74,7 +73,8 @@
     {
         try
         {
-            var response = await CartService.GetCartItems(customerId);
+            var httpClient = HttpClientFactory.CreateClient("API");
+            var response = await httpClient.GetFromJsonAsync<GetCartReponseDTO>($"api/cart/getCart/{cusotmerId}");
 
             if (response != null)
             {
@@ -123,7 +123,8 @@
     private async Task UpdateCartItem(int itemId, int quantity)
     {
         var updateDto = new AddUpdateCartItemsRequestDTO(itemId, quantity);
-        var response = await CartService.UpdateCartItems(customerId, updateDto);
+
+            var response = await httpClient.PutAsJsonAsync($"api/cart/updateCart/{cusotmerId}", updateDto);
 
         if (response.IsSuccessStatusCode)
         {
