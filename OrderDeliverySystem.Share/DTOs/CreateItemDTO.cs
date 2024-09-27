@@ -1,9 +1,10 @@
 ﻿using OrderDeliverySystem.Share.Data.Models;
-
 namespace OrderDeliverySystem.Share.DTOs
 {
     public class CreateItemDTO
     {
+       
+        public int MerchantId { get; set; }
         public int ItemId { get; set; }
         public string? ItemName { get; set; }
         public string? ItemDescription { get; set; }
