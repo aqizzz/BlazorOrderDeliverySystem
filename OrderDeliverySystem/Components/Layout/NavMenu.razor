@@ -9,7 +9,7 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
-@inject AuthService AuthService
+@inject IAuthService AuthService
 @rendermode InteractiveAuto
 
 
@@ -66,7 +66,8 @@ else
         </NotAuthorized>
     </AuthorizeView>
 }
-
+<MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Login" Href="/worker-profile" />
+<MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Login" Href="/worker-profile/edit" />
 
 <MudCollapse Expanded="_cartExpanded">
     @if (_cartExpanded)

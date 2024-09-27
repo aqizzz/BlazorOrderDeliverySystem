@@ -1,4 +1,4 @@
-﻿@page "/merchant"
+﻿@page "/merchant-profile"
 
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Authorization;
@@ -13,8 +13,8 @@
 @inject NavigationManager NavigationManager
 @inject IProfileService ProfileService
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject ILogger<MerchantProfile> logger
 @inject IJSRuntime JSRuntime
+@inject IAuthorizationService AuthorizationService
 @rendermode InteractiveAuto
 <br>
 <br />
@@ -74,15 +74,6 @@ else if (model != null)
                 <MudItem xs="8">
                     <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
                         <MudText>@model.Phone</MudText>
-                    </MudField>
-                </MudItem>
-
-                <MudItem xs="2">
-                    <MudField Label="Merchant Pic:" AlignLabel="Align.Start" Underline="false" />
-                </MudItem>
-                <MudItem xs="8">
-                    <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
-                        <MudText>@model.MerchantPic</MudText>
                     </MudField>
                 </MudItem>
 
@@ -157,27 +148,61 @@ else if (model != null)
                 </MudItem>
             </MudItem>
         </MudGrid>
+        <AuthorizeView Roles="Merchant">
+            @*Example of set with role: <AuthorizeView Roles="Admin">*@
+            <Authorized >
+                <p>You are merchant@user.Identity  </p>
+            </Authorized>
+            <NotAuthorized>
+                <p>You are not merchant @user.Identity</p>
+            </NotAuthorized>
+        </AuthorizeView>
     </MudContainer>
+
 }
 @code {
+    private ClaimsPrincipal user;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+
     private MerchantProfileDTO model = new MerchantProfileDTO { BusinessName = "New business" }; 
+
+    [Parameter]
+    public int UserId { get; set; }
 
     public bool ShowErrors { get; set; } = false;
     public IEnumerable<string> Errors { get; set; } = new List<string>();
 
-    private string userId = "4";
+    private int userId = 4;
     private bool isLoading = true;
 
     private async Task LoadMerchantProfile()
     {
         try
         {
-            var httpClient = httpClientFactory.CreateClient("API");
-            httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-            model = await httpClient.GetFromJsonAsync<MerchantProfileDTO>($"api/Profile/Merchant/{userId}");
+            if (authenticationState is not null)
+            {
+                await LogToBrowserConsole($"authenticationState is not null");
+                if (user is not null)
+                {
+                    await LogToBrowserConsole($"user is not null");
+                    if (user.IsInRole("Merchant"))
+                    {
+                        await LogToBrowserConsole($"user is Merchant");
+                        model = await ProfileService.GetMerchantProfile();
 
-            isLoading = false;
-            StateHasChanged();
+                    }
+                    else
+                    {
+                        await LogToBrowserConsole($"user is not Merchant");
+                        model = await ProfileService.GetMerchantProfile(userId);
+
+                    }
+                    isLoading = false;
+                    StateHasChanged();
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -187,6 +212,8 @@ else if (model != null)
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await authenticationState;
+        user = authState.User;
         await LoadMerchantProfile();
     }
 
