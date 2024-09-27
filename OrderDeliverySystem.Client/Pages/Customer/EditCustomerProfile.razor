@@ -1,4 +1,4 @@
-﻿@page "/customer/edit"
+﻿@page "/customer-profile/edit"
 
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Authorization;
@@ -13,10 +13,19 @@
 @inject NavigationManager NavigationManager
 @inject IProfileService ProfileService
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject ILogger<CustomerProfile> logger
 @inject IJSRuntime JSRuntime
-@rendermode InteractiveServer
+@rendermode InteractiveAuto
 
+<br>
+<br />
+<br />
+<br />
+@if (isLoading)
+{
+    <p>Loading profile...</p>
+}
+else if (model != null)
+{
 <MudContainer>
     <EditForm Model="@model" OnValidSubmit="HandleUpdateProfile" FormName="profileForm">
         <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
@@ -32,8 +41,7 @@
                 </MudItem>
                 <MudItem xs="8">
                     <MudField Underline="false">
-                        <MudTextField id="firstName" @bind-Value="model.FirstName" Variant="Variant.Filled" />
-                        <ValidationMessage For="@(() => model.FirstName)" />
+                            <MudTextField id="firstName" @bind-Value="model.FirstName" For="@(() => model.FirstName)" Variant="Variant.Filled" />
                     </MudField>
                 </MudItem>
                 <MudItem xs="2">
@@ -44,8 +52,7 @@
                 </MudItem>
                 <MudItem xs="8">
                     <MudField Underline="false">
-                        <MudTextField id="lastName" @bind-Value="model.LastName" Variant="Variant.Filled" />
-                        <ValidationMessage For="@(() => model.LastName)" />
+                            <MudTextField id="lastName" @bind-Value="model.LastName" For="@(() => model.LastName)" Variant="Variant.Filled" />
                     </MudField>
                 </MudItem>
                 <MudItem xs="2">
@@ -56,8 +63,7 @@
                 </MudItem>
                 <MudItem xs="8">
                     <MudField Underline="false">
-                        <MudTextField id="email" @bind-Value="model.Email" Variant="Variant.Filled" />
-                        <ValidationMessage For="@(() => model.Email)" />
+                            <MudTextField id="email" @bind-Value="model.Email" For="@(() => model.Email)" Variant="Variant.Filled" />
                     </MudField>
                 </MudItem>
                 <MudItem xs="2">
@@ -68,8 +74,7 @@
                 </MudItem>
                 <MudItem xs="8">
                     <MudField Underline="false">
-                        <MudTextField id="phone" @bind-Value="model.Phone" Variant="Variant.Filled" />
-                        <ValidationMessage For="@(() => model.Phone)" />
+                            <MudTextField id="phone" @bind-Value="model.Phone" For="@(() => model.Phone)" Variant="Variant.Filled" />
                     </MudField>
                 </MudItem>
                 <MudItem xs="2">
@@ -80,8 +85,7 @@
                 </MudItem>
                 <MudItem xs="8">
                     <MudField Underline="false">
-                        <MudTextField id="unit" @bind-Value="model.Unit" Variant="Variant.Filled" />
-                        <ValidationMessage For="@(() => model.Unit)" />
+                            <MudTextField id="unit" @bind-Value="model.Unit" For="@(() => model.Unit)" Variant="Variant.Filled" />
                     </MudField>
                 </MudItem>
                 <MudItem xs="2">
@@ -92,8 +96,7 @@
                 </MudItem>
                 <MudItem xs="8">
                     <MudField Underline="false">
-                        <MudTextField id="address" @bind-Value="model.Address" Variant="Variant.Filled" />
-                        <ValidationMessage For="@(() => model.Address)" />
+                        <MudTextField id="address" @bind-Value="model.Address" For="@(() => model.Address)" Variant="Variant.Filled" />
                     </MudField>
                 </MudItem>
                 <MudItem xs="2">
@@ -104,8 +107,7 @@
                 </MudItem>
                 <MudItem xs="8">
                     <MudField Underline="false">
-                        <MudTextField id="city" @bind-Value="model.City" Variant="Variant.Filled" />
-                        <ValidationMessage For="@(() => model.City)" />
+                        <MudTextField id="city" @bind-Value="model.City" For="@(() => model.City)" Variant="Variant.Filled" />
                     </MudField>
                 </MudItem>
                 <MudItem xs="2">
@@ -116,8 +118,7 @@
                 </MudItem>
                 <MudItem xs="8">
                     <MudField Underline="false">
-                        <MudTextField id="province" @bind-Value="model.Province" Variant="Variant.Filled" />
-                        <ValidationMessage For="@(() => model.Province)" />
+                            <MudTextField id="province" @bind-Value="model.Province" For="@(() => model.Province)"  Variant="Variant.Filled" />
                     </MudField>
                 </MudItem>
                 <MudItem xs="2">
@@ -128,8 +129,7 @@
                 </MudItem>
                 <MudItem xs="8">
                     <MudField Underline="false">
-                        <MudTextField id="postcode" @bind-Value="model.Postcode" Variant="Variant.Filled" />
-                        <ValidationMessage For="@(() => model.Postcode)" />
+                        <MudTextField id="postcode" @bind-Value="model.Postcode" For="@(() => model.Postcode)" Variant="Variant.Filled" />
                     </MudField>
                 </MudItem>
             </MudGrid>
@@ -137,31 +137,34 @@
             </MudItem>
 
             <MudItem xs="12" Class="object-center">
-                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Warning" OnClick="@(()=>HandleUpdateProfile())">Update Profile</MudButton>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Profile</MudButton>
             </MudItem>
         </MudGrid>
     </EditForm>
 </MudContainer>
+}
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+
+    [Parameter]
+    public int UserId { get; set; }
+
+
     private UserProfileDTO model = new(); // Ensure model is initialized
+    private ClaimsPrincipal user;
+
 
     public bool ShowErrors { get; set; } = false;
     public IEnumerable<string> Errors { get; set; } = new List<string>();
 
-    private string userId = "5";
+    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        // var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        // var user = authState.User;
-        // model = (await this.ProfileService.GetCustomer(userId)).Data;
-
-        // if (user.Identity != null && user.Identity.IsAuthenticated)
-        // {
-        //     userId = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
-        //     model = (await this.ProfileService.GetCustomer(userId)).Data;
-        // }
-        await LogToBrowserConsole("OnInitializedAsync called");
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+        await LogToBrowserConsole($"OnInitializedAsync");
         await LoadUserProfile();
     }
 
@@ -169,37 +172,29 @@
     {
         try
         {
-            await LogToBrowserConsole("Starting LoadUserProfile");
-            var httpClient = httpClientFactory.CreateClient("API");
-            var uri = $"api/Profile/{userId}";
-            await LogToBrowserConsole($"Uri: {uri}");
-            httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-            var response = await httpClient.GetAsync(uri);
-            var profile = await httpClient.GetFromJsonAsync<UserProfileDTO>($"api/Profile/{userId}");
-            await LogToBrowserConsole($"Response: {System.Text.Json.JsonSerializer.Serialize(response)}");
-            await LogToBrowserConsole($"profile: {profile}");
+            if (authenticationState is not null)
+            {
+                if (user is not null)
+                {
+                    if (user.IsInRole("Admin"))
+                    {
+                        model = await ProfileService.GetCustomerProfile(UserId);
+                    }
+                    else if (user.IsInRole("Customer"))
+                    {
+                        model= await ProfileService.GetCustomerProfile();
 
-            if (response.IsSuccessStatusCode)
-            {
-                await LogToBrowserConsole("Starting ReadAsStringAsync");
-                var stringData = await response.Content.ReadAsStringAsync();
-                await LogToBrowserConsole($"Starting convert: {stringData}");
-                var model = System.Text.Json.JsonSerializer.Deserialize<UserProfileDTO>(stringData);
-                await LogToBrowserConsole($"Response Data: {model}");
-            }
-            else
-            {
-                await LogToBrowserConsole("No response received.");
+                    }
+                    isLoading = false;
+                    StateHasChanged();
+                }
             }
         }
         catch (Exception ex)
         {
             await LogToBrowserConsole($"Error loading: {ex.Message}");
         }
-        finally
-        {
-            StateHasChanged();
-        }
+
     }
 
     private async Task HandleUpdateProfile()
@@ -207,7 +202,7 @@
         try
         {
             await LogToBrowserConsole($"Update Data: {model}");
-            var result = await this.ProfileService.UpdateCustomer(model); // Update customer data
+            var result = await this.ProfileService.UpdateCustomerProfile(model); // Update customer data
             
 
             if (result.Succeeded)

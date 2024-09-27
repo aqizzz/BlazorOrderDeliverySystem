@@ -3,7 +3,7 @@
 @using MudBlazor
 @inject HttpClient httpClient
 @using OrderDeliverySystem.Client.Shared
-@* @using OrderDeliverySystem.Share.Data.Models *@
+ @using OrderDeliverySystem.Share.Data.Models 
 @using OrderDeliverySystem.Share.DTOs
 @using OrderDeliverySystem.Client.Shared.Common
 @inject IHttpClientFactory HttpClientFactory
@@ -15,13 +15,7 @@
 
 <MudContainer Class="my-10">
 
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3>ItemList</h3>
-        @* <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateNewItem"> *@
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" >
-            Create New Item
-        </MudButton>
-    </div>
+    <h3>ItemList</h3>
 
     <!-- 表格显示部分 -->
     @* <MudTable Items="@Items" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped"  @bind-SelectedItem="selectedItem1"> *@
@@ -50,24 +44,22 @@
             <MudTd DataLabel="Available">@context.ItemIsAvailable</MudTd>
 
             @* add to cart button  *@
-            <MudTd DataLabel="Action"> 
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => Modify(new UpdateItemDTO { ItemName = context.ItemName, ItemDescription = context.ItemDescription, ItemPrice = context.ItemPrice, ItemPic = context.ItemPic, ItemIsAvailable = context.ItemIsAvailable }, context.ItemId)">
-                    Modify
+            @* <MudTd DataLabel="Action">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => AddToCart(context)">
+                    Add to Cart
                 </MudButton>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => Remove(context.ItemId)">
-                    Remove
-                </MudButton>
-            </MudTd>
+            </MudTd> *@
 
         </RowTemplate>
         <PagerContent>
             <MudTablePager />
         </PagerContent>
     </MudTable>
-    
+  
+ 
 
     <!-- Temporary debugging using foreach loop to display raw data -->
-    @* <div>
+   <div>
         <h3>Raw Data (for debugging)</h3>
         <ul>
             @foreach (var item in Items)
@@ -75,9 +67,9 @@
                 <li>@item.MerchantId - @item.ItemId - @item.ItemName - @item.ItemDescription - @item.ItemPrice - @item.ItemPic - @item.ItemIsAvailable</li>
             }
         </ul>
-    </div> *@
+    </div> 
 
- @*    <!-- 交互控件部分 -->
+   <!-- 交互控件部分 -->
     <div class="d-flex flex-wrap mt-4">
         <MudSwitch @bind-Value="hover" Color="Color.Primary">Hover</MudSwitch>
         <MudSwitch @bind-Value="dense" Color="Color.Secondary">Dense</MudSwitch>
@@ -87,12 +79,12 @@
         <div style="min-width:200px;">
             <MudText Class="align-self-center d-inline">Selected: @selectedItem1?.ItemName</MudText>
         </div>
-    </div> *@
+    </div> 
 
 </MudContainer>
 
 @code {
-    private int merchantId = 2;
+    private int userId = 12;
 
     private bool dense = false;
     private bool hover = true;
@@ -115,7 +107,7 @@
         try
         {
             var httpClient = HttpClientFactory.CreateClient("API");
-            var response = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>($"api/items/merchant/{merchantId}");
+            var response = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>($"api/items/merchant/{userId}");
 
             if (response != null)
             {
