@@ -159,42 +159,39 @@ namespace OrderDeliverySystem.Controllers
  */
 
         [HttpPost]
-        public async Task<ActionResult<Item>> CreateItem(CreateItemDTO newItemDto)
+        [Authorize(Roles = "Merchant")]
+        public async Task<IActionResult> CreateItem(CreateItemDTO newItemDto)
         {
+            // 获取当前登录用户的 ID
+            
+            var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var merchant = await _context.Merchants.FirstOrDefaultAsync(m => m.UserId == loggedInUserId);
 
 
-            var merchantId = 2;
+            if (merchant == null)
+                return NotFound("Merchant not found");
 
+            using var transaction = await _context.Database.BeginTransactionAsync();
             var newItem = new Item
             {
-                MerchantId = merchantId, // Use the hardcoded merchant ID
+                // MerchantId = merchantId, // Use the hardcoded merchant ID
+                MerchantId = newItemDto.MerchantId,
                 ItemName = newItemDto.ItemName,
                 ItemDescription = newItemDto.ItemDescription,
                 ItemPrice = newItemDto.ItemPrice,
                 ItemPic = newItemDto.ItemPic,
                 ItemIsAvailable = newItemDto.ItemIsAvailable,
-                Merchant = null // You can assign a merchant if necessary
+                Merchant = merchant // You can assign a merchant if necessary
             };
 
-            if (!ModelState.IsValid)
-            {
-                _logger.LogError("Invalid item data");
-                return BadRequest(ModelState);
-            }
 
             _context.Items.Add(newItem);
             await _context.SaveChangesAsync();
-
-            _logger.LogInformation($"Item '{newItem.ItemName}' created by merchant {merchantId}.");
-            return CreatedAtAction(nameof(GetItem), new { id = newItem.ItemId }, newItem);
+            await transaction.CommitAsync();
+            return Ok("MenuItem has been successfully updated");
         }
-
-
-
-
-
-
-
+        
 
 
         // PUT: api/items/{id}
