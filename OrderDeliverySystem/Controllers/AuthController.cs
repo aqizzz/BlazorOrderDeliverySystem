@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
 using OrderDeliverySystem.Share.Data.Models;
+using static OrderDeliverySystem.Share.Data.Constants.Merchant;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -19,57 +20,53 @@ namespace OrderDeliverySystemApi.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(CustomerRegisterDTO user)
         {
-            if (user == null) return BadRequest();
+            if (user == null)
+                return BadRequest("User data is required.");
 
             using var transaction = await context.Database.BeginTransactionAsync();
-            try
+
+            var getUser = await context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
+            if (getUser != null)
+                return BadRequest("User already exists");
+
+            var newUser = new User
             {
-                var getUser = await context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
-                if (getUser != null) return BadRequest("User already exists");
+                Email = user.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.Password),
+                Role = "Customer",
+                IsActive = true,
+                CreatedAt = DateTime.Now,
+            };
 
-                var newUser = new User
-                {
-                    Email = user.Email,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.Password),
-                    Role = "Customer",
-                    IsActive = true
-                };
+            context.Users.Add(newUser);
+            await context.SaveChangesAsync();
 
-                context.Users.Add(newUser);
-                await context.SaveChangesAsync();
-
-                var newCustomer = new Customer
-                {
-                    User = newUser,
-                    UserId = newUser.UserId
-                };
-
-                context.Customers.Add(newCustomer);
-                await context.SaveChangesAsync();
-
-                var newAddress = new AddressModel
-                {
-                    User = newUser,
-                    UserId = newUser.UserId,
-                    Type = "Main",
-                    Unit = "",
-                    Address = "",
-                    City = "",
-                    Province = "",
-                    Postcode = ""
-                };
-                context.Addresses.Add(newAddress);
-                await context.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-
-                return Ok("Success");
-            }
-            catch (Exception ex)
+            var newCustomer = new Customer
             {
-                await transaction.RollbackAsync();
-                return StatusCode(500, "An error occurred while registering the customer: " + ex.Message);
-            }
+                User = newUser,
+                UserId = newUser.UserId
+            };
+
+            context.Customers.Add(newCustomer);
+            await context.SaveChangesAsync();
+
+            var newAddress = new AddressModel
+            {
+                User = newUser,
+                UserId = newUser.UserId,
+                Type = "Main",
+                Unit = "",
+                Address = "",
+                City = "",
+                Province = "",
+                Postcode = ""
+            };
+            context.Addresses.Add(newAddress);
+            await context.SaveChangesAsync(); 
+
+            await transaction.CommitAsync();
+
+            return Ok("Success");
         }
 
         [HttpPost("login")]
@@ -145,7 +142,6 @@ namespace OrderDeliverySystemApi.Controllers
             var userClaims = User;
             var userId = Convert.ToInt32(userClaims.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-
             var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             if (user == null)
                 return NotFound("User not found");
@@ -154,21 +150,10 @@ namespace OrderDeliverySystemApi.Controllers
             if (!verifyPassword)
                 return BadRequest("Current password is incorrect");
 
-            using var transaction = await context.Database.BeginTransactionAsync();
-            try
-            {
-                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(passwordDto.NewPassword);
-                await context.SaveChangesAsync();
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(passwordDto.NewPassword);
+            await context.SaveChangesAsync();
 
-                await transaction.CommitAsync();
-                return Ok("Password has been successfully changed");
-            }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync();
-
-                return StatusCode(500, "An error occurred while changing the password");
-            }
+            return Ok("Password has been successfully changed");
         }
 
 
@@ -176,124 +161,118 @@ namespace OrderDeliverySystemApi.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Register(WorkerRegisterDTO user)
         {
-            if (user == null) return BadRequest();
+            if (user == null)
+                return BadRequest("User data is required.");
+
             using var transaction = await context.Database.BeginTransactionAsync();
-            try
+
+            var getUser = await context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
+            if (getUser != null)
+                return BadRequest("User already exists");
+
+            var newUser = new User
             {
-                var getUser = await context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
-                if (getUser != null) return BadRequest("User already exists");
+                FirstName = user.FirstName ?? "",
+                LastName = user.LastName ?? "",
+                Phone = user.Phone ?? "",
+                Email = user.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.Password),
+                Role = "Worker",
+                IsActive = true,
+                CreatedAt = DateTime.Now,
+            };
 
-                var newUser = new User
-                {
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Phone = user.Phone,
-                    Email = user.Email,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.Password),
-                    Role = "Worker",
-                    IsActive = true
-                };
+            context.Users.Add(newUser);
+            await context.SaveChangesAsync();
 
-                context.Users.Add(newUser);
-                await context.SaveChangesAsync();
-
-                var newWorker = new DeliveryWorker
-                {
-                    User = newUser,
-                    UserId = newUser.UserId,
-                    WorkerAvailability = false,
-                    CommissionRate = user.CommissionRate
-                };
-
-                context.DeliveryWorkers.Add(newWorker);
-                await context.SaveChangesAsync();
-
-                var newAddress = new AddressModel
-                {
-                    User = newUser,
-                    UserId = newUser.UserId,
-                    Type = "Main",
-                    Unit = user.Unit ?? "",
-                    Address = user.Address ?? "",
-                    City = user.City ?? "",
-                    Province = user.Province ?? "",
-                    Postcode = user.Postcode ?? ""
-                };
-                context.Addresses.Add(newAddress);
-                await context.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-
-                return Ok("Success");
-            }
-            catch (Exception)
+            var newWorker = new DeliveryWorker
             {
-                await transaction.RollbackAsync();
-                return StatusCode(500, "An error occurred while registering the worker");
-            }
+                User = newUser,
+                UserId = newUser.UserId,
+                WorkerAvailability = false,
+                CommissionRate = user.CommissionRate,
+                LastTaskAssigned = null
+            };
+
+            context.DeliveryWorkers.Add(newWorker);
+
+            var newAddress = new AddressModel
+            {
+                User = newUser,
+                UserId = newUser.UserId,
+                Type = "Main",
+                Unit = user.Unit ?? "",
+                Address = user.Address ?? "",
+                City = user.City ?? "",
+                Province = user.Province ?? "",
+                Postcode = user.Postcode ?? ""
+            };
+            context.Addresses.Add(newAddress);
+            await context.SaveChangesAsync(); 
+
+            await transaction.CommitAsync();
+
+            return Ok("Success");
         }
 
         [HttpPost("register/merchant")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Register(MerchantRegisterDTO user)
         {
-            if (user == null) return BadRequest();
+            if (user == null)
+                return BadRequest("User data is required.");
+
             using var transaction = await context.Database.BeginTransactionAsync();
-            try
+
+            var getUser = await context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
+            if (getUser != null)
+                return BadRequest("User already exists");
+
+            var newUser = new User
             {
-                var getUser = await context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
-                if (getUser != null) return BadRequest("User already exists");
+                FirstName = user.FirstName ?? "",
+                LastName = user.LastName ?? "",
+                Phone = user.Phone ?? "",
+                Email = user.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.Password),
+                Role = "Merchant",
+                IsActive = true,
+                CreatedAt = DateTime.Now,
+            };
 
-                var newUser = new User
-                {
-                    FirstName = user.FirstName ?? "",
-                    LastName = user.LastName ?? "",
-                    Phone = user.Phone ?? "",
-                    Email = user.Email,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.Password),
-                    Role = "Merchant",
-                    IsActive = true
-                };
+            context.Users.Add(newUser);
+            await context.SaveChangesAsync(); 
 
-                context.Users.Add(newUser);
-                await context.SaveChangesAsync();
-
-                var newMerchant = new Merchant
-                {
-                    User = newUser,
-                    UserId = newUser.UserId,
-                    BusinessName = user.BusinessName ?? "",
-                    MerchantPic = user.MerchantPic ?? "",
-                    MerchantDescription = user.MerchantDescription ?? "",
-                    PreparingTime = user.PreparingTime ?? 0
-                };
-
-                context.Merchants.Add(newMerchant);
-                await context.SaveChangesAsync();
-
-                var newAddress = new AddressModel
-                {
-                    User = newUser,
-                    UserId = newUser.UserId,
-                    Type = "Main",
-                    Unit = user.Unit ?? "",
-                    Address = user.Address ?? "",
-                    City = user.City ?? "",
-                    Province = user.Province ?? "",
-                    Postcode = user.Postcode ?? ""
-                };
-                context.Addresses.Add(newAddress);
-                await context.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-
-                return Ok("Success");
-            }
-            catch (Exception)
+            var newMerchant = new Merchant
             {
-                await transaction.RollbackAsync();
-                return StatusCode(500, "An error occurred while registering the worker");
-            }
+                User = newUser,
+                UserId = newUser.UserId,
+                BusinessName = user.BusinessName ?? "",
+                MerchantPic = user.MerchantPic ?? DefaultPic,
+                MerchantDescription = user.MerchantDescription ?? "",
+                PreparingTime = user.PreparingTime ?? 0
+            };
+
+            context.Merchants.Add(newMerchant);
+
+            var newAddress = new AddressModel
+            {
+                User = newUser,
+                UserId = newUser.UserId,
+                Type = "Main",
+                Unit = user.Unit ?? "",
+                Address = user.Address ?? "",
+                City = user.City ?? "",
+                Province = user.Province ?? "",
+                Postcode = user.Postcode ?? ""
+            };
+            context.Addresses.Add(newAddress);
+
+            await context.SaveChangesAsync(); 
+
+            await transaction.CommitAsync();
+
+            return Ok("Success");
         }
 
     }

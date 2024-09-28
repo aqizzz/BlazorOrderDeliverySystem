@@ -1,5 +1,7 @@
 ﻿@page "/tracking/{id}"
-@using MudBlazor
+@attribute [Authorize(Roles = "Customer")]
+@using Microsoft.AspNetCore.Authorization;
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using OrderDeliverySystem.Client.Shared
 @using System.ComponentModel.DataAnnotations
 @inject IHttpClientFactory HttpClientFactory
