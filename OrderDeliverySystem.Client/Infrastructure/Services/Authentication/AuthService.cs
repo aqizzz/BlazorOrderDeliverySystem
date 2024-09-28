@@ -18,7 +18,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Authentication
         private const string LoginPath = "/api/Auth/login";
         private const string RegisterPath = "/api/Auth/register";
         private const string ChangePasswordPath = "/api/Auth/me/change-password";
-
+       
         public AuthService(
             ILocalStorageService localStorage,
             AuthenticationStateProvider authenticationStateProvider,

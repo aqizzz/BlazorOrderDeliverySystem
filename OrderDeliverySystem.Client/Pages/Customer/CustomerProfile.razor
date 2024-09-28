@@ -26,7 +26,8 @@ else if (model != null)
     <div Style="display:none;">
         <MudField id="userId" Text="@model.UserId" />
     </div>
-<MudContainer Class="my-10 px-15 " >
+ <MudContainer Class="my-10 d-flex justify-content-center align-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
+        <MudPaper Class="pa-16 ma-2 d-flex justify-content-center align-content-center" Elevation="3" Width="100%">
         <MudText Class="py-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My profile</MudText>
         <MudDivider Style="color:rgba(112, 0, 0, 1);border-color:rgba(112, 0, 0, 1);border-width:3px;" />
         <MudGrid xs="12" lg="12">
@@ -133,6 +134,8 @@ else if (model != null)
         <MudItem xs="12">
         </MudItem>
     </MudGrid>
+    
+    </MudPaper>
 </MudContainer>
 }
 @code {
@@ -160,11 +163,13 @@ else if (model != null)
                 {
                     if (user.IsInRole("Admin"))
                     {
-                        model = await ProfileService.GetCustomer(UserId);
+                        model = await ProfileService.GetCustomerProfile(UserId);
+
                     }
                     else if (user.IsInRole("Customer"))
                     {
-                        model = await ProfileService.GetCustomer();
+                        model = await ProfileService.GetCustomerProfile();
+
                     }
                     isLoading = false;
                     StateHasChanged();

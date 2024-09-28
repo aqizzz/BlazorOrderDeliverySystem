@@ -1,23 +1,23 @@
 @page "/order-now"
-@*@attribute [Authorize(Roles = "Customer")]*@
 @using System.Text.RegularExpressions
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authorization;
-@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using OrderDeliverySystem.Client.Shared.Common
 @using OrderDeliverySystem.Client.Shared
 @using OrderDeliverySystem.Share.DTOs
 @using OrderDeliverySystem.Share.DTOs.CartDTO
 @using OrderDeliverySystem.Share.Data.Models
+@using OrderDeliverySystem.Client.Infrastructure.Services.Orders
 @using Microsoft.AspNetCore.Components.Authorization
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
+@inject OrderService Orderservice
+@inject NavigationManager Navigation
 
-
-
-<EditForm Model="@order" OnValidSubmit="OrderCreationSubmit">
+<EditForm Model="order" OnValidSubmit="OrderCreationSubmit">
 <DataAnnotationsValidator />
 
 <MudContainer Class="my-10">
@@ -28,64 +28,68 @@
         <MudDivider Class=" border-2" Style="border-color:rgba(112, 0, 0, 1);" />
             <MudForm>
                 <MudRadioGroup @bind-Value="SelectedOption">
-                    <MudRadio Value="@("Radio 1")" Color="Color.Primary">Default Address</MudRadio>
-                    <MudRadio Value="@("Radio 2")" Color="Color.Secondary">Secondary</MudRadio>
-                    <MudRadio Value="@("Radio 3")">Default</MudRadio>
-                    <MudRadio Value="@("Radio 4")" Color="Color.Primary" Disabled="true">Disabled</MudRadio>
+                    @if(order.Address == null)
+                    {
+                        <MudRadio Value="@("Radio 1")" Disabled="true">Default Address</MudRadio>
+                        <MudRadio Value="@("Radio 2")" Color="Color.Primary" Dense="true">Create New Address</MudRadio>
+                    }
+                    else
+                    {
+                        <MudRadio Value="@("Radio 1")" >Default Addresses</MudRadio>
+                        <MudRadio Value="@("Radio 2")" Color="Color.Primary">Create New Address</MudRadio>
+                    }
+                    
+                    
+                   
                 </MudRadioGroup>
             </MudForm>
-            <MudGrid>
-                <MudItem xs="12" sm="7">
-                    <MudCard>
-                        <MudCardContent>
-                            <MudTextField @bind-Value="order.CustomerId" For="@(() => order.CustomerId)" InputType="InputType.Hidden" />
-                            <MudTextField @bind-Value="order.MerchantId" For="@(() => order.MerchantId)" InputType="InputType.Hidden" />
-                            <MudTextField @bind-Value="order.CartId" For="@(() => order.CartId)" InputType="InputType.Hidden" />
-                            <MudTextField @bind-Value="order.FirstName" For="@(() => order.FirstName)" InputType="InputType.Hidden" />
-                            <MudTextField Label="First name" HelperText="Max. 8 characters"
-                                          @bind-Value="order.FirstName" For="@(() => order.FirstName)" />
-                            <MudTextField Label="Last name" HelperText="Max. 8 characters"
-                                          @bind-Value="order.LastName" For="@(() => order.LastName)" />
-                            <MudTextField Label="Email" Class="mt-3"
-                                          @bind-Value="order.Email" For="@(() => order.Email)" InputType="InputType.Email" />
-                            <MudTextField Label="Phone" HelperText="Enter your phone number" Class="mt-3"
-                                          @bind-Value="order.Phone" For="@(() => order.Phone)" InputType="InputType.Telephone" />
-                         <MudTextField Label="Unit" HelperText="Enter your Unit" Class="mt-3"
-                                          @bind-Value="order.Unit" For="@(() => order.Unit)" InputType="InputType.Text" />
-                            <MudTextField Label="Address" HelperText="Enter your address" Class="mt-3"
+            @if (SelectedOption == "Radio 1")
+            {
+                <MudText Class="" Typo="Typo.h4">Default Address : </MudText>
+                <MudText Typo="Typo.h5">Name : @order.FirstName @order.LastName</MudText>
+                <MudText Typo="Typo.h5">Phone : @order.Phone</MudText>
+                <MudText Typo="Typo.h5">Address : @order.Address</MudText>
+            }
+            else if (SelectedOption == "Radio 2")
+            {
+                <MudGrid Class="d-block">
+                    <MudItem xs="12" sm="7">
+                        <MudCard>
+                            <MudCardContent>
+                                <MudTextField @bind-Value="order.CustomerId" For="@(() => order.CustomerId)" InputType="InputType.Hidden" />
+                                <MudTextField @bind-Value="order.MerchantId" For="@(() => order.MerchantId)" InputType="InputType.Hidden" />
+                                <MudTextField @bind-Value="order.CartId" For="@(() => order.CartId)" InputType="InputType.Hidden" />
+                                <MudTextField Label="First name" HelperText="Enter your first name"
+                                              @bind-Value="order.FirstName" For="@(() => order.FirstName)" />
+                                <MudTextField Label="Last name" HelperText="Enter your last name"
+                                              @bind-Value="order.LastName" For="@(() => order.LastName)" />
+                                <MudTextField Label="Phone" HelperText="Enter your phone number" Class="mt-3"
+                                              @bind-Value="order.Phone" For="@(() => order.Phone)" InputType="InputType.Telephone" />
+                                <MudTextField Label="Unit" HelperText="Enter your Unit" Class="mt-3"
+                                              @bind-Value="order.Unit" For="@(() => order.Unit)" InputType="InputType.Text" />
+                                <MudTextField Label="Address" HelperText="Enter your address" Class="mt-3"
                                               @bind-Value="order.Address" For="@(() => order.Address)" InputType="InputType.Text" />
-                            <MudTextField Label="City" HelperText="Enter your City" Class="mt-3"
-                                          @bind-Value="order.City" For="@(() => order.City)" InputType="InputType.Text" />
-                            <MudTextField Label="Provice" HelperText="Enter your Provice" Class="mt-3"
-                                          @bind-Value="order.Province" For="@(() => order.Province)" InputType="InputType.Text" />
-                            <MudTextField Label="Postcode" HelperText="Enter your PostCode" Class="mt-3"
-                                          @bind-Value="order.PostCode" For="@(() => order.PostCode)" InputType="InputType.Text" />
-                            
-                        </MudCardContent>
-                       
-                    </MudCard>
-                </MudItem>
-                <MudItem xs="12" sm="5">
-                    <MudPaper Class="pa-4 mud-height-full">
-                        <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
-                        @if (success)
-                        {
-                            <MudText Color="Color.Success">Success</MudText>
-                        }
-                        else
-                        {
-                            <MudText Color="@Color.Error">
-                                <ValidationSummary />
-                            </MudText>
-                        }
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudText Typo="Typo.body2" Align="Align.Center">
-                        Fill out the form correctly to see the success message.
-                    </MudText>
-                </MudItem>
-            </MudGrid>
+                                <MudTextField Label="City" HelperText="Enter your City" Class="mt-3"
+                                              @bind-Value="order.City" For="@(() => order.City)" InputType="InputType.Text" />
+                                <MudTextField Label="Provice" HelperText="Enter your Provice" Class="mt-3"
+                                              @bind-Value="order.Province" For="@(() => order.Province)" InputType="InputType.Text" />
+                                <MudTextField Label="Postcode" HelperText="Enter your PostCode" Class="mt-3"
+                                              @bind-Value="order.PostCode" For="@(() => order.PostCode)" InputType="InputType.Text" />
+
+                            </MudCardContent>
+
+                        </MudCard>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.body2" Align="Align.Center">
+                            Fill out the form correctly to see the success message.
+                        </MudText>
+                    </MudItem>
+                </MudGrid>
+            }
+            
+           
+         
        
     </MudContainer>
     <MudContainer Class="my-3">
@@ -136,19 +140,14 @@
         <MudDivider Class="mt-5 border-2" Style="border-color:rgba(112, 0, 0, 1);" />
     </MudContainer>
     <MudCardActions>
-        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Register</MudButton>
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" >Register</MudButton>
     </MudCardActions>
 </MudContainer>
  </EditForm>
-        
+
 @code {
 
-    public string SelectedOption { get; set; }
 
-    private void Reset()
-    {
-        SelectedOption = null;
-    }
     private const decimal TaxRate = 0.15m;
     private const decimal DeliveryFee = 6.00m;
     int customerId;
@@ -160,7 +159,12 @@
     private List<GetCartItemsResponseDTO> cartItems = new();
     private CreateOrderDTO order = new CreateOrderDTO();
     bool success;
-    protected async Task OnInitialized()
+
+    [Inject]
+    private IAuthService AuthService { get; set; }
+
+    public string SelectedOption { get; set; } 
+    protected override async Task OnInitializedAsync()
     {
         await GetCustomerId();
         await LoadCartItems();
@@ -169,14 +173,26 @@
         order.MerchantId = merchantId;
         order.OrderItems = cartItems;
         order.TotalAmount = GetTotalAmount();
+        await base.OnInitializedAsync();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        
 
     }
+   
+
+    private void Reset()
+    {
+        SelectedOption = null;
+    }
+   
+
     private async Task LoadCartItems()
     {
         try
         {
             var httpClient = HttpClientFactory.CreateClient("API");
-            var response = await httpClient.GetFromJsonAsync<GetCartReponseDTO>($"api/cart/getCart/{customerId}");
+            var response = await httpClient.GetFromJsonAsync<GetCartReponseDTO>($"api/cart/getCartByUser");
 
             if (response != null)
             {
@@ -253,10 +269,13 @@
     {
         return GetTotalAfterTax() + DeliveryFee;
     }
-    private void OrderCreationSubmit()
+    private async Task OrderCreationSubmit()
     {
 
-     
+        await Orderservice.CreateOrderAsync(this.order);
+        
+        Navigation.NavigateTo("/my-orders", forceLoad: true);
+        StateHasChanged();
     }
 
 }

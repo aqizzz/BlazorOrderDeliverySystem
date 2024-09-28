@@ -4,12 +4,13 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @inject AuthenticationStateProvider AuthenticationStateProvider
-
 @inject IJSRuntime JSRuntime
+
 <MudThemeProvider/>
 <MudPopoverProvider/>
 <MudDialogProvider/>
 <MudSnackbarProvider/>
+
 
 <MudLayout>
     <MudHidden Class="my-10" Breakpoint="Breakpoint.MdAndUp" Invert="true">
@@ -97,10 +98,8 @@
 
 @code {
 
-    [Inject]
+     [Inject]
     private IAuthService AuthService { get; set; }
-
-    
     protected override async Task OnInitializedAsync()
     {
       
@@ -135,7 +134,4 @@
             _ => Color.Error
         };
     }
-}
-@code {
-    
 }
