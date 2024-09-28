@@ -164,7 +164,6 @@ else if (model != null)
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         user = authState.User;
-        await LogToBrowserConsole($"OnInitializedAsync");
         await LoadUserProfile();
     }
 
@@ -191,7 +190,6 @@ else if (model != null)
 
     private async Task HandleUpdateProfile()
     {
-        await LogToBrowserConsole($"Update Data: {model}");
         var result = await this.ProfileService.UpdateCustomerProfile(model); // Update customer data
             
 
