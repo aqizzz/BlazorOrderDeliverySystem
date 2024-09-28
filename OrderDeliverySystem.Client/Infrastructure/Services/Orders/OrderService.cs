@@ -15,7 +15,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
     public class OrderService
     {
         private readonly HttpClient _httpClient;
-        private const string Base = "https://localhost:7027/api/Orders/";
+        private const string Base = "api/Orders/";
 
         public OrderService(HttpClient httpClient)
         {

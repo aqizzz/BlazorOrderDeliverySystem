@@ -16,17 +16,14 @@
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveAuto
 
-<br>
-<br />
-<br />
-<br />
+<MudContainer Class="my-10 d-flex justify-content-center align-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
 @if (isLoading)
 {
     <p>Loading profile...</p>
 }
 else if (model != null)
 {
-    <MudContainer>
+        <MudPaper Class="pa-16 ma-2" Elevation="3" Width="60%">
         <EditForm Model="@model" OnValidSubmit="HandleUpdateProfile" FormName="profileForm">
             <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
             <DataAnnotationsValidator />
@@ -185,8 +182,9 @@ else if (model != null)
                 </MudItem>
             </MudGrid>
         </EditForm>
-    </MudContainer>
+    </MudPaper>
 }
+</MudContainer>
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }

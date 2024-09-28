@@ -6,6 +6,7 @@
 @inject HttpClient httpClient
 @using OrderDeliverySystem.Share.DTOs
 @using OrderDeliverySystem.Client.Shared.Common
+@using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -44,6 +45,10 @@
 
 
 @code{
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+    private ClaimsPrincipal user;
+
     [Parameter]
     public int userId { get; set; } = 0;
 
@@ -57,11 +62,11 @@
         await LoadMenuItems();
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
+        user = authState.User;
     }
 
     private int customerId = 3;
-    private int merchantId = 2;
+    private int merchantId;
     private bool dense = false;
     private bool hover = true;
     private bool striped = false;
@@ -81,7 +86,8 @@
             if(merchantId > 0)
             {
                 var httpClient = HttpClientFactory.CreateClient("API");
-                var response = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>($"api/items/merchant/{merchantId}");
+          
+                var response = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>($"api/items/merchant/{userId}");
 
                 if (response != null)
                 {
