@@ -22,7 +22,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();
-builder.Services.AddScoped<CartService>();
+
 builder.Services.AddScoped<OrderService>();
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -95,6 +95,7 @@ builder.Services.AddScoped<ApiAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<TokenHelper>();
 builder.Services.AddHttpContextAccessor();
 

@@ -23,7 +23,7 @@ builder.Services.AddScoped<TokenHelper>();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 
-builder.Services.AddScoped<CartService>();
+builder.Services.AddScoped<ICartService, CartService>();
 //builder.Services.AddHttpClient("API", client =>
 //{
 //    client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
