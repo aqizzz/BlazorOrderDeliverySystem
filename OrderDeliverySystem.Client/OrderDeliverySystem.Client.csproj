@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Pages\AddCartTempo.razor" />
     <Content Remove="Pages\ItemList.razor" />
   </ItemGroup>
 
