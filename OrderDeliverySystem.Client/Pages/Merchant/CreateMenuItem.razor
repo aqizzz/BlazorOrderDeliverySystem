@@ -1,5 +1,6 @@
 ﻿<h3>CreateMenuItem</h3>
-@page "/createMenuItem"
+@page "/merchant-items"
+
 @inject HttpClient Http
 @inject ISnackbar Snackbar
 @inject IHttpClientFactory HttpClientFactory
@@ -51,7 +52,17 @@
 @code { 
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
-    private CreateItemDTO newItem = new CreateItemDTO();
+    private CreateItemDTO newItem = new CreateItemDTO
+    {
+            ItemId = 0,
+            MerchantId = 0,
+            ItemName = "item1",
+            ItemDescription = "item1Des",
+            ItemPrice = 1,
+            ItemPic = "New business",
+            ItemIsAvailable = true,   
+    };
+
     private bool isAuthorized = false;
     private string token;
     private ClaimsPrincipal user;
