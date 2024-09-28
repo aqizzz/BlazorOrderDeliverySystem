@@ -11,6 +11,7 @@
 <MudDialogProvider/>
 <MudSnackbarProvider/>
 
+
 <MudLayout>
     <MudHidden Class="my-10" Breakpoint="Breakpoint.MdAndUp" Invert="true">
          <MudAppBar Height="Auto" Class="p-3 bg-white">
@@ -60,7 +61,7 @@
  
 
        <Authorized>
-            <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Style="min-height:700px;">
+            <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Style="max-height:650px;">
                 <LeftNavBar />
             </MudDrawer>
           
@@ -71,10 +72,21 @@
 
         @Body
     </MudMainContent>
-    <MudPaper Bottom="true" Class="mt-4 bg-light p-5"  Fixed="false">
-       
-        <Footer />
-    </MudPaper>
+    <AuthorizeView Roles="Admin,Merchant,Worker">
+        <Authorized>
+            <MudStack Bottom="true" Class="mt-4 bg-light p-2" >
+
+                <Footer />
+            </MudStack>
+        </Authorized>
+        <NotAuthorized>
+            <MudPaper Bottom="true" Class="mt-4 bg-light p-5">
+
+                <Footer />
+            </MudPaper>
+        </NotAuthorized>
+    </AuthorizeView>
+   
     <div id="blazor-error-ui">
         An unhandled error has occurred.
         <a href="" class="reload">Reload</a>

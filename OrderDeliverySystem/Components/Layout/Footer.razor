@@ -1,10 +1,10 @@
 ﻿@using MudBlazor
 
 
-<MudGrid Class="mt-5 row">
+<MudGrid Class="my-2 row">
     <MudItem xs="12" sm="12" md="3" Class="d-flex justify-content-center">
         <div>
-            <MudLink Href="/"><MudImage Src="images/logo.png" Width="200" Height="120" Alt="Swedish Farm House" Class="rounded-lg" /></MudLink>
+            <MudLink Href="/"><MudImage Src="images/logo.png" Width="150" Height="100" Alt="Swedish Farm House" Class="rounded-lg" /></MudLink>
             <MudText Typo="Typo.h6" Color="Color.Dark">123 rue St.Catherine,</MudText>
             <MudText Typo="Typo.h6" Color="Color.Dark"> Montreal, Quebec, Canada</MudText>
         </div>
@@ -39,11 +39,22 @@
         </div>
     </MudItem>
     <MudItem xs="12" sm="12" md="3" Class="d-flex justify-content-center">
-        <MudIconButton Icon="@Icons.Custom.Brands.Facebook" Style="color:rgba(112, 0, 0, 1);" Size="Size.Large" />
-        <MudIconButton Icon="@Icons.Custom.Brands.Twitter" Style="color: rgba(112, 0, 0, 1);" Size="Size.Large" />
-        <MudIconButton Icon="@Icons.Custom.Brands.Instagram" Style="color:rgba(112, 0, 0, 1);" Size="Size.Large" />
-        <MudIconButton Icon="@Icons.Custom.Brands.LinkedIn" Style="color: rgba(112, 0, 0, 1);" Size="Size.Large" />
+        <MudGrid>
+        <MudItem xs="12" sm="12" md="12" Class="d-flex justify-content-center">
+            <MudIconButton Icon="@Icons.Custom.Brands.Facebook" Style="color:rgba(112, 0, 0, 1);" Size="Size.Large" />
+            <MudIconButton Icon="@Icons.Custom.Brands.Twitter" Style="color: rgba(112, 0, 0, 1);" Size="Size.Large" />
+            <MudIconButton Icon="@Icons.Custom.Brands.Instagram" Style="color:rgba(112, 0, 0, 1);" Size="Size.Large" />
+            <MudIconButton Icon="@Icons.Custom.Brands.LinkedIn" Style="color: rgba(112, 0, 0, 1);" Size="Size.Large" />
+        </MudItem>
+        
+        <MudItem xs="12" sm="12" md="12" Class="d-flex justify-content-center">
+            <MudText Class="d-inline-block">Copyright&nbsp;<span>©</span></MudText>
+            <MudText Class="d-inline-block">&nbsp;&nbsp;2024 DinnerPal Company - Team 3</MudText>
+
+        </MudItem>
+        </MudGrid>
     </MudItem>
+   
 </MudGrid>
 
 

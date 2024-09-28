@@ -40,4 +40,10 @@
 	  <None Include="Pages\ItemList.razor" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Content Update="Shared\OrderList.razor">
+	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+	  </Content>
+	</ItemGroup>
+
 </Project>

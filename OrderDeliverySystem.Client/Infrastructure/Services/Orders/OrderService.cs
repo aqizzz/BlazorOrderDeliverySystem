@@ -1,7 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Data;
 using System.Net.Http;
 using System.Net.Http.Json;
 using Azure.Messaging;
+using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components.Authorization;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -14,11 +17,11 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
         private readonly HttpClient _httpClient;
         private const string Base = "https://localhost:7027/api/Orders/";
 
-		public OrderService(HttpClient httpClient)
+        public OrderService(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
-         public async Task<List<OrderDTO>> GetOrdersByRoleAsync(string role, int id, bool recent)
+        public async Task<List<OrderDTO>> GetOrdersByRoleAsync(string role, int id, bool recent)
         {
             var uri = $"{Base}{role}/{id}?recent={recent.ToString().ToLower()}";
             Console.WriteLine($"making request to { uri}");
@@ -26,7 +29,15 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 			return orders ?? new List<OrderDTO>();
 		}
 
-        public async Task<Result> CreateOrderAsync(OrderDTO order)
+        public async Task<List<OrderDTO>> GetOrdersTableByRoleAsync(string role, int id, bool recent )
+        {
+            var uri = $"{Base}/table/{role}/{id}?recent={recent.ToString().ToLower()}";
+            Console.WriteLine($"making request to {uri}");
+            var orders = await _httpClient.GetFromJsonAsync<List<OrderDTO>>(uri);
+            return orders ?? new List<OrderDTO>();
+        }
+
+        public async Task<Result> CreateOrderAsync(CreateOrderDTO order)
         {
             var uri = $"{Base}/create";
             Console.WriteLine($"Base Address: {_httpClient.BaseAddress}");
@@ -66,6 +77,24 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
                 Console.WriteLine($"Exception occurred: {ex.Message}");
                 return Result.Failure(new[] { ex.Message });
             }
+        }
+
+        public async Task<HttpResponseMessage> UpdateOrderAsync(OrderDTO order)
+        {
+            switch (order.Status)
+            {
+                case "Pending":
+                    order.Status = "Approved"; break;
+                case "Approved":
+                    order.Status = "In Delivery"; break;
+                case "In Delivery":
+                    order.Status = "Delivered"; break;
+            }
+
+            var uri = $"{Base}update/{order.OrderId}";
+            Console.WriteLine($"making request to {uri}");
+            var response = await _httpClient.PutAsJsonAsync(uri, order);
+            return response;
         }
     }
 }
