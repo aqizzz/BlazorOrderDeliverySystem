@@ -1,13 +1,12 @@
-﻿<h3>CreateMenuItem</h3>
-@page "/merchant-items"
+﻿@page "/merchant-items"
 
-@inject HttpClient Http
 @inject ISnackbar Snackbar
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager Navigation
 @inject IAuthService AuthService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ItemService ItemService
+@inject NavigationManager NavigationManager
 
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
@@ -19,35 +18,34 @@
 @using OrderDeliverySystem.Share.Data
 @using System.Net.Http.Headers
 @using Microsoft.AspNetCore.Authorization
-@rendermode InteractiveServer
 @using OrderDeliverySystem.Client.Infrastructure.Extensions
 @using OrderDeliverySystem.Client.Infrastructure.Services.Item
 @using OrderDeliverySystem.Client.Shared.Common
-
-@if (isAuthorized)
-{
-    <MudPaper Class="pa-4">
-        <MudText Typo="Typo.h5">Create New Menu Item</MudText>
-
-        <EditForm Model="@newItem" OnValidSubmit="CreateItem">
-            <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
-            <MudTextField @bind-Value="newItem.ItemName" Label="Item Name" Required="true" />
-            <MudTextField @bind-Value="newItem.ItemDescription" Label="Description" />
-            <MudNumericField @bind-Value="newItem.ItemPrice" Label="Price" Required="true" />
-            <MudTextField @bind-Value="newItem.ItemPic" Label="Image URL" />
-            <MudSwitch @bind-Checked="newItem.ItemIsAvailable" Label="Available" T="bool" />
-
-            <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Primary" >Submit</MudButton>
-            @* <MudButton Type="button" Variant="Variant.Filled" Color="Color.Secondary" >Reset</MudButton> *@
-            <MudButton Type="button" Variant="Variant.Filled" Color="Color.Secondary" OnClick="ResetForm">Reset</MudButton>
-        </EditForm>
-
-        <MudSnackbarProvider />
-    </MudPaper>
-} else
-{
-    <MudText Typo="Typo.h5" Color="Color.Error">Unauthorized: You do not have permission to create items.</MudText>
-}
+@rendermode InteractiveServer
+<br /><br /><br /><br />
+<AuthorizeView Roles="Merchant">
+    <Authorized>
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h5">Create New Menu Item</MudText>
+            <EditForm Model="@newItem" OnValidSubmit="CreateItem" Context="CreateItemForm">
+                <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
+                <MudTextField @bind-Value="newItem.ItemName" Label="Item Name" Required="true" />
+                <MudTextField @bind-Value="newItem.ItemDescription" Label="Description" />
+                <MudNumericField @bind-Value="newItem.ItemPrice" Label="Price" Required="true" />
+                <MudTextField @bind-Value="newItem.ItemPic" Label="Image URL" />
+                <MudSwitch @bind-Value="newItem.ItemIsAvailable" T="bool" Color="Color.Error">@(newItem.ItemIsAvailable ? "Available" : "Not Available")</MudSwitch>
+                <br />
+                <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Error" OnClick="@(()=>CreateItem())">Submit</MudButton>
+                @* <MudButton Type="button" Variant="Variant.Filled" Color="Color.Secondary" >Reset</MudButton> *@
+                <MudButton Type="button" Variant="Variant.Filled"  OnClick="ResetForm">Reset</MudButton>
+            </EditForm>
+            <MudSnackbarProvider />
+        </MudPaper>
+    </Authorized>
+    <NotAuthorized>
+        <MudText Typo="Typo.h5" Color="Color.Error">Unauthorized: You do not have permission to create items.</MudText>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code { 
     [CascadingParameter]
@@ -56,10 +54,10 @@
     {
             ItemId = 0,
             MerchantId = 0,
-            ItemName = "item1",
-            ItemDescription = "item1Des",
-            ItemPrice = 1,
-            ItemPic = "New business",
+            ItemName = "",
+            ItemDescription = "",
+            ItemPrice = 0,
+            ItemPic = "",
             ItemIsAvailable = true,   
     };
 
@@ -70,37 +68,43 @@
     public bool ShowErrors { get; set; } = false;
     public IEnumerable<string> Errors { get; set; } = new List<string>();
 
+
     protected override async Task OnInitializedAsync()
     {   
         var authState = await authenticationState;
         user = authState.User;
+        
     }
-
 
     private async Task CreateItem()
     {
-
-       
-
         var result = await this.ItemService.CreateMenuItem(newItem); // Update customer data
-
 
         if (result.Succeeded)
         {
             ShowErrors = false;
+            NavigationManager.NavigateTo("/");
         }
         else
         {
             Errors = result.Errors;
             ShowErrors = true;
         }
-       
-       
     }
 
     private void ResetForm()
     {
-        newItem = new CreateItemDTO();
+        newItem = new CreateItemDTO
+            {
+                ItemId = 0,
+                MerchantId = 0,
+                ItemName = "",
+                ItemDescription = "",
+                ItemPrice = 0,
+                ItemPic = "",
+                ItemIsAvailable = true,
+            };
     }
+}
 
 }

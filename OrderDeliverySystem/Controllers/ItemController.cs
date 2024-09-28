@@ -115,7 +115,7 @@ namespace OrderDeliverySystem.Controllers
         }
 
         // Merchant creates an item (requires login and merchant role)
-        [HttpPost]
+        //[HttpPost]
         // [Authorize(Roles = "Merchant")]
         /* public async Task<ActionResult<Item>> CreateItem(CreateItemDTO newItemDto)
          {
@@ -165,7 +165,6 @@ namespace OrderDeliverySystem.Controllers
             // 获取当前登录用户的 ID
             
             var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            var Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var merchant = await _context.Merchants.FirstOrDefaultAsync(m => m.UserId == loggedInUserId);
 
 
