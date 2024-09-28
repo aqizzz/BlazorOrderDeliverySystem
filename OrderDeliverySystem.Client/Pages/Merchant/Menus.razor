@@ -14,8 +14,10 @@
 <h3>Menus</h3>
 
 <MudContainer Class="my-10">
+
     <h3>ItemList</h3>
-   表格显示部分 
+
+    <!-- 表格显示部分 -->
     @* <MudTable Items="@Items" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped"  @bind-SelectedItem="selectedItem1"> *@
         <MudTable Items="@Items" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<ViewItemDTO,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
         <ToolBarContent>
@@ -41,12 +43,12 @@
             <MudTd DataLabel="Picture">@context.ItemPic</MudTd>          
             <MudTd DataLabel="Available">@context.ItemIsAvailable</MudTd>
 
-         
-            <MudTd DataLabel="Action">
+            @* add to cart button  *@
+            @* <MudTd DataLabel="Action">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => AddToCart(context)">
                     Add to Cart
                 </MudButton>
-            </MudTd>
+            </MudTd> *@
 
         </RowTemplate>
         <PagerContent>
@@ -82,7 +84,7 @@
 </MudContainer>
 
 @code {
-    private int merchantId = 2;
+    private int userId = 12;
 
     private bool dense = false;
     private bool hover = true;
@@ -92,7 +94,6 @@
     private ViewItemDTO selectedItem1 = null;
     private HashSet<ViewItemDTO> selectedItems = new HashSet<ViewItemDTO>();
 
-   // private IEnumerable<ViewItemDTO> Items = new List<ViewItemDTO>();
     private List<ViewItemDTO> Items = new List<ViewItemDTO>();
     private bool isLoading = true;
 
@@ -106,7 +107,7 @@
         try
         {
             var httpClient = HttpClientFactory.CreateClient("API");
-            var response = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>($"api/items/merchant/{merchantId}");
+            var response = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>($"api/items/merchant/{userId}");
 
             if (response != null)
             {
@@ -140,29 +141,58 @@
     }
 
 
-    private async Task AddToCart(ViewItemDTO item)
+    private async Task Modify(UpdateItemDTO item, int itemId)
     {
         try
         {
             var httpClient = HttpClientFactory.CreateClient("ApiClient");
 
-           // Assuming you have an API endpoint to add the item to the cart
-            var response = await httpClient.PostAsJsonAsync("/api/cart", item);
+            // PUT 请求到 /api/items/{itemId} 来更新 Item
+            var response = await httpClient.PutAsJsonAsync($"/api/items/{itemId}", item);
+
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine($"Item {item.ItemName} added to cart successfully.");
-              //  You might want to show a success notification on the UI
+                Console.WriteLine($"Item {item.ItemName} updated successfully.");
+                // 如果成功，可以显示成功的消息或者做其他处理
             }
             else
             {
-                Console.WriteLine($"Failed to add item {item.ItemName} to cart.");
-              //  Handle failure (e.g., show an error message)
+                Console.WriteLine($"Failed to update item {item.ItemName}. Response: {response.StatusCode}");
+                // 处理失败情况，可以显示错误信息
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error adding item to cart: {ex.Message}");
+            Console.WriteLine($"Error updating item: {ex.Message}");
+            // 可以选择显示异常消息或者做其他处理
         }
    }
+
+    private async Task Remove(int itemId)
+    {
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("ApiClient");
+
+            // DELETE 请求到 /api/items/{itemId} 来删除 Item
+            var response = await httpClient.DeleteAsync($"/api/items/{itemId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Item with id {itemId} deleted successfully.");
+                // 如果成功，可以在UI上更新列表，删除该 Item
+            }
+            else
+            {
+                Console.WriteLine($"Failed to delete item with id {itemId}. Response: {response.StatusCode}");
+                // 处理失败情况，可以显示错误信息
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting item: {ex.Message}");
+            // 可以选择显示异常消息或者做其他处理
+        }
+    }
 
 }

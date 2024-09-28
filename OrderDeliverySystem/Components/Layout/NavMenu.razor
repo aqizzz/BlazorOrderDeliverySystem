@@ -63,7 +63,7 @@
 <MudCollapse Expanded="_cartExpanded">
     @if (_cartExpanded)
     {
-        <Cart OnClose="CloseCart" />
+        <CartCollaspe OnClose="CloseCart" />
     }
 </MudCollapse>
 
@@ -110,6 +110,14 @@
     {
         _menuExpanded = !_menuExpanded;
     }
+
+    private void OnLocationChanged(object sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        _cartExpanded = false;
+        StateHasChanged();
+    }
+
+
     private void OnExpandCartClick()
     {
         _cartExpanded = !_cartExpanded;
@@ -124,9 +132,9 @@
     {
         if (AuthService != null)
         {
-            StateHasChanged();
             await AuthService.Logout();
-
+            Navigation.NavigateTo("/", forceLoad: true);
+            StateHasChanged();
         }
         NavigationManager.NavigateTo("/");
     }
@@ -135,7 +143,10 @@
         NavigationManager.NavigateTo("/login");
     }
 
-
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
 
 
 }
