@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Components.Authorization;
 using OrderDeliverySystem.Client.Infrastructure.Extensions;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
 {
@@ -35,7 +36,6 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
         }
         public async Task<UserProfileDTO> GetCustomerProfile()
         {
-            //var token = await localStorage.GetItemAsync<string>("authToken");
             var httpClient = this.httpClientFactory.CreateClient("API");
 
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
@@ -108,8 +108,6 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
         public async Task<MerchantProfileDTO> GetMerchantProfile(int userId)
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
-
-            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
 
             var path = GetMerchantPath + "/" + userId;
 

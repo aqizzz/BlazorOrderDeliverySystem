@@ -28,6 +28,7 @@
         {
             public const int MaxBusinessNameLength = 20;
             public const int MaxPicLength = 255;
+            public const string DefaultPic = "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png";
         }
     }
 }

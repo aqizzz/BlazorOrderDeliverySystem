@@ -14,19 +14,24 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Authentication
         private readonly ILocalStorageService localStorage;
         private readonly AuthenticationStateProvider authenticationStateProvider;
         private readonly IHttpClientFactory httpClientFactory;
+        private readonly TokenHelper tokenHelper;
 
         private const string LoginPath = "/api/Auth/login";
         private const string RegisterPath = "/api/Auth/register";
         private const string ChangePasswordPath = "/api/Auth/me/change-password";
-       
+        private const string WorkerRegisterPath = "/api/Auth/register/worker";
+        private const string MerchantRegisterPath = "/api/Auth/register/merchant";
+
         public AuthService(
             ILocalStorageService localStorage,
             AuthenticationStateProvider authenticationStateProvider,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            TokenHelper tokenHelper)
         {
             this.localStorage = localStorage;
             this.authenticationStateProvider = authenticationStateProvider;
             this.httpClientFactory = httpClientFactory;
+            this.tokenHelper = tokenHelper;
         }
 
         public async Task<Result> Register(CustomerRegisterDTO model)
@@ -34,6 +39,24 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Authentication
             var httpClient = this.httpClientFactory.CreateClient("API");
             return await httpClient
                 .PostAsJsonAsync(RegisterPath, model)
+                .ToResult();
+        }
+
+        public async Task<Result> WorkerRegister(WorkerRegisterDTO model)
+        {
+            var httpClient = this.httpClientFactory.CreateClient("API");
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+            return await httpClient
+                .PostAsJsonAsync(WorkerRegisterPath, model)
+                .ToResult();
+        }
+
+        public async Task<Result> MerchantRegister(MerchantRegisterDTO model)
+        {
+            var httpClient = this.httpClientFactory.CreateClient("API");
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+            return await httpClient
+                .PostAsJsonAsync(MerchantRegisterPath, model)
                 .ToResult();
         }
 

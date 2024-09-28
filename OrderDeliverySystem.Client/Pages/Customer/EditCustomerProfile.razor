@@ -164,62 +164,43 @@ else if (model != null)
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         user = authState.User;
-        await LogToBrowserConsole($"OnInitializedAsync");
         await LoadUserProfile();
     }
 
     private async Task LoadUserProfile()
     {
-        try
+        if (authenticationState is not null)
         {
-            if (authenticationState is not null)
+            if (user is not null)
             {
-                if (user is not null)
+                if (user.IsInRole("Admin"))
                 {
-                    if (user.IsInRole("Admin"))
-                    {
-                        model = await ProfileService.GetCustomerProfile(UserId);
-                    }
-                    else if (user.IsInRole("Customer"))
-                    {
-                        model= await ProfileService.GetCustomerProfile();
-
-                    }
-                    isLoading = false;
-                    StateHasChanged();
+                    model = await ProfileService.GetCustomerProfile(UserId);
                 }
+                else if (user.IsInRole("Customer"))
+                {
+                    model= await ProfileService.GetCustomerProfile();
+
+                }
+                isLoading = false;
+                StateHasChanged();
             }
         }
-        catch (Exception ex)
-        {
-            await LogToBrowserConsole($"Error loading: {ex.Message}");
-        }
-
     }
 
     private async Task HandleUpdateProfile()
     {
-        try
-        {
-            await LogToBrowserConsole($"Update Data: {model}");
-            var result = await this.ProfileService.UpdateCustomerProfile(model); // Update customer data
+        var result = await this.ProfileService.UpdateCustomerProfile(model); // Update customer data
             
 
-            if (result.Succeeded)
-            {
-                ShowErrors = false;
-            }
-            else
-            {
-                Errors = result.Errors;
-                ShowErrors = true;
-            }
-        }
-        catch (Exception ex)
+        if (result.Succeeded)
         {
-            Console.WriteLine($"An error occurred: {ex.Message}");
+            ShowErrors = false;
+        }
+        else
+        {
+            Errors = result.Errors;
+            ShowErrors = true;
         }
     }
-
-    private async Task LogToBrowserConsole(string message) => await JSRuntime.InvokeVoidAsync("console.log", message);
 }

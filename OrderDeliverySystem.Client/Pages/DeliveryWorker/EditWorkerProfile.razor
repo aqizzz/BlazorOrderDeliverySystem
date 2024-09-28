@@ -214,56 +214,40 @@ else if (model != null)
 
     private async Task LoadUserProfile()
     {
-        try
-        {
-            if (authenticationState is not null)
-            {
-                if (user is not null)
-                {
-                    if (user.IsInRole("Admin"))
-                    {
-                        model = await ProfileService.GetWorkerProfile(UserId);
-                    }
-                    else if (user.IsInRole("Worker"))
-                    {
-                        model = await ProfileService.GetWorkerProfile();
 
-                    }
-                    isLoading = false;
-                    StateHasChanged();
-                }
-            }
-        }
-        catch (Exception ex)
+        if (authenticationState is not null)
         {
-            await LogToBrowserConsole($"Error loading: {ex.Message}");
+            if (user is not null)
+            {
+                if (user.IsInRole("Admin"))
+                {
+                    model = await ProfileService.GetWorkerProfile(UserId);
+                }
+                else if (user.IsInRole("Worker"))
+                {
+                    model = await ProfileService.GetWorkerProfile();
+
+                }
+                isLoading = false;
+                StateHasChanged();
+            }
         }
 
     }
 
     private async Task HandleUpdateProfile()
     {
-        try
+        var result = await this.ProfileService.UpdateWorkerProfile(model); // Update customer data
+
+
+        if (result.Succeeded)
         {
-            await LogToBrowserConsole($"Update Data: {model}");
-            var result = await this.ProfileService.UpdateWorkerProfile(model); // Update customer data
-
-
-            if (result.Succeeded)
-            {
-                ShowErrors = false;
-            }
-            else
-            {
-                Errors = result.Errors;
-                ShowErrors = true;
-            }
+            ShowErrors = false;
         }
-        catch (Exception ex)
+        else
         {
-            Console.WriteLine($"An error occurred: {ex.Message}");
+            Errors = result.Errors;
+            ShowErrors = true;
         }
     }
-
-    private async Task LogToBrowserConsole(string message) => await JSRuntime.InvokeVoidAsync("console.log", message);
 }
