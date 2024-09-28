@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Data;
 using System.Net.Http;
 using System.Net.Http.Json;
 using Azure.Messaging;
@@ -36,7 +37,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             return orders ?? new List<OrderDTO>();
         }
 
-        public async Task<Result> CreateOrderAsync(OrderDTO order)
+        public async Task<Result> CreateOrderAsync(CreateOrderDTO order)
         {
             var uri = $"{Base}/create";
             Console.WriteLine($"Base Address: {_httpClient.BaseAddress}");
@@ -76,6 +77,24 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
                 Console.WriteLine($"Exception occurred: {ex.Message}");
                 return Result.Failure(new[] { ex.Message });
             }
+        }
+
+        public async Task<HttpResponseMessage> UpdateOrderAsync(OrderDTO order)
+        {
+            switch (order.Status)
+            {
+                case "Pending":
+                    order.Status = "Approved"; break;
+                case "Approved":
+                    order.Status = "In Delivery"; break;
+                case "In Delivery":
+                    order.Status = "Delivered"; break;
+            }
+
+            var uri = $"{Base}update/{order.OrderId}";
+            Console.WriteLine($"making request to {uri}");
+            var response = await _httpClient.PutAsJsonAsync(uri, order);
+            return response;
         }
     }
 }

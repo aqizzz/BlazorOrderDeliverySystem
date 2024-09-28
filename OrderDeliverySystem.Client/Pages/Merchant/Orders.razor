@@ -17,95 +17,56 @@
 @rendermode InteractiveServer
 
 
-<MudContainer Class="my-10" >
+<MudContainer Class="my-10">
+    <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My Orders</MudText>
    
-    <MudTable Items="@recentOrders" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<OrderDTO,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1" >
-        <ToolBarContent>
-            <MudText Class="my-2" Typo="Typo.h4">Orders</MudText>
-            <MudSpacer />
-            @*<MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>*@
-        </ToolBarContent>
-        <HeaderContent >
-            <MudTh Class="text-center">OrderId</MudTh>
-            <MudTh Class="text-center">OrderTime</MudTh>
-            <MudTh Class="text-center">Item Name</MudTh>
-            <MudTh Class="text-center">Item Quantity</MudTh>
-            <MudTh Class="text-center">TotalAmount</MudTh>
-            <MudTh Class="text-center">Actions</MudTh>
-           
-        </HeaderContent>
-       
-        <RowTemplate>
-           
-            <MudTd Class="text-center" DataLabel="OrderId">@context.OrderId</MudTd>
-            <MudTd Class="text-center" DataLabel="OrderTime">@context.CreatedAt.ToString("MM/dd/yyyy hh:mm:ss")</MudTd>
-            <MudTd Class="text-center" DataLabel="ItemName">
-                @foreach (var orderItem in @context.OrderItems)
-                {
-                    <MudText>@orderItem.ItemName</MudText>
-                    <MudDivider Class="border-2"/>
-                }
-            </MudTd>
+    <MudTabs TabHeaderClass="d-flex justify-content-end " Elevation="1" Rounded="true" PanelClass="pa-6" ActiveTabClass="border-solid border-1 mud-border-primary">
 
-            <MudTd Class="text-center" DataLabel="Quantity">
-                @foreach (var orderItem in @context.OrderItems)
-                {
-                    <MudText>@orderItem.Quantity</MudText>
-                    <MudDivider Class="border-2" />
-                }
+        <MudTabPanel>
+            
+            <ChildContent>
+                <AuthorizeView Roles="Merchant">
+                    <Authorized>
+                        <OrderList role="merchant" recent="true" />
+                    </Authorized>
+                </AuthorizeView>
+                <AuthorizeView Roles="Worker">
+                    <Authorized>
+                        <OrderList role="worder" recent="true" />
+                    </Authorized>
+                </AuthorizeView>
               
-             </MudTd>
-            <MudTd Class="text-center" DataLabel="TotalAmount">@context.TotalAmount.ToString("C")</MudTd>
-            <MudTd DataLabel="Action" Class="d-flex justify-content-center">
-                @if (context.Status.ToLower().Equals("pending"))
-                {
+            </ChildContent>
+            <TabContent>
+                Recent Orders
+            </TabContent>
+        </MudTabPanel>
+        <MudTabPanel>
+            <ChildContent>
+                <AuthorizeView Roles="Merchant">
+                    <Authorized>
+                        <OrderList role="merchant" recent="false" />
+                    </Authorized>
+                </AuthorizeView>
+                <AuthorizeView Roles="Worker">
+                    <Authorized>
+                        <OrderList role="worder" recent="false" />
+                    </Authorized>
+                </AuthorizeView>
+               
+            </ChildContent>
 
-                    <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Approve" Style="color: rgba(168, 0, 0, 1);" OnClick="() => ApproveOrder(context)"/>
-
-                    <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Cancel" Color="Color.Default" OnClick="() => CancelOrder(context)" />
-                    
-                }
-                else
-                {
-                    <MudFab Variant="Variant.Outlined" Color="Color.Secondary" Label="Approved" Style="color: rgba(168, 0, 0, 1);" Disabled="true"/>
-                }
-
-            </MudTd>
-
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager />
-        </PagerContent>
-    </MudTable>
-
-    <div class="d-flex flex-wrap mt-4">
-        <MudSwitch @bind-Value="hover" Color="Color.Primary">Hover</MudSwitch>
-        <MudSwitch @bind-Value="dense" Color="Color.Secondary">Dense</MudSwitch>
-        <MudSwitch @bind-Value="striped" Color="Color.Tertiary">Striped</MudSwitch>
-        <MudSwitch @bind-Value="bordered" Color="Color.Warning">Bordered</MudSwitch>
-        <MudSpacer />
-        <div style="min-width:200px;">
-            <MudText Class="align-self-center d-inline">Selected: @selectedItem1?.OrderId</MudText>
-        </div>
-    </div>
-</MudContainer> 
+            <TabContent>
+                Order History
+            </TabContent>
+        </MudTabPanel>
+    </MudTabs>
+  
+</MudContainer>
 
 @code {
-
-
-    private bool dense = false;
-    private bool hover = true;
-    private bool striped = true;
-    private bool bordered = false;
-    private string searchString1 = "";
-    private OrderDTO selectedItem1 = null;
-    private HashSet<OrderDTO> selectedOrders = new HashSet<OrderDTO>();
-    private List<OrderDTO> recentOrders = new();
-    private List<OrderDTO> orderHistory = new();
-
-    // private IEnumerable<ViewItemDTO> Orders = new List<ViewItemDTO>();
-
-    private bool isLoading = true;
+    [Inject]
+    private IAuthService AuthService { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -113,46 +74,8 @@
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        int merchantId = 2;
-
-        recentOrders = await Orderservice.GetOrdersTableByRoleAsync("merchant", merchantId, true);
-
+      
     }
-
-    private void ApproveOrder(OrderDTO order)
-    {
-        
-    }
-
-    private void CancelOrder(OrderDTO order)
-    {
-
-    }
-
-    private bool FilterFunc1(OrderDTO order) => FilterFunc(order, searchString1);
-
-    private bool FilterFunc(OrderDTO order, string searchString)
-    {
-        if (string.IsNullOrWhiteSpace(searchString))
-            return true;
-        if (order.Customer.User.FirstName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (order.Customer.User.LastName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        foreach (var address in order.Customer.User.Addresses)
-        {
-            if (address.FullAddress.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-        }
-        foreach (var item in order.OrderItems)
-        {
-            if (item.ItemName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-        }
-
-        return false;
-    }
-
 
 
 }

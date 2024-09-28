@@ -59,14 +59,14 @@ namespace OrderDeliverySystemApi.Controllers
                 return NotFound($"Merchant with ID {orderDto.MerchantId} not found.");
             }
 
-            var customer = await _context.Customers.FindAsync(orderDto.CustomerId);
+            var customer = await _context.Customers.FindAsync(1);
             if (customer == null)
             {
                 return NotFound($"Customer with ID {orderDto.CustomerId} not found.");
             }
            
             var worker = await _context.DeliveryWorkers
-                .Where(w => w.WorkerAvailability == true && w.LastTaskAssigned != null) // Ensure worker is available and has a task history
+                .Where(w => w.WorkerAvailability == true ) // Ensure worker is available and has a task history
                 .OrderBy(w => w.LastTaskAssigned) // Get the worker with the oldest LastTaskAssigned date
                 .FirstOrDefaultAsync();
             if (worker == null)
@@ -145,7 +145,7 @@ namespace OrderDeliverySystemApi.Controllers
                 UpdatedAt = DateTime.Now,
                 Merchant = merchant,
                 Customer = customer,
-
+               
 
             };
 
@@ -180,28 +180,20 @@ namespace OrderDeliverySystemApi.Controllers
             return CreatedAtAction(nameof(GetOrder), new { id = order.OrderId }, order);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("update")]
      
-        public async Task<IActionResult> UpdateOrder(int id, Order updatedOrder)
+        public async Task<IActionResult> UpdateOrder(OrderDTO updatedOrder)
         {
-            if (id != updatedOrder.OrderId)
-            {
-                return BadRequest();
-            }
+          
 
-            var order = await _context.Orders.FindAsync(id);
+            var order = await _context.Orders.FindAsync(updatedOrder.OrderId);
             if (order == null)
             {
                 return NotFound();
             }
 
             // Update order fields
-            order.CustomerId = updatedOrder.CustomerId;
-            order.MerchantId = updatedOrder.MerchantId;
-            order.WorkerId = updatedOrder.WorkerId;
-            order.PickupAddressId = updatedOrder.PickupAddressId;
-            order.DropoffAddressId = updatedOrder.DropoffAddressId;
-            order.TotalAmount = updatedOrder.TotalAmount;
+           
             order.Status = updatedOrder.Status;
             order.UpdatedAt = DateTime.Now;
 
@@ -211,10 +203,22 @@ namespace OrderDeliverySystemApi.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                var newTracking = new DeliveryTask {
+                    Order = order,
+                    OrderId = order.OrderId,
+                    AssignedTime = DateTime.Now,
+                    WorkerId= order.DeliveryWorker.WorkerId,
+                    DeliveryWorker=order.DeliveryWorker,
+                    Status = updatedOrder.Status,
+                };
+                _context.DeliveryTasks.Add(newTracking);
+                await _context.SaveChangesAsync();
+
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!OrderExists(id))
+                if (!OrderExists(updatedOrder.OrderId))
                 {
                     return NotFound();
                 }
