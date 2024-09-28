@@ -102,7 +102,7 @@
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-
+        NavigationManager.LocationChanged += OnLocationChanged;
     }
     bool _menuExpanded = true;
 
