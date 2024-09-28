@@ -58,7 +58,6 @@
         </NotAuthorized>
     </AuthorizeView>
 
-
 </MudHidden>
 
 <MudCollapse Expanded="_cartExpanded">
@@ -129,6 +128,7 @@
             await AuthService.Logout();
 
         }
+        NavigationManager.NavigateTo("/");
     }
     public async Task LogIn()
     {
