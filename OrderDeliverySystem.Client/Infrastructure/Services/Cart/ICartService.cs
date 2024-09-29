@@ -10,5 +10,8 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Cart
         Task<HttpResponseMessage> RemoveCartItems(int itemId);
         Task<HttpResponseMessage> AddToCartItems(List<AddUpdateCartItemsRequestDTO> cartItems);
         Task<HttpResponseMessage> ClearCartItems();
+        Task<HttpResponseMessage> GetTotalCartQuantity();
+
+        event Action OnCartChanged;
     }
 }

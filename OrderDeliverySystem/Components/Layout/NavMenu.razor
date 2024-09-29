@@ -5,6 +5,7 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Authorization
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@using OrderDeliverySystem.Client.Infrastructure.Services.Cart
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
@@ -38,7 +39,25 @@
                 <MudButton Href="/my-orders">My Orders</MudButton>
             </MudButtonGroup>
             <MudSpacer />
-            <MudIconButton OnClick="OnExpandCartClick" Icon="@Icons.Material.Filled.AddShoppingCart" Style="color: rgba(168, 0, 0, 1);">@(_cartExpanded ? "" : "")</MudIconButton>
+            <div style="position: relative; display: inline-block;">
+                <MudIconButton OnClick="OnExpandCartClick" Icon="@Icons.Material.Filled.AddShoppingCart" Style="color: rgba(168, 0, 0, 1);" />
+                <span class="cart-quantity">@totalCartQuantity</span>
+            </div>
+
+            <style>
+                .cart-quantity {
+                    position: absolute;
+                    top: -5px;
+                    right: 14px;
+                    background-color: red;
+                    color: white;
+                    border-radius: 50%;
+                    padding: 3px 6px;
+                    font-size: 12px;
+                    line-height: 1;
+                }
+            </style>
+
             <MudIconButton Href="/customer-profile" Icon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" />
             <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Log Out" OnClick="LogOut" />
         </Authorized>
@@ -94,17 +113,45 @@
     }*@
     [Inject]
     private IAuthService AuthService { get; set; }
+    [Inject]
+    private ICartService CartService { get; set; }
     bool _cartExpanded = false;
-
+    private int totalCartQuantity = 0;
     protected override async Task OnInitializedAsync()
     {
-        StateHasChanged();
+
+        // StateHasChanged();
         await base.OnInitializedAsync();
+        CartService.OnCartChanged += UpdateCartQuantity;
+        await LoadCartQuantity();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         NavigationManager.LocationChanged += OnLocationChanged;
     }
     bool _menuExpanded = true;
+
+    private async Task LoadCartQuantity()
+    {
+        try
+        {
+            var response = await CartService.GetTotalCartQuantity();
+            if (response.IsSuccessStatusCode)
+            {
+                totalCartQuantity = await response.Content.ReadFromJsonAsync<int>();
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error loading cart quantity: " + ex.Message);
+        }
+    }
+
+    private void UpdateCartQuantity()
+    {
+        
+        _ = LoadCartQuantity();
+    }
 
     private void OnExpandMenuClick()
     {
@@ -148,6 +195,7 @@
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
+        CartService.OnCartChanged -= UpdateCartQuantity;
     }
 
     
