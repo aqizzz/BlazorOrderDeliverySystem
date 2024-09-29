@@ -1,29 +1,22 @@
-﻿@if (this.Errors != null)
+﻿@if (!string.IsNullOrEmpty(this.Errors))
 {
     if (this.ShowErrors)
     {
-        foreach (var error in this.Errors)
-        {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                @error
-                <button @onclick="Reset" type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        }
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @Errors
+            <button @onclick="Reset" type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
     }
 }
 
 @code {
-
-
     [Parameter]
     public bool ShowErrors { get; set; }
 
     [Parameter]
-    public IEnumerable<string>? Errors { get; set; }
+    public string? Errors { get; set; }
 
     private void Reset() => this.ShowErrors = !this.ShowErrors;
-
-
 }

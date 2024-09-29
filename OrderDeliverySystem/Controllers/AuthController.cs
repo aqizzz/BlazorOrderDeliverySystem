@@ -16,18 +16,19 @@ namespace OrderDeliverySystemApi.Controllers
     [Route("api/[controller]")]
     public class AuthController(AppDbContext context, IConfiguration config) : ControllerBase
     {
+        private const string InvalidErrorMessage = "Invalid email or password.";
 
         [HttpPost("register")]
         public async Task<IActionResult> Register(CustomerRegisterDTO user)
         {
             if (user == null)
-                return BadRequest("User data is required.");
+                return BadRequest(new { Error = "User data is required." });
 
             using var transaction = await context.Database.BeginTransactionAsync();
 
             var getUser = await context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
             if (getUser != null)
-                return BadRequest("User already exists");
+                return BadRequest(new { Error = "User already exists" });
 
             var newUser = new User
             {
@@ -72,16 +73,13 @@ namespace OrderDeliverySystemApi.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginRequestDTO loginDto)
         {
-            if (string.IsNullOrEmpty(loginDto.Email) || string.IsNullOrEmpty(loginDto.Password))
-                return BadRequest("Email and password are required");
-
             var user = await context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
             if (user == null)
-                return BadRequest("Invalid credentials");
+                return BadRequest(new { Error = "Invalid credentials" });
 
             var verifyPassword = BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash);
             if (!verifyPassword)
-                return Unauthorized("Invalid credentials");
+                return Unauthorized(new { Error = "Invalid credentials" });
 
             var token = GenerateJwtToken(user.UserId, user.Email, user.Role);
 
@@ -144,11 +142,11 @@ namespace OrderDeliverySystemApi.Controllers
 
             var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             if (user == null)
-                return NotFound("User not found");
+                return BadRequest(new { Error = "User not found" });
 
             var verifyPassword = BCrypt.Net.BCrypt.Verify(passwordDto.Password, user.PasswordHash);
             if (!verifyPassword)
-                return BadRequest("Current password is incorrect");
+                return BadRequest(new { Error = "Current password is incorrect" });
 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(passwordDto.NewPassword);
             await context.SaveChangesAsync();
@@ -162,13 +160,13 @@ namespace OrderDeliverySystemApi.Controllers
         public async Task<IActionResult> Register(WorkerRegisterDTO user)
         {
             if (user == null)
-                return BadRequest("User data is required.");
+                return BadRequest(new { Error = "User data is required." });
 
             using var transaction = await context.Database.BeginTransactionAsync();
 
             var getUser = await context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
             if (getUser != null)
-                return BadRequest("User already exists");
+                return BadRequest(new { Error = "User already exists" });
 
             var newUser = new User
             {
@@ -220,13 +218,13 @@ namespace OrderDeliverySystemApi.Controllers
         public async Task<IActionResult> Register(MerchantRegisterDTO user)
         {
             if (user == null)
-                return BadRequest("User data is required.");
+                return BadRequest(new { Error = "User data is required." });
 
             using var transaction = await context.Database.BeginTransactionAsync();
 
             var getUser = await context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
             if (getUser != null)
-                return BadRequest("User already exists");
+                return BadRequest(new { Error = "User already exists" });
 
             var newUser = new User
             {
