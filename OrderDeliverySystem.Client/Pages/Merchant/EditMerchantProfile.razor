@@ -28,7 +28,7 @@ else if (model != null)
 {
     <MudContainer>
         <EditForm Model="@model" OnValidSubmit="HandleUpdateProfile" FormName="profileForm">
-            <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
+            <ErrorsList ShowErrors="@ShowErrors" Errors="@Errors" />
             <DataAnnotationsValidator />
             <MudGrid>
 
@@ -190,7 +190,7 @@ else if (model != null)
     private int userId = 4;
 
     public bool ShowErrors { get; set; } = false;
-    public IEnumerable<string> Errors { get; set; } = new List<string>();
+    public string Errors { get; set; } = string.Empty;
 
     private bool isLoading = true;
 
@@ -234,7 +234,7 @@ else if (model != null)
         }
         else
         {
-            Errors = result.Errors;
+            Errors = result.Error;
             ShowErrors = true;
         }
     }

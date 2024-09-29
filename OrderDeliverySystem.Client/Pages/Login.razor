@@ -20,7 +20,7 @@
 }
 
 <EditForm Model="@model" OnValidSubmit="HandleLogin" FormName="loginForm">
-    <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
+    <ErrorsList ShowErrors="@ShowErrors" Errors="@Errors" />
     <DataAnnotationsValidator />
 
     <MudField Underline="false">
@@ -45,7 +45,7 @@
 
     public bool ShowErrors { get; set; } = false;
 
-    public IEnumerable<string> Errors { get; set; } = new List<string>();
+    public string Errors { get; set; } = string.Empty;
 
     private string message { get; set; } = string.Empty;
     private string alertClass { get; set; } = string.Empty;
@@ -80,7 +80,7 @@
         else
         {
             // Handle login failure
-            this.Errors = result.Errors;
+            this.Errors = result.Error;
             this.ShowErrors = true;
         }
     }
