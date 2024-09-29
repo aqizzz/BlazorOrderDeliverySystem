@@ -44,6 +44,10 @@
 
 
 @code{
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+    private ClaimsPrincipal user;
+
     [Parameter]
     public int merchantUserId { get; set; }
     [CascadingParameter]
@@ -66,6 +70,7 @@
     }
 
     private int customerId = 3;
+    private int merchantId;
     private bool dense = false;
     private bool hover = true;
     private bool striped = false;
@@ -86,7 +91,7 @@
             {
                 var httpClient = HttpClientFactory.CreateClient("API");
           
-                var response = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>($"api/items/merchant/{merchantUserId}");
+                var response = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>($"api/items/merchant/{userId}");
 
                 if (response != null)
                 {

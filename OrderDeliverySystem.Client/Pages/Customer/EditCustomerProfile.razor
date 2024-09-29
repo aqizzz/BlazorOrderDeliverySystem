@@ -49,7 +49,48 @@ else if (model != null)
 
                     <MudItem xs="2">
                     </MudItem>
+             <MudItem xs="12">
+                    <MudText Class="py-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">Edit profile</MudText>
+                        <div Style="display:none;">
+                            <MudTextField id="userId" @bind-Value="model.UserId" ReadOnly="true" />
+                        </div>
+             </MudItem>
+             <MudItem xs="12" Class="d-flex justify-content-center">
+                 <div class="object-center">
+                <MudGrid>
+                    <MudItem xs="2">
+                        <MudField Label="Firstname:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                                <MudTextField id="firstName" @bind-Value="model.FirstName" For="@(() => model.FirstName)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
 
+                    <MudItem xs="2">
+                    </MudItem>
+
+                    <MudItem xs="2">
+                        <MudField Label="Lastname:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                                <MudTextField id="lastName" @bind-Value="model.LastName" For="@(() => model.LastName)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
+                    
+                    <MudItem xs="2" >
+                        <MudField Label="Email:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                                        <MudTextField id="email" @bind-Value="model.Email" For="@(() => model.Email)" Variant="Variant.Filled" dissab="true" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
                     <MudItem xs="2">
                         <MudField Label="Lastname:" AlignLabel="Align.Start" Underline="false" />
                     </MudItem>
@@ -82,7 +123,27 @@ else if (model != null)
                     </MudItem>
                     <MudItem xs="2">
                     </MudItem>
+                    <MudItem xs="2">
+                        <MudField Label="Phone:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                                <MudTextField id="phone" @bind-Value="model.Phone" For="@(() => model.Phone)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
 
+                    <MudItem xs="2">
+                        <MudField Label="Unit:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                                <MudTextField id="unit" @bind-Value="model.Unit" For="@(() => model.Unit)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
                     <MudItem xs="2">
                         <MudField Label="Unit:" AlignLabel="Align.Start" Underline="false" />
                     </MudItem>
@@ -104,6 +165,16 @@ else if (model != null)
                     </MudItem>
                     <MudItem xs="2">
                     </MudItem>
+                    <MudItem xs="2">
+                        <MudField Label="Address:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                            <MudTextField id="address" @bind-Value="model.Address" For="@(() => model.Address)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
 
                     <MudItem xs="2">
                         <MudField Label="City:" AlignLabel="Align.Start" Underline="false" />
@@ -115,7 +186,27 @@ else if (model != null)
                     </MudItem>
                     <MudItem xs="2">
                     </MudItem>
+                    <MudItem xs="2">
+                        <MudField Label="City:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                            <MudTextField id="city" @bind-Value="model.City" For="@(() => model.City)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
 
+                    <MudItem xs="2">
+                        <MudField Label="Province:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                                <MudTextField id="province" @bind-Value="model.Province" For="@(() => model.Province)"  Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
                     <MudItem xs="2">
                         <MudField Label="Province:" AlignLabel="Align.Start" Underline="false" />
                     </MudItem>
@@ -139,6 +230,18 @@ else if (model != null)
                     </MudItem>
                 </MudGrid>
                 </div>
+                    <MudItem xs="2">
+                        <MudField Label="Postcode:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                            <MudTextField id="postcode" @bind-Value="model.Postcode" For="@(() => model.Postcode)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
+                </MudGrid>
+                </div>
             </MudItem>
           
             <MudItem xs="12" Class="d-flex justify-content-start">
@@ -148,6 +251,8 @@ else if (model != null)
              </MudItem>
         </MudGrid>
     </EditForm>
+        </MudPaper>
+}
         </MudPaper>
 }
 </MudContainer>

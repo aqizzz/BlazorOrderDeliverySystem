@@ -3,10 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
 using OrderDeliverySystem.Share.Data.Models;
-using Microsoft.IdentityModel.Tokens;
-using Radzen.Blazor.Rendering;
-using static OrderDeliverySystem.Share.Data.Constants;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace OrderDeliverySystemApi.Controllers
 {
@@ -201,33 +197,18 @@ namespace OrderDeliverySystemApi.Controllers
             // Update the order in the context
             _context.Entry(order).State = EntityState.Modified;
 
-            try
-            {
-                await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
-                var newTracking = new DeliveryTask {
-                    Order = order,
-                    OrderId = order.OrderId,
-                    AssignedTime = DateTime.Now,
-                    WorkerId= order.DeliveryWorker.WorkerId,
-                    DeliveryWorker=order.DeliveryWorker,
-                    Status = updatedOrder.Status,
-                };
-                _context.DeliveryTasks.Add(newTracking);
-                await _context.SaveChangesAsync();
-
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!OrderExists(updatedOrder.OrderId))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            var newTracking = new DeliveryTask {
+                Order = order,
+                OrderId = order.OrderId,
+                AssignedTime = DateTime.Now,
+                WorkerId= order.DeliveryWorker.WorkerId,
+                DeliveryWorker=order.DeliveryWorker,
+                Status = updatedOrder.Status,
+            };
+            _context.DeliveryTasks.Add(newTracking);
+            await _context.SaveChangesAsync();
 
             return NoContent();
         }
