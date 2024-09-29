@@ -200,7 +200,7 @@
     public string SelectedOption { get; set; } = "Radio 1";
     private UserProfileDTO model = new(); // Ensure model is initialized
 
- 
+
 
     public bool ShowErrors { get; set; } = false;
     public string SuccessMessage { get; set; } = "";
@@ -210,6 +210,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         user = authState.User;
         await LoadUserProfile();

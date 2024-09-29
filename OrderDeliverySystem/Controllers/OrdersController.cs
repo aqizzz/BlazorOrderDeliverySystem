@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
 using OrderDeliverySystem.Share.Data.Models;
+using System.Security.Claims;
+using static OrderDeliverySystem.Share.Data.Constants;
 
 namespace OrderDeliverySystemApi.Controllers
 {
@@ -523,6 +525,73 @@ namespace OrderDeliverySystemApi.Controllers
                 .ToListAsync();
 
             return Ok(orders);
+        }
+
+
+        [HttpGet("getOrderByCart")]
+
+        public async Task<ActionResult<CreateOrderDTO>> GetOrderByCart()
+        {
+          
+            if(!User.IsInRole("Customer"))
+            {
+                return Forbid();
+            }
+
+            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var user = _context.Users.FindAsync(userId);
+            Console.WriteLine("UserId is " + userId);
+            var cart = await _context.Carts
+            .Include(c => c.Customer)
+            .ThenInclude(c => c.User)
+            .Include(c => c.CartItems)
+            .ThenInclude(ci => ci.Item)
+            .ThenInclude(cim => cim.Merchant)
+            .Where(c => c.Customer.UserId == userId)
+            .FirstOrDefaultAsync();
+
+
+            var order = new CreateOrderDTO
+            {
+                Customer = cart.Customer,
+                Merchants = cart.CartItems.Select(item => new MerchantProfileDTO
+                {
+                    BusinessName = item.Item.Merchant.BusinessName,
+                    MerchantPic = item.Item.Merchant.MerchantPic,
+                    PreparingTime = item.Item.Merchant.PreparingTime,
+                    MerchantDescription = item.Item.Merchant.MerchantDescription,
+                    UserId = item.Item.Merchant.UserId,
+                    FirstName = item.Item.Merchant.User.FirstName,
+                    LastName = item.Item.Merchant.User.LastName,
+                    Unit = item.Item.Merchant.User.Addresses.Select(a => a.Unit).FirstOrDefault(),
+                    Address = item.Item.Merchant.User.Addresses.Select(a => a.Address).FirstOrDefault(),
+                    City = item.Item.Merchant.User.Addresses.Select(a => a.City).FirstOrDefault(),
+                    Province = item.Item.Merchant.User.Addresses.Select(a => a.Province).FirstOrDefault(),
+                    Postcode = item.Item.Merchant.User.Addresses.Select(a => a.Postcode).FirstOrDefault()
+
+                }).ToList(),
+                OrderItems = cart.CartItems.Select(item => new CreateItemDTO
+                {
+                    MerchantId = item.Item.MerchantId,
+                    ItemId = item.Item.ItemId,
+                    ItemName = item.Item.ItemName,
+                    Quantity = item.Quantity, 
+                    ItemPrice = item.Item.ItemPrice,
+                    ItemPic = item.Item.ItemPic,
+                    ItemDescription = item.Item.ItemDescription,
+                    ItemIsAvailable = item.Item.ItemIsAvailable,
+
+                }).ToList()
+
+
+            };
+            Console.WriteLine("CostomerId is " + order.Customer.UserId);
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(order);
         }
     }
 }

@@ -120,7 +120,7 @@
 
         int merchantId = 2;
         if(role !=null && recent != null){
-            recentOrders = await Orderservice.GetOrdersByRoleAsync(role, merchantId, recent);
+            recentOrders = await Orderservice.GetOrdersByRole(role, merchantId, recent);
         }
        
 
@@ -129,7 +129,7 @@
     private async Task ApproveOrder(OrderDTO order)
     {
        
-       await Orderservice.UpdateOrderAsync(order);
+       await Orderservice.UpdateOrder(order);
         StateHasChanged();
     }
 

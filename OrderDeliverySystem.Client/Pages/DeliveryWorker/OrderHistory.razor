@@ -69,8 +69,8 @@
     protected override async Task OnInitializedAsync()
     {
         int workerId = 5;
-        recentOrders = await OrderService.GetOrdersByRoleAsync("worker", workerId, true);
-        orderHistory = await OrderService.GetOrdersByRoleAsync("worker", workerId, false);
+        recentOrders = await OrderService.GetOrdersByRole("worker", workerId, true);
+        orderHistory = await OrderService.GetOrdersByRole("worker", workerId, false);
     }
     private void ShowOrderDetails(OrderDTO order)
     {

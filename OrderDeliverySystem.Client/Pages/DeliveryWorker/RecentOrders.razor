@@ -47,7 +47,7 @@
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         int workerId = 9;
-        recentOrders = await OrderService.GetOrdersTableByRoleAsync("worker", workerId, true);
+        recentOrders = await OrderService.GetOrdersByRole("worker", workerId, true);
        
     }
     private void ShowOrderDetails(OrderDTO order)

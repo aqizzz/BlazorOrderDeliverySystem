@@ -5,7 +5,8 @@ namespace OrderDeliverySystem.Share.DTOs
 {
     public class CreateOrderDTO
     {
-        public MerchantProfileDTO Merchant { get; set; }
+        public Customer Customer { get; set; }
+        public List<MerchantProfileDTO> Merchants { get; set; }
         public List<CreateItemDTO> OrderItems { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net;
+using System.Net.Http.Json;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using OrderDeliverySystem.Share.Data;
@@ -6,7 +7,7 @@ using OrderDeliverySystem.Share.DTOs;
 
 namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 {
-    public class OrderService
+    public class OrderService : IOrderService
     {
         private readonly ILocalStorageService localStorage;
         private readonly AuthenticationStateProvider authenticationStateProvider;
@@ -26,7 +27,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             this.httpClientFactory = httpClientFactory;
             this.tokenHelper = tokenHelper;
         }
-        public async Task<List<OrderDTO>> GetOrdersByRoleAsync(string role, int id, bool recent)
+        public async Task<List<OrderDTO>> GetOrdersByRole(string role, int id, bool recent)
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
@@ -36,7 +37,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 			return orders ?? new List<OrderDTO>();
 		}
 
-        public async Task<List<OrderDTO>> GetOrdersTableByRoleAsync(string role, int id, bool recent )
+        public async Task<List<OrderDTO>> GetOrdersTableByRole(string role, int id, bool recent )
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
 
@@ -46,7 +47,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             return orders ?? new List<OrderDTO>();
         }
 
-        public async Task<Result> CreateOrderAsync(CreateOrderDTO order)
+        public async Task<Result> CreateOrder(CreateOrderDTO order)
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
 
@@ -68,7 +69,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             return Result.Success;
         }
 
-        public async Task<HttpResponseMessage> UpdateOrderAsync(OrderDTO order)
+        public async Task<Result> UpdateOrder(OrderDTO order)
         {
             switch (order.Status)
             {
@@ -86,7 +87,32 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 
             var uri = $"{Base}update/{order.OrderId}";
             var response = await httpClient.PutAsJsonAsync(uri, order);
-            return response;
+            if (!response.IsSuccessStatusCode)
+            {
+                var errors = await response.Content.ReadFromJsonAsync<string[]>();
+                return errors != null
+                    ? Result.Failure(errors) // Return the errors if present
+                    : Result.Failure(new[] { "An unknown error occurred." });
+            }
+            return Result.Success;
+        }
+
+        public async Task<CreateOrderDTO> GetPlacedOrder()
+        {
+            
+            var httpClient = this.httpClientFactory.CreateClient("API");
+
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+
+            var uri = $"{Base}getOrderByCart";
+            var order = await httpClient.GetFromJsonAsync<CreateOrderDTO>(uri);
+           
+            return order?? new CreateOrderDTO();
+        }
+
+        public Task<Result> CancelOrder(int orderId)
+        {
+            throw new NotImplementedException();
         }
     }
 }
