@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Components.Authorization;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
 using OrderDeliverySystem.Share.DTOs.CartDTO;
+using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO;
+using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO.OrderDeliverySystem.Share.DTOs.CartDTO;
 
 namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 {
@@ -43,20 +45,20 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             var httpClient = this.httpClientFactory.CreateClient("API");
 
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
-            var uri = $"{Base}/table/{role}/{id}?recent={recent.ToString().ToLower()}";
+            var uri = $"{Base}table/{role}/{id}?recent={recent.ToString().ToLower()}";
             var orders = await httpClient.GetFromJsonAsync<List<OrderDTO>>(uri);
             return orders ?? new List<OrderDTO>();
         }
 
-        public async Task<Result> CreateOrder(CreateOrderDTO order)
+        public async Task<Result> CreateOrder(List<GetOrderItemResponseDTO> cartItems)
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
 
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
-            var uri = $"{Base}/create";
+            var uri = $"{Base}create";
 
             // Sending the request with payload
-            var response = await httpClient.PostAsJsonAsync(uri, order);
+            var response = await httpClient.PostAsJsonAsync(uri, cartItems);
 
 
             if (!response.IsSuccessStatusCode)
@@ -111,13 +113,13 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
         }
 
 
-        public async Task<CreateOrderDTO> GetOrderByCart()
+        public async Task<GetOrderResponseDTO> GetOrderByCart()
         {
             var httpClient = httpClientFactory.CreateClient("API");
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
             var uri = $"{Base}getCart";
-            var response = await httpClient.GetFromJsonAsync<GetCartReponseDTO>(uri);
-            return await httpClient.GetFromJsonAsync<CreateOrderDTO>(uri);
+           
+            return await httpClient.GetFromJsonAsync<GetOrderResponseDTO>(uri);
         }
 
 

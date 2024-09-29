@@ -5,6 +5,10 @@ using OrderDeliverySystem.Share.DTOs;
 using OrderDeliverySystem.Share.Data.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using OrderDeliverySystem.Share.DTOs.CartDTO;
+using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO;
+using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO.OrderDeliverySystem.Share.DTOs.CartDTO;
+using static OrderDeliverySystem.Share.Data.Constants;
 
 
 
@@ -609,7 +613,7 @@ namespace OrderDeliverySystemApi.Controllers
 
             return Ok(orderDto);
         }
-        /// GET: api/cart/getCart/{customerId}
+      /*  /// GET: api/cart/getCart/{customerId}
         [HttpGet("getCart")]
         public async Task<IActionResult> GetCartItems()
         {
@@ -645,7 +649,7 @@ namespace OrderDeliverySystemApi.Controllers
 
                 return NotFound("Items not found.");
             }
-            var itemDto = cartItems.Select(i => new GetOrderItemResposeDTO
+            var itemDto = cartItems.Select(i => new CreateItemDTO
             {
                 ItemId = i.ItemId,
                 ItemName = i.Item.ItemName,
@@ -658,9 +662,11 @@ namespace OrderDeliverySystemApi.Controllers
             
             
 
-            var cartDto = new GetCartReponseDTO(
-                cart.CartId,
-                cart.CustomerId,
+            var orderDto = new CreateOrderDTO
+            {
+                CartId = cart.CartId,
+                CustomerId = cart.CustomerId,
+                MerchantId = 
                 cart.CartItems?.Select(ci => new GetCartItemsResponseDTO(
                     ci.CartItemId,
                     ci.ItemId,
@@ -669,6 +675,66 @@ namespace OrderDeliverySystemApi.Controllers
                     ci.Item.ItemPic ?? "",
                     ci.Quantity
                 )).ToList() ?? new List<GetCartItemsResponseDTO>()
+            };
+
+            return Ok(orderDto);
+        }
+*/
+
+        // GET: api/cart/getCart/{customerId}
+        [HttpGet("getCart")]
+        public async Task<IActionResult> GetCartItems()
+        {
+
+            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
+
+
+            if (customer == null)
+            {
+                return NotFound("Customer not found.");
+            }
+
+            int customerId = customer.CustomerId;
+
+            var cart = await _context.Carts
+                .Include(c => c.Customer)
+                .Include(c => c.CartItems)
+                .ThenInclude(ci => ci.Item)
+                .ThenInclude(i => i.Merchant)
+                .ThenInclude(m => m.User)
+                .ThenInclude(u => u.Addresses)
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
+
+            if (cart == null)
+            {
+
+                cart = new Cart
+                {
+                    CustomerId = customerId,
+                    Customer = customer,
+                    CartItems = new List<CartItem>()
+                };
+                _context.Carts.Add(cart);
+                await _context.SaveChangesAsync();
+            }
+
+
+            var cartDto = new GetOrderResponseDTO(
+                cart.CartId,
+                cart.CustomerId,
+                cart.CartItems?.Select(ci => new GetOrderItemResponseDTO(
+                    ci.CartItemId,
+                    ci.Item.MerchantId,
+                    ci.ItemId,
+                    ci.Item.ItemName ?? "Unknown Item",
+                    ci.Item.ItemPrice,
+                    ci.Item.ItemPic ?? "",
+                    ci.Quantity
+                   
+                )).ToList() ?? new List<GetOrderItemResponseDTO>()
             );
 
             return Ok(cartDto);
