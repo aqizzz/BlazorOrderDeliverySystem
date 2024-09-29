@@ -5,6 +5,7 @@
 @using MudBlazor
 @using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager NavigationManager
+@inject NavigationManager Navigation
 @inject ICartService CartService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JSRuntime
@@ -64,6 +65,7 @@
     private List<GetCartItemsResponseDTO> cartItems = new();
     private decimal subtotal;
     private bool isLoading = true;
+    
 
     protected override async Task OnInitializedAsync()
     {
@@ -164,7 +166,7 @@
 
     private void PlaceOrder()
     {
-        NavigationManager.NavigateTo($"/order-now");
+        Navigation.NavigateTo($"/order-now", forceLoad:true);
     }
 
     public string FormatCurrency(decimal value)

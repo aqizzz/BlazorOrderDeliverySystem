@@ -140,7 +140,9 @@
     }
     public async Task LogIn()
     {
+      
         NavigationManager.NavigateTo("/login");
+        
     }
 
     public void Dispose()
@@ -148,5 +150,6 @@
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
 
+    
 
 }

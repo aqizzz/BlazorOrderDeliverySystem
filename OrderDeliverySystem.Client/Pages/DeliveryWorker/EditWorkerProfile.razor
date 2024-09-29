@@ -17,13 +17,14 @@
 @rendermode InteractiveAuto
 
 <MudContainer Class="my-10 d-flex justify-content-center align-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
+
 @if (isLoading)
 {
     <p>Loading profile...</p>
 }
 else if (model != null)
 {
-        <MudPaper Class="pa-16 ma-2" Elevation="3" Width="60%">
+        <MudPaper Class="pa-16 ma-2" Elevation="3" >
         <EditForm Model="@model" OnValidSubmit="HandleUpdateProfile" FormName="profileForm">
             <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
             <DataAnnotationsValidator />
@@ -178,13 +179,17 @@ else if (model != null)
                     <MudItem xs="2">
                     </MudItem>
                 <MudItem xs="12" Class="object-center">
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Profile</MudButton>
+                        <MudButton Class="mx-2" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Profile</MudButton>
+                        <MudButton Class="mx-2" ButtonType="ButtonType.Reset" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LockReset" Color="Color.Primary">Reset</MudButton>
+                        <MudButton Class="mx-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/worker-profile">Cancel</MudButton>
                 </MudItem>
             </MudGrid>
         </EditForm>
     </MudPaper>
+   
 }
 </MudContainer>
+
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }

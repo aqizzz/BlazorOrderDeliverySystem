@@ -63,7 +63,7 @@ namespace OrderDeliverySystemApi.Controllers
                 Postcode = ""
             };
             context.Addresses.Add(newAddress);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(); 
 
             await transaction.CommitAsync();
 
@@ -193,6 +193,7 @@ namespace OrderDeliverySystemApi.Controllers
             };
 
             context.DeliveryWorkers.Add(newWorker);
+            await context.SaveChangesAsync();
 
             var newAddress = new AddressModel
             {
@@ -206,7 +207,7 @@ namespace OrderDeliverySystemApi.Controllers
                 Postcode = user.Postcode ?? ""
             };
             context.Addresses.Add(newAddress);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(); 
 
             await transaction.CommitAsync();
 
@@ -239,7 +240,7 @@ namespace OrderDeliverySystemApi.Controllers
             };
 
             context.Users.Add(newUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(); 
 
             var newMerchant = new Merchant
             {
@@ -252,6 +253,7 @@ namespace OrderDeliverySystemApi.Controllers
             };
 
             context.Merchants.Add(newMerchant);
+            await context.SaveChangesAsync();
 
             var newAddress = new AddressModel
             {
@@ -266,7 +268,7 @@ namespace OrderDeliverySystemApi.Controllers
             };
             context.Addresses.Add(newAddress);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(); 
 
             await transaction.CommitAsync();
 
@@ -274,5 +276,5 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
     }
-
+ 
 }

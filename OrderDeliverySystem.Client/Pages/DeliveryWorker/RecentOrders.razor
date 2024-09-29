@@ -1,6 +1,5 @@
-﻿@page "/my-orders"
+﻿@page "/worker-orders"
 @inject OrderService OrderService
-
 @using OrderDeliverySystem.Client.Shared
 @inject IJSRuntime JSRuntime
 @using System.ComponentModel.DataAnnotations
@@ -19,54 +18,24 @@
 
 <MudContainer Class="my-10">
     <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My Orders</MudText>
-    <MudTabs TabHeaderClass="d-flex justify-content-end " Elevation="1" Rounded="true" PanelClass="pa-6" ActiveTabClass="border-solid border-1 mud-border-primary" >
-       
-        <MudTabPanel>
-            <ChildContent>
-                @if (recentOrders.Any())
-				{
-				@foreach (var order in recentOrders)
-				{
-                        <OrderCard Order="@order" />
-				}
-				}else
-				{
-					<MudText>You have no recent orders!</MudText>
-				}
-               
-            </ChildContent>
-            <TabContent>
-                Recent Orders
-            </TabContent>
-        </MudTabPanel>
-        <MudTabPanel>
-            <ChildContent>
-                @if (orderHistory.Any())
-                {
-                    @foreach (var order in orderHistory)
-                    {
-                        <OrderCard Order="@order" />
-                    }
-                }
-                else
-                {
-                    <MudText>You have no orders!</MudText>
-                }
-            </ChildContent>
-              
-            <TabContent>
-                Order History
-            </TabContent>
-        </MudTabPanel>
-    </MudTabs>
-
+        @if (recentOrders.Any())
+        {
+            @foreach (var order in recentOrders)
+            {
+            <!-- <OrderCard Order="@order" -->
+            }
+        }
+        else
+        {
+            <MudText>You have no recent orders!</MudText>
+        }
 
 </MudContainer>
 @code {
-  
+
     private List<OrderDTO> recentOrders = new();
     private List<OrderDTO> orderHistory = new();
-   // private OrderDTO? selectedOrder = new();
+    // private OrderDTO? selectedOrder = new();
     [Inject]
     private IAuthService AuthService { get; set; }
 
@@ -77,19 +46,19 @@
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        int customerId = 3;
-        recentOrders = await OrderService.GetOrdersByRole("customer", customerId, true);
-        orderHistory = await OrderService.GetOrdersByRole("customer", customerId, false);
+        int workerId = 9;
+        recentOrders = await OrderService.GetOrdersByRole("worker", workerId, true);
+       
     }
     private void ShowOrderDetails(OrderDTO order)
     {
         //selectedOrderItems = order.OrderItems;
     }
     bool _expanded = true;
-   
+
     private void OnExpandCollapseClick()
     {
         _expanded = !_expanded;
     }
- 
+
 }
