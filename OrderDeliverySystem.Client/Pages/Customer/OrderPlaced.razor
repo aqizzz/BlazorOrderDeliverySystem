@@ -191,11 +191,11 @@ else
 
     }
 
-    private async Task LoadCreateOrder(int cartId)
+    private async Task LoadCreateOrder()
     {
         try
         {
-            var response = await Orderservice.GetPlacedOrder(cartId);
+            var response = await Orderservice.GetOrderByCart();
 
             if (response != null)
             {

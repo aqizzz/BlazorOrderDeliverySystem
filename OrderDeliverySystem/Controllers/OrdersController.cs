@@ -609,7 +609,7 @@ namespace OrderDeliverySystemApi.Controllers
 
             return Ok(orderDto);
         }
-        /*// GET: api/cart/getCart/{customerId}
+        /// GET: api/cart/getCart/{customerId}
         [HttpGet("getCart")]
         public async Task<IActionResult> GetCartItems()
         {
@@ -654,41 +654,7 @@ namespace OrderDeliverySystemApi.Controllers
                 Quantity = i.Quantity,
             }).ToList();
 
-            var merchant = await _context.Merchants
-                .Include(m => m.User)
-                .ThenInclude(u => u.Addresses)
-                .Include(m => m.Items)
-                .FirstOrDefaultAsync();
-        
-            if (merchant == null)
-            {
-
-                return NotFound("Items not found.");
-            }
-
-            var merchantDto =  new GetMerchantResponseDTO
-            {
-
-                MerchantId = merchant.MerchantId,
-                UserId = merchant.UserId,
-                BusinessName = merchant.BusinessName,
-                MerchantDescription = merchant.MerchantDescription,
-                MinTime = merchant.PreparingTime.HasValue ? merchant.PreparingTime.Value + 15 : 30,
-                MaxTime = merchant.PreparingTime.HasValue ? merchant.PreparingTime.Value + 30 : 45,
-                FullAddress = merchant.User.Addresses.Select(ad => new AddressDTO
-                {
-                    AddressId = ad.AddressId,
-                    UserId = ad.UserId,
-                    Type = ad.Type,
-                    Unit = ad.Unit,
-                    Address = ad.Address,
-                    City = ad.City,
-                    Province = ad.Province,
-                    Postcode = ad.Postcode,
-
-                }).FirstOrDefault(),
-                OrderList = itemDto
-            };
+          
             
             
 
@@ -707,7 +673,7 @@ namespace OrderDeliverySystemApi.Controllers
 
             return Ok(cartDto);
         }
-*/
+
 
         /*[HttpGet("getOrderByCart")]
 
