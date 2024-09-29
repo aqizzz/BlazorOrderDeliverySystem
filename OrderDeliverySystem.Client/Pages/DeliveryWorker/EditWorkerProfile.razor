@@ -203,7 +203,7 @@ else if (model != null)
 
 
     public bool ShowErrors { get; set; } = false;
-    public IEnumerable<string> Errors { get; set; } = new List<string>();
+    public string Errors { get; set; } = string.Empty;
 
     private int userId = 2;
     private bool isLoading = true;
@@ -249,7 +249,7 @@ else if (model != null)
         }
         else
         {
-            Errors = result.Errors;
+            Errors = result.Error;
             ShowErrors = true;
         }
     }

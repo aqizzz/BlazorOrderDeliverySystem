@@ -52,7 +52,7 @@
 
     public bool ShowErrors { get; set; } = false;
 
-    public IEnumerable<string> Errors { get; set; } = new List<string>();
+    public string Errors { get; set; } = string.Empty;
 
     private string message { get; set; } = string.Empty;
     private string alertClass { get; set; } = string.Empty;
@@ -86,7 +86,7 @@
         else
         {
             // Registration failed
-            this.Errors = result.Errors;
+            this.Errors = result.Error;
             this.ShowErrors = true;
         }
 
