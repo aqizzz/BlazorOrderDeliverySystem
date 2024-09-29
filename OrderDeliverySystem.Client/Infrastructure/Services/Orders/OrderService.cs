@@ -1,7 +1,5 @@
-
 using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using OrderDeliverySystem.Share.Data;
@@ -9,7 +7,6 @@ using OrderDeliverySystem.Share.DTOs;
 using OrderDeliverySystem.Share.DTOs.CartDTO;
 using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO;
 using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO.OrderDeliverySystem.Share.DTOs.CartDTO;
-using static OrderDeliverySystem.Client.Infrastructure.Services.Authentication.AuthService;
 
 namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 {
@@ -42,14 +39,6 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 			var orders = await httpClient.GetFromJsonAsync<List<OrderDTO>>(uri);
 			return orders ?? new List<OrderDTO>();
 		}
-        public async Task<OrderDTO> GetOrderByIdAsync( int id)
-        {
-            var httpClient = this.httpClientFactory.CreateClient("API");
-            var uri = $"{Base}order/{id}";
-            Console.WriteLine($"making request to {uri}");
-            var order = await httpClient.GetFromJsonAsync<OrderDTO>(uri);
-            return order ?? new OrderDTO();
-        }
 
         public async Task<List<OrderDTO>> GetOrdersTableByRole(string role, int id, bool recent )
         {
@@ -74,16 +63,10 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 
             if (!response.IsSuccessStatusCode)
             {
-                var responseContent = await response.Content.ReadAsStringAsync();
-
-
-                var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(responseContent, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-
-                return Result.Failure(errorResponse?.Error ?? "An unknown error occurred.");
+                var errors = await response.Content.ReadFromJsonAsync<string[]>();
+                return errors != null
+                    ? Result.Failure(errors) // Return the errors if present
+                    : Result.Failure(new[] { "An unknown error occurred." });
             }
 
             return Result.Success;
