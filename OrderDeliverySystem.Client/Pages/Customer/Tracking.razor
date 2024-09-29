@@ -1,13 +1,33 @@
 ﻿@page "/tracking/{id}"
-@attribute [Authorize(Roles = "Customer")]
+@*attribute [Authorize(Roles = "Customer")]*@
 @using Microsoft.AspNetCore.Authorization;
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using OrderDeliverySystem.Client.Shared
+@using OrderDeliverySystem.Share.DTOs
 @using System.ComponentModel.DataAnnotations
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
+
+
+@inject OrderService OrderService
+@inject GeocodingService GeocodingService
+
+
+@using OrderDeliverySystem.Client.Infrastructure.Services.Orders;
+@using OrderDeliverySystem.Client.Shared.Common
+
+@using OrderDeliverySystem.Share.Data
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+
+
+
+@if(order != null)
+{
+    
 
 <MudContainer Class="my-10">
     <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My Orders</MudText>
@@ -24,27 +44,28 @@
     <MudItem xs="12" sm="12" md="3">
         <MudGrid>
             <MudItem xs="12">
-                <MudText Class="pb-2" Typo="Typo.h5">Merchant Name</MudText>
+                    <MudText Class="pb-2" Typo="Typo.h5">@order.Merchant.BusinessName</MudText>
                 <div Class="pb-2">
                 <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.AccessTime"></MudIcon>
-                <MudText Class="d-inline-block" Typo="Typo.body2">Time: 40 ~ 50 mins</MudText>
+                            <MudText Class="d-inline-block" Typo="Typo.body2">Time: @order.Merchant.PreparingTime mins</MudText>
                 </div>
                 <div Class="pb-2">
                 <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.LocationOn"></MudIcon>
-                <MudText Class="d-inline-block" Typo="Typo.body2">Address: This Merchant's Address'</MudText>
+                            <MudText Class="d-inline-block" Typo="Typo.body2">Address: @order.Merchant.User.Addresses.FirstOrDefault().FullAddress</MudText>
                 </div>
             </MudItem>
         </MudGrid>
     </MudItem>
     <MudItem xs="12" sm="12" md="5" Class="d-flex justify-content-center align-item-center"  GutterBottom="true">
        <div>
-        <MudText Typo="Typo.body1" Align="Align.Center" >Order Time: 09/14/2024 18:45</MudText>
+                <MudText Typo="Typo.body1" Align="Align.Center">
+                    Order Time: @order.CreatedAt.ToString("MM/dd/yy hh:mm tt")</MudText>
         <MudText Typo="Typo.body1" Align="Align.Center" >Arrived time: 09/14/2024 19:25</MudText>
-        <MudText Typo="Typo.body1" Align="Align.Center" >Status: Approved</MudText>
+                    <MudText Typo="Typo.body1" Align="Align.Center">Status: @order.Status</MudText>
         </div>
     </MudItem>
     <MudItem xs="12" sm="12" md="2" >
-        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount:</MudText>
+            <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount: $@order.TotalAmount</MudText>
     </MudItem>
         <MudItem xs="12" sm="12" md="12" Class=" border-t-4 border-solid mt-4" Style="border-color:rgba(112, 0, 0, 1);">
         <MudCollapse Expanded="_expanded">
@@ -63,18 +84,70 @@
             </MudGrid>
                 <MudDivider Class="border-b-2 border-solid mt-4" Style="border-color:rgba(112, 0, 0, 1);"></MudDivider>
         </MudCollapse>
-            <gmp-map center="37.4220656,-122.0840897"
+           @* <gmp-map center="37.4220656,-122.0840897"
                      zoom="10"
                      map-id="DEMO_MAP_ID"
-                     style="height: 600px"></gmp-map>
-      
-    </MudItem>
+            style="height: 600px"></gmp-map>*@
+            @if (MerchantLat != 0 && CustomerLat != 0){
+                <GoogleMap MerchantLat="@MerchantLat" MerchantLng="@MerchantLng" CustomerLat="@CustomerLat" CustomerLng="@CustomerLng" Id="@orderId"/>
+            }
+            else
+            {
+                <MudText>Loading map...</MudText>
+            }
+        </MudItem>
 </MudGrid>
 </MudContainer>
-
+}
 @code {
     [Parameter]
     public string Id { get; set; }
+
+    private OrderDTO order;
+
+    private double MerchantLat;
+    private double MerchantLng;
+    private double CustomerLat;
+    private double CustomerLng;
+    private int orderId;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        @*await base.OnInitializedAsync();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;*@
+         orderId = int.Parse(Id);
+        Console.WriteLine($"Fetching order with ID: {Id}");
+        try
+        {
+            order = await OrderService.GetOrderByIdAsync(orderId);
+
+            if (order == null)
+            {
+                Console.WriteLine("Order is null!");
+                return;
+            }
+
+        }catch(Exception ex)
+        {
+            Console.WriteLine($"Error fetching order: {ex.Message}");
+        }
+
+
+        var merchantAddress = order.Merchant.User.Addresses.FirstOrDefault().FullAddress;
+        var customerAddress = order.Customer.User.Addresses.FirstOrDefault().FullAddress;
+        Console.WriteLine($"MAddress: {merchantAddress}");
+        Console.WriteLine($"CAddress: {customerAddress}");
+
+        if (merchantAddress != null && customerAddress != null)
+        {
+            (MerchantLat, MerchantLng) = await GeocodingService.GetCoordinatesFromAddressAsync(merchantAddress);
+            (CustomerLat, CustomerLng) = await GeocodingService.GetCoordinatesFromAddressAsync(customerAddress);
+        }
+        Console.WriteLine($"MCoordinates: {MerchantLat}, { MerchantLng}");
+        Console.WriteLine($"CCoordinates: {CustomerLat}, {CustomerLng}");
+    }
 
     protected override void OnInitialized()
     {

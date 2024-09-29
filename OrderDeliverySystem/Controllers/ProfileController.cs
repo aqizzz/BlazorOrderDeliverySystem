@@ -21,7 +21,7 @@ namespace OrderDeliverySystem.Controllers
 
             var profile = await GetUserProfile(userId);
             if (profile == null)
-                return NotFound("User not found");
+                return NotFound(new { Error = "User not found" });
 
             return Ok(profile);
         }
@@ -37,7 +37,7 @@ namespace OrderDeliverySystem.Controllers
 
             var profile = await GetUserProfile(userId);
             if (profile == null)
-                return NotFound("User not found");
+                return NotFound(new { Error = "User not found" });
 
             return Ok(profile);
         }
@@ -52,7 +52,7 @@ namespace OrderDeliverySystem.Controllers
 
             if (profile == null)
             {
-                return NotFound("Worker not found");
+                return NotFound(new { Error = "Worker not found" });
             }
 
             return Ok(profile);
@@ -71,7 +71,7 @@ namespace OrderDeliverySystem.Controllers
 
             if (profile == null)
             {
-                return NotFound("Worker not found");
+                return NotFound(new { Error = "Worker not found" });
             }
 
             return Ok(profile);
@@ -85,7 +85,7 @@ namespace OrderDeliverySystem.Controllers
 
             if (profile == null)
             {
-                return NotFound("Merchant not found");
+                return NotFound(new { Error = "Merchant not found" });
             }
 
             return Ok(profile);
@@ -98,7 +98,7 @@ namespace OrderDeliverySystem.Controllers
 
             if (profile == null)
             {
-                return NotFound("Merchant not found");
+                return NotFound(new { Error = "Merchant not found" });
             }
 
             return Ok(profile);
@@ -117,7 +117,7 @@ namespace OrderDeliverySystem.Controllers
 
             if (dto == null)
             {
-                return BadRequest("Profile data is required.");
+                return BadRequest(new { Error = "Profile data is required." });
             }
 
             using var transaction = await context.Database.BeginTransactionAsync();
@@ -125,12 +125,12 @@ namespace OrderDeliverySystem.Controllers
             var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == dto.UserId);
             if (user == null)
             {
-                return NotFound("User not found.");
+                return NotFound(new { Error = "User not found." });
             }
 
             var existingUserWithEmail = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.UserId != dto.UserId);
             if (existingUserWithEmail != null)
-                return Conflict("Email already exists for another user");
+                return Conflict(new { Error = "Email already exists for another user" });
 
             var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == dto.UserId && a.Type == "Main");
             if (address == null)
@@ -169,7 +169,7 @@ namespace OrderDeliverySystem.Controllers
 
             if (dto == null)
             {
-                return BadRequest("Profile data is required.");
+                return BadRequest(new { Error = "Profile data is required." });
             }
 
 
@@ -177,15 +177,15 @@ namespace OrderDeliverySystem.Controllers
 
             var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == dto.UserId);
             if (user == null)
-                return NotFound("User not found");
+                return NotFound(new { Error = "User not found" });
 
             var existingUserWithEmail = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.UserId != dto.UserId);
             if (existingUserWithEmail != null)
-                return Conflict("Email already exists for another user");
+                return Conflict(new { Error = "Email already exists for another user" });
 
             var worker = await context.DeliveryWorkers.FirstOrDefaultAsync(d => d.UserId == dto.UserId);
             if (worker == null)
-                return NotFound("Delivery worker not found");
+                return NotFound(new { Error = "Delivery worker not found" });
 
             var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == dto.UserId && a.Type == "Main");
             if (address == null)
@@ -225,7 +225,7 @@ namespace OrderDeliverySystem.Controllers
 
             if (dto == null)
             {
-                return BadRequest("Profile data is required.");
+                return BadRequest(new { Error = "Profile data is required." });
             }
 
 
@@ -233,15 +233,15 @@ namespace OrderDeliverySystem.Controllers
 
             var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == dto.UserId);
             if (user == null)
-                return NotFound("User not found");
+                return NotFound(new { Error = "User not found" });
 
             var merchant = await context.Merchants.FirstOrDefaultAsync(m => m.UserId == dto.UserId);
             if (merchant == null)
-                return NotFound("Merchant not found");
+                return NotFound(new { Error = "Merchant not found" });
 
             var existingUserWithEmail = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.UserId != dto.UserId);
             if (existingUserWithEmail != null)
-                return Conflict("Email already exists for another user");
+                return Conflict(new { Error = "Email already exists for another user" });
 
             var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == dto.UserId && a.Type == "Main");
             if (address == null)
@@ -279,7 +279,7 @@ namespace OrderDeliverySystem.Controllers
 
             if (merchants == null || !merchants.Any()) // Check if the list is null or empty
             {
-                return NotFound("Merchant not found");
+                return NotFound(new { Error = "Merchant not found" });
             }
 
 

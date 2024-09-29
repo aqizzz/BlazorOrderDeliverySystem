@@ -1,0 +1,41 @@
+﻿@inject IJSRuntime JSRuntime
+
+<h3>GoogleMap</h3>
+<div id="map" style="height: 600px; width: 100%;"></div>
+
+@code {
+	[Parameter]
+	public int Id { get; set; }
+	[Parameter]
+	public double MerchantLat { get; set; }
+	[Parameter]
+	public double MerchantLng { get; set; }
+	[Parameter]
+	public double CustomerLat { get; set; }
+	[Parameter]
+	public double CustomerLng { get; set; }
+	//Default Location
+	@*[Parameter]
+	public double MerchantLat { get; set; } = 45.5083;
+	[Parameter]
+	public double MerchantLng { get; set; } = -73.5664;
+	[Parameter]
+	public double CustomerLat { get; set; } = 45.4961;
+	[Parameter]
+	public double CustomerLng { get; set; } = -73.5693;*@
+	[Parameter]
+	public int Zoom { get; set; } = 12;
+
+	//Calls map
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		
+		if (firstRender)
+		{
+			Console.WriteLine($"MapMCoordinates: {MerchantLat}, {MerchantLng}");
+			Console.WriteLine($"MapCCoordinates: {CustomerLat}, {CustomerLng}");
+			await JSRuntime.InvokeVoidAsync("initMap", MerchantLat, MerchantLng, CustomerLat, CustomerLng, Id);
+		
+		}
+	}
+}
