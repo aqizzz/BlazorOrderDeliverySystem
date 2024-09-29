@@ -18,11 +18,10 @@
 
 
 
- <MudContainer Class="my-10 d-flex justify-content-center align-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
 
 
 
- <MudContainer Class="my-10 d-flex justify-content-center align-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
+<MudContainer Class="my-10 d-flex justify-content-center align-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
 @if (isLoading)
 {
     <p>Loading profile...</p>
@@ -122,9 +121,7 @@ else if (model != null)
     </MudPaper>
     }
 </MudContainer>
-    </MudPaper>
-    }
-</MudContainer>
+
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }

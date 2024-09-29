@@ -50,11 +50,6 @@
 
     [Parameter]
     public int merchantUserId { get; set; }
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationState { get; set; }
-    private ClaimsPrincipal user;
-
-   
 
     [Inject]
     private IAuthService AuthService { get; set; }
@@ -91,7 +86,7 @@
             {
                 var httpClient = HttpClientFactory.CreateClient("API");
           
-                var response = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>($"api/items/merchant/{userId}");
+                var response = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>($"api/items/merchant/{merchantUserId}");
 
                 if (response != null)
                 {
