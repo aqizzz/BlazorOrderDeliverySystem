@@ -18,30 +18,62 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 			var requestUrl = $"https://maps.googleapis.com/maps/api/geocode/json?address={Uri.EscapeDataString(address)}&key={_googleApiKey}";
 
 			var response = await client.GetAsync(requestUrl);
-			if (response.IsSuccessStatusCode)
-			{
-				var json = await response.Content.ReadAsStringAsync();
-				var geocodingResult = JsonSerializer.Deserialize<GeocodingResponse>(json);
+            var json = await response.Content.ReadAsStringAsync();
 
-				if (geocodingResult?.Results != null && geocodingResult.Results.Any())
+            Console.WriteLine($"Response JSON: {json}");
+            if (response.IsSuccessStatusCode)
+			{
+				
+				var geocodingResult = JsonSerializer.Deserialize<GeocodingResponse>(json, new JsonSerializerOptions
 				{
-					var location = geocodingResult.Results.First().Geometry.Location;
-					return (location.Lat, location.Lng);
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+
+                Console.WriteLine($"Geocoding Status: {geocodingResult?.Status}");
+                Console.WriteLine($"Number of Results: {geocodingResult?.Results?.Count}"); 
+
+                if (geocodingResult?.Status == "OK" && geocodingResult.Results != null && geocodingResult.Results.Count > 0)
+				{
+					var geometery = geocodingResult.Results.First().Geometry;
+					if (geometery != null)
+					{
+						var location = geometery.Location;
+
+						if (location != null)
+						{
+							return (location.Lat, location.Lng);
+						}
+						else
+						{
+							throw new Exception("Location data is null.");
+						}
+					}
+					else
+					{
+                        throw new Exception("Geometry data is null.");
+                    }
+					
 				}
+				else
+				{
+                    throw new Exception($"Unable to retrieve coordinates. Status: {geocodingResult?.Status}. Response:{json}");
+                }
 			}
 
-			throw new Exception("Unable to retrieve coordinates.");
+			throw new Exception($"Error calling API. Status: {response.StatusCode} - {response.ReasonPhrase}");
 		}
 	}
 
 	public class GeocodingResponse
 	{
 		public List<GeocodingResult> Results { get; set; }
+		public string Status { get; set; }
 	}
 
 	public class GeocodingResult
 	{
 		public Geometry Geometry { get; set; }
+		public string FormattedAddress { get; set; }
 	}
 
 	public class Geometry

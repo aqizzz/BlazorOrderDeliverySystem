@@ -6,12 +6,17 @@ namespace OrderDeliverySystem.Hubs
 	{
 		public async Task UpdateLocation(string orderId, double latitude, double longitude)
 		{
-			await Clients.Group(orderId).SendAsync("RecieveLocationUpdate", latitude, longitude);
+			await Clients.Group(orderId).SendAsync("ReceiveLocationUpdate", latitude, longitude);
 		}
 
 		public async Task TrackOrder(string orderId)
 		{
-			await Groups.AddToGroupAsync(Context.ConnectionId, orderId);
+            if (string.IsNullOrEmpty(orderId))
+            {
+                Console.WriteLine("Invalid orderId received.");
+                throw new ArgumentException("Order ID cannot be null or empty.", nameof(orderId));
+            }
+            await Groups.AddToGroupAsync(Context.ConnectionId, orderId);
 		}
 		public async Task StopTrackingOrder(string orderId)
 		{

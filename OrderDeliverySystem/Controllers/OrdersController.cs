@@ -429,14 +429,18 @@ namespace OrderDeliverySystemApi.Controllers
         {
             var order = await _context.Orders
                 .Include(o => o.Customer)
+                    .ThenInclude(c => c.User)
+                    .ThenInclude(u => u.Addresses)
                 .Include(o => o.OrderItems)
                 .Include(o => o.Merchant)
+                .ThenInclude(m => m.User)
+                .ThenInclude(u => u.Addresses)
                 .Include(o => o.DeliveryWorker)
                 .FirstOrDefaultAsync(o => o.OrderId == id);
 
             if(order == null)
             {
-                return NotFound(new { message = "Order not found" });
+                return Ok(order);
             }
 
             var orderDTO = new OrderDTO
@@ -461,7 +465,7 @@ namespace OrderDeliverySystemApi.Controllers
                         Email = order.Customer.User.Email,
                         Phone = order.Customer.User.Phone,
                         Role = order.Customer.User.Role,
-                        Addresses = order.Customer.User.Addresses.Select(a => new AddressModelDTO1
+                        Addresses = order.Customer.User.Addresses?.Select(a => new AddressModelDTO1
                         {
                             Type = a.Type,
                             Unit = a.Unit,
@@ -469,7 +473,7 @@ namespace OrderDeliverySystemApi.Controllers
                             City = a.City,
                             Province = a.Province,
                             Postcode = a.Postcode,
-                        }).ToList()
+                        }).ToList() ?? new List<AddressModelDTO1>()
                     }
                 },
                 Merchant = new MerchantDTO1
@@ -487,7 +491,7 @@ namespace OrderDeliverySystemApi.Controllers
                         Email = order.Merchant.User.Email,
                         Phone = order.Merchant.User.Phone,
                         Role = order.Merchant.User.Role,
-                        Addresses = order.Merchant.User.Addresses.Select(a => new AddressModelDTO1
+                        Addresses = order.Merchant.User.Addresses?.Select(a => new AddressModelDTO1
                         {
                             Type = a.Type,
                             Unit = a.Unit,
@@ -495,16 +499,16 @@ namespace OrderDeliverySystemApi.Controllers
                             City = a.City,
                             Province = a.Province,
                             Postcode = a.Postcode
-                        }).ToList()
+                        }).ToList() ?? new List<AddressModelDTO1>()
                     }
                 },
-                OrderItems = order.OrderItems.Select(oi => new AppOrderItem
+                OrderItems = order.OrderItems?.Select(oi => new AppOrderItem
                 {
                     OrderItemId = oi.OrderItemId,
                     ItemId = oi.ItemId,
                     OrderId = oi.OrderId,
                     Quantity = oi.Quantity
-                }).ToList()
+                }).ToList() ?? new List<AppOrderItem>()
             };
             return Ok(orderDTO);
 

@@ -26,6 +26,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();
 builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<GeocodingService>();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
@@ -180,5 +181,10 @@ app.MapControllers();
 
 //Routing for tracker
 app.MapHub<OrderTrackingHub>("/orderTrackingHub");
+
+/*app.UseEndpoints(endpoints =>
+{
+    endpoints.MapHub<OrderTrackingHub>("/orderTrackingHub");
+});*/
 
 app.Run();
