@@ -175,7 +175,7 @@
                     <h3>Login Information</h3>
                 </MudItem>
                 <MudItem xs="12">
-                    <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
+                    <ErrorsList ShowErrors="@ShowErrors" Errors="@Errors" />
                     @if (ShowResult)
                     {
                         <MudAlert Severity="Severity.Success" ContentAlignment="HorizontalAlignment.Center" ShowCloseIcon="true">@message</MudAlert>
@@ -216,8 +216,8 @@
                 </MudItem>
 
                  <MudItem xs="12" Class="d-flex justify-content-start">
-                    <MudButton Class="m-2" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleCreateProfile())" >Create Merchant</MudButton>
-                    <MudButton Class="m-2" ButtonType="ButtonType.Reset" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LockReset" Color="Color.Primary">Reset</MudButton>
+                    <MudButton Class="m-2" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" >Create Merchant</MudButton>
+                            <MudButton Class="m-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LockReset" Color="Color.Primary" OnClick="@(()=>Reset())">Reset</MudButton>
                     <MudButton Class="m-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/user-management">Cancel</MudButton>
                 </MudItem>
             </MudGrid>
@@ -229,7 +229,7 @@
     {
         <EditForm Model="@workerModel" OnValidSubmit="HandleCreateProfile" FormName="profileForm">
             <ChildContent Context="workerFormContext">
-            <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
+            <ErrorsList ShowErrors="@ShowErrors" Errors="@Errors" />
             <DataAnnotationsValidator />
 
                 <MudGrid>
@@ -357,7 +357,7 @@
                         <h3>Login Information</h3>
                     </MudItem>
                     <MudItem xs="12">
-                        <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
+                        <ErrorsList ShowErrors="@ShowErrors" Errors="@Errors" />
                             @if (ShowResult)
                             {
                                 <MudAlert Severity="Severity.Success" ContentAlignment="HorizontalAlignment.Center" ShowCloseIcon="true" >@message</MudAlert>
@@ -397,11 +397,11 @@
                     <MudItem xs="2">
                     </MudItem>
 
-                    <MudItem xs="12">
-                        <div style="display: flex; justify-content: center;" class="mt-6">
-                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" Class="Class.object-center" OnClick="@(()=>HandleCreateProfile())">Create Delivery Worker</MudButton>
-                        </div>
-                    </MudItem>
+                        <MudItem xs="12" Class="d-flex justify-content-start">
+                            <MudButton Class="m-2" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error">Create Worker</MudButton>
+                            <MudButton Class="m-2"  Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LockReset" Color="Color.Primary" OnClick="@(()=>Reset())">Reset</MudButton>
+                            <MudButton Class="m-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/user-management">Cancel</MudButton>
+                        </MudItem>
                  </MudGrid>
             </ChildContent>
         </EditForm>
@@ -473,8 +473,6 @@
     }
 
 
-
-
     private async Task HandleCreateProfile()
     {
         Result result;
@@ -499,6 +497,49 @@
         {
             Errors = result.Error;
             ShowErrors = true;
+        }
+    }
+
+    void Reset()
+    {
+        @if (isWorker)
+        {
+            workerModel = new WorkerRegisterDTO
+                {
+                    UserId = 0,
+                    FirstName = null,
+                    LastName = null,
+                    Phone = "000-000-0000",
+                    Type = "Main",
+                    Unit = null,
+                    Address = null,
+                    City = null,
+                    Province = null,
+                    Postcode = null,
+                    WorkerAvailability = false,
+                    CommissionRate = 0,
+                    LastTaskAssigned = null
+                };
+        }
+        else
+        {
+            merchantModel = new MerchantRegisterDTO
+                {
+                    UserId = 0,
+                    FirstName = null,
+                    LastName = null,
+                    BusinessName = "New business",
+                    MerchantDescription = null,
+                    MerchantPic = null,
+                    Phone = "000-000-0000",
+                    Unit = null,
+                    Address = null,
+                    City = null,
+                    Province = null,
+                    Postcode = null,
+                    Type = "Main",
+                    PreparingTime = 0
+                };
         }
     }
 

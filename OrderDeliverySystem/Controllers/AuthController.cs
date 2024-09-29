@@ -193,6 +193,7 @@ namespace OrderDeliverySystemApi.Controllers
             };
 
             context.DeliveryWorkers.Add(newWorker);
+            await context.SaveChangesAsync();
 
             var newAddress = new AddressModel
             {
@@ -252,6 +253,7 @@ namespace OrderDeliverySystemApi.Controllers
             };
 
             context.Merchants.Add(newMerchant);
+            await context.SaveChangesAsync();
 
             var newAddress = new AddressModel
             {
