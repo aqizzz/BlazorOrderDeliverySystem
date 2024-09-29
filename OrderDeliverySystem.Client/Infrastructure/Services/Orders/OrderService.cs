@@ -4,6 +4,7 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
+using OrderDeliverySystem.Share.DTOs.CartDTO;
 
 namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 {
@@ -97,23 +98,34 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             return Result.Success;
         }
 
-        public async Task<CreateOrderDTO> GetPlacedOrder()
+        public async Task<CreateOrderDTO> GetPlacedOrder(int cartId)
         {
             
             var httpClient = this.httpClientFactory.CreateClient("API");
 
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
 
-            var uri = $"{Base}getOrderByCart";
-            var order = await httpClient.GetFromJsonAsync<CreateOrderDTO>(uri);
-           
-            return order?? new CreateOrderDTO();
+            var uri = $"{Base}getOrderByCart/{cartId}";
+
+            return await httpClient.GetFromJsonAsync<CreateOrderDTO>(uri);
         }
+
+
+        public async Task<CreateOrderDTO> GetOrderByCart()
+        {
+            var httpClient = httpClientFactory.CreateClient("API");
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+            var uri = $"{Base}getCart";
+            var response = await httpClient.GetFromJsonAsync<GetCartReponseDTO>(uri);
+            return await httpClient.GetFromJsonAsync<CreateOrderDTO>(uri);
+        }
+
 
         public Task<Result> CancelOrder(int orderId)
         {
             throw new NotImplementedException();
         }
+
     }
 }
 

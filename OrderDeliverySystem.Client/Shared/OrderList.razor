@@ -88,7 +88,11 @@
 
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
 
+    [Parameter]
+    public int UserId { get; set; }
     [Parameter]
     public bool recent { get; set; }
     [Parameter]
