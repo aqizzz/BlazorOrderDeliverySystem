@@ -169,7 +169,7 @@ namespace OrderDeliverySystem.Controllers
 
 
             if (merchant == null)
-                return NotFound("Merchant not found");
+                return NotFound(new { Error = "Merchant not found" });
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             var newItem = new Item

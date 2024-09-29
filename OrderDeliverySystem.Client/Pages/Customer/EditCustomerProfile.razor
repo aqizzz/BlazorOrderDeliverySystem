@@ -26,7 +26,7 @@ else if (model != null)
  <MudPaper Class="pa-16 ma-2" Elevation="3" Width="60%">
          
     <EditForm Model="@model" OnValidSubmit="HandleUpdateProfile" FormName="profileForm">
-        <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
+        <ErrorsList ShowErrors="@ShowErrors" Errors="@Errors" />
         <DataAnnotationsValidator />
         <MudGrid>
              <MudItem xs="12">
@@ -148,6 +148,8 @@ else if (model != null)
              </MudItem>
         </MudGrid>
     </EditForm>
+            <MudDivider DividerType="DividerType.Middle" Class="my-3" />
+            <ChangePassword/>
         </MudPaper>
 }
 </MudContainer>
@@ -164,7 +166,7 @@ else if (model != null)
 
 
     public bool ShowErrors { get; set; } = false;
-    public IEnumerable<string> Errors { get; set; } = new List<string>();
+    public string Errors { get; set; } = string.Empty;
 
     private bool isLoading = true;
 
@@ -204,10 +206,12 @@ else if (model != null)
         if (result.Succeeded)
         {
             ShowErrors = false;
+
+            NavigationManager.NavigateTo("/customer-profile");
         }
         else
         {
-            Errors = result.Errors;
+            Errors = result.Error;
             ShowErrors = true;
         }
     }

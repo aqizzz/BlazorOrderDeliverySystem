@@ -453,7 +453,7 @@
     private ClaimsPrincipal user;
 
     public bool ShowErrors { get; set; } = false;
-    public IEnumerable<string> Errors { get; set; } = new List<string>();
+    public string Errors { get; set; } = string.Empty;
 
     private bool isWorker { get; set; } = false;
 
@@ -498,7 +498,7 @@
         }
         else
         {
-            Errors = result.Errors;
+            Errors = result.Error;
             ShowErrors = true;
         }
     }
