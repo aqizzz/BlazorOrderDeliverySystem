@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Components.Authorization;
 using OrderDeliverySystem.Client.Infrastructure;
 using MudBlazor.Services;
 using OrderDeliverySystem.Client.Infrastructure.Services.Orders;
+using OrderDeliverySystem.Hubs;
+
 using OrderDeliverySystem.Client.Infrastructure.Services.Cart;
 using OrderDeliverySystem.Client.Infrastructure.Services.Item;
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +27,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddMudServices();
 
 builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<GeocodingService>();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
@@ -135,6 +138,8 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
 
+//Allows RealTime Location Sharing
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -177,5 +182,12 @@ app.MapRazorComponents<App>()
 
 app.MapControllers();
 
+//Routing for tracker
+app.MapHub<OrderTrackingHub>("/orderTrackingHub");
+
+/*app.UseEndpoints(endpoints =>
+{
+    endpoints.MapHub<OrderTrackingHub>("/orderTrackingHub");
+});*/
 
 app.Run();

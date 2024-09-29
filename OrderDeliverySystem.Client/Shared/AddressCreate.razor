@@ -204,7 +204,7 @@
 
     public bool ShowErrors { get; set; } = false;
     public string SuccessMessage { get; set; } = "";
-    public IEnumerable<string> Errors { get; set; } = new List<string>();
+    public string Errors { get; set; } = string.Empty;
 
     private bool isLoading = true;
 
@@ -249,7 +249,7 @@
         }
         else
         {
-            Errors = result.Errors;
+            Errors = result.Error;
             ShowErrors = true;
         }
     }

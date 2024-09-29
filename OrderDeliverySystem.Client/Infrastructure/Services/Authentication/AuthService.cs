@@ -21,6 +21,10 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Authentication
         private const string ChangePasswordPath = "/api/Auth/me/change-password";
         private const string WorkerRegisterPath = "/api/Auth/register/worker";
         private const string MerchantRegisterPath = "/api/Auth/register/merchant";
+        public class ErrorResponse
+        {
+            public string Error { get; set; }
+        }
 
         public AuthService(
             ILocalStorageService localStorage,
@@ -67,9 +71,16 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 
             if (!response.IsSuccessStatusCode)
             {
-                var errors = await response.Content.ReadFromJsonAsync<string[]>();
+                var responseContent = await response.Content.ReadAsStringAsync();
 
-                return Result.Failure(errors);
+
+                var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true 
+                });
+
+    
+                return Result.Failure(errorResponse?.Error ?? "An unknown error occurred.");
             }
 
             var responseAsString = await response.Content.ReadAsStringAsync();
@@ -93,6 +104,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Authentication
         public async Task<Result> ChangePassword(ChangePasswordRequestDto model)
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
             return await httpClient
                 .PostAsJsonAsync(ChangePasswordPath, model)
                 .ToResult();

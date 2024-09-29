@@ -1,5 +1,7 @@
-﻿using System.Net;
+using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using OrderDeliverySystem.Share.Data;
@@ -29,6 +31,12 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             this.authenticationStateProvider = authenticationStateProvider;
             this.httpClientFactory = httpClientFactory;
             this.tokenHelper = tokenHelper;
+        }
+
+
+        public class ErrorResponse
+        {
+            public string Error { get; set; }
         }
         public async Task<List<OrderDTO>> GetOrdersByRole(string role, int id, bool recent)
         {
@@ -63,10 +71,16 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 
             if (!response.IsSuccessStatusCode)
             {
-                var errors = await response.Content.ReadFromJsonAsync<string[]>();
-                return errors != null
-                    ? Result.Failure(errors) // Return the errors if present
-                    : Result.Failure(new[] { "An unknown error occurred." });
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+
+                var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+
+                return Result.Failure(errorResponse?.Error ?? "An unknown error occurred.");
             }
 
             return Result.Success;
@@ -92,10 +106,10 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             var response = await httpClient.PutAsJsonAsync(uri, order);
             if (!response.IsSuccessStatusCode)
             {
-                var errors = await response.Content.ReadFromJsonAsync<string[]>();
+                var errors = await response.Content.ReadFromJsonAsync<string>();
                 return errors != null
                     ? Result.Failure(errors) // Return the errors if present
-                    : Result.Failure(new[] { "An unknown error occurred." });
+                    : Result.Failure( "An unknown error occurred.");
             }
             return Result.Success;
         }
@@ -120,6 +134,15 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             var uri = $"{Base}getCart";
            
             return await httpClient.GetFromJsonAsync<GetOrderResponseDTO>(uri);
+        }
+
+        public async Task<OrderDTO> GetOrderByIdAsync(int id)
+        {
+            var httpClient = this.httpClientFactory.CreateClient("API");
+            var uri = $"{Base}order/{id}";
+            Console.WriteLine($"making request to {uri}");
+            var order = await httpClient.GetFromJsonAsync<OrderDTO>(uri);
+            return order ?? new OrderDTO();
         }
 
 
