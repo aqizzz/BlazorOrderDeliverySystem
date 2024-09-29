@@ -100,7 +100,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             return Result.Success;
         }
 
-        public async Task<CreateOrderDTO> GetPlacedOrder(int cartId)
+        public async Task<GetOrderResponseDTO> GetPlacedOrder(int cartId)
         {
             
             var httpClient = this.httpClientFactory.CreateClient("API");
@@ -109,7 +109,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 
             var uri = $"{Base}getOrderByCart/{cartId}";
 
-            return await httpClient.GetFromJsonAsync<CreateOrderDTO>(uri);
+            return await httpClient.GetFromJsonAsync<GetOrderResponseDTO>(uri);
         }
 
 
