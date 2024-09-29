@@ -114,6 +114,15 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
             return await httpClient.GetFromJsonAsync<MerchantProfileDTO>(path);
         }
 
+        public async Task<MerchantProfileDTO> GetMerchantProfileByItemId(int itemId)
+        {
+            var httpClient = this.httpClientFactory.CreateClient("API");
+
+            var path = GetMerchantPath + "/item/" + itemId;
+
+            return await httpClient.GetFromJsonAsync<MerchantProfileDTO>(path);
+        }
+
         public async Task<Result> UpdateMerchantProfile(MerchantProfileDTO model)
         {
             var httpClient = this.httpClientFactory.CreateClient("API");

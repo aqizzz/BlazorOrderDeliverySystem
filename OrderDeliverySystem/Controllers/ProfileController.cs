@@ -6,6 +6,8 @@ using OrderDeliverySystem.Share.Data.Models;
 using static OrderDeliverySystem.Share.Data.Constants.Merchant;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using static OrderDeliverySystem.Share.Data.Constants;
+using static MudBlazor.CategoryTypes;
 
 namespace OrderDeliverySystem.Controllers
 {
@@ -100,6 +102,42 @@ namespace OrderDeliverySystem.Controllers
             {
                 return NotFound(new { Error = "Merchant not found" });
             }
+
+            return Ok(profile);
+        }
+
+        [HttpGet("merchant/item/{itemId}")]
+        public async Task<IActionResult> GetMerchantInfoByItemId(int itemId)
+        {
+            var item = await context.Items
+                .Include(i => i.Merchant) 
+                .ThenInclude(m => m.User)
+                .ThenInclude(u => u.Addresses)
+                .FirstOrDefaultAsync(i => i.ItemId == itemId);
+
+            if (item == null)
+            {
+                return NotFound(new { Error = "Merchant not found" });
+            }
+
+            var profile =  new MerchantProfileDTO
+            {
+                UserId = item.Merchant.UserId,
+                FirstName = item.Merchant.User.FirstName,
+                LastName = item.Merchant.User.LastName,
+                Phone = item.Merchant.User.Phone,
+                Email = item.Merchant.User.Email,
+                BusinessName = item.Merchant.BusinessName ?? "New Business",
+                MerchantPic = item.Merchant.MerchantPic ?? "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png",
+                MerchantDescription = item.Merchant.MerchantDescription ?? "",
+                PreparingTime = item.Merchant.PreparingTime ?? 0,
+                Type = "Main",
+                Unit = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Unit ?? "",
+                Address = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Address ?? "",
+                City = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.City ?? "",
+                Province = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Province ?? "",
+                Postcode = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Postcode ?? ""
+            };
 
             return Ok(profile);
         }
