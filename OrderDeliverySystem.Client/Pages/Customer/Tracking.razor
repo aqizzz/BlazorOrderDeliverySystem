@@ -1,32 +1,25 @@
 ﻿@page "/tracking/{id}"
-@using MudBlazor
+@attribute [Authorize(Roles = "Customer")]
+@using Microsoft.AspNetCore.Authorization;
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using OrderDeliverySystem.Client.Shared
 @using OrderDeliverySystem.Share.DTOs
 @using System.ComponentModel.DataAnnotations
+@using OrderDeliverySystem.Client.Infrastructure.Services.Orders;
+@using OrderDeliverySystem.Client.Shared.Common
+@using OrderDeliverySystem.Share.Data
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
-@rendermode InteractiveServer
-
-
 @inject OrderService OrderService
 @inject GeocodingService GeocodingService
-
-
-@using OrderDeliverySystem.Client.Infrastructure.Services.Orders;
-@using OrderDeliverySystem.Client.Shared.Common
-
-@using OrderDeliverySystem.Share.Data
-@using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components.Authorization
-@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@rendermode InteractiveServer
 
 
 
 @if(order != null)
 {
-    
-
 <MudContainer Class="my-10">
     <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My Orders</MudText>
     <MudDivider Class=" border-2" Style="border-color:rgba(112, 0, 0, 1);" />
