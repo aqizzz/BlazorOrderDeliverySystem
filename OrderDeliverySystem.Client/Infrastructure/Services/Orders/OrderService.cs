@@ -39,9 +39,10 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 		}
         public async Task<OrderDTO> GetOrderByIdAsync( int id)
         {
+            var httpClient = this.httpClientFactory.CreateClient("API");
             var uri = $"{Base}order/{id}";
             Console.WriteLine($"making request to {uri}");
-            var order = await _httpClient.GetFromJsonAsync<OrderDTO>(uri);
+            var order = await httpClient.GetFromJsonAsync<OrderDTO>(uri);
             return order ?? new OrderDTO();
         }
 

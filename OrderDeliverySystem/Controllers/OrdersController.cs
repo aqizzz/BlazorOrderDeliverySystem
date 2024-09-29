@@ -22,7 +22,7 @@ namespace OrderDeliverySystemApi.Controllers
          {
          }*/
         [HttpGet("{id}")]
-       
+
         public async Task<ActionResult<Order>> GetOrder(int id)
         {
             var order = await _context.Orders
@@ -48,7 +48,7 @@ namespace OrderDeliverySystemApi.Controllers
         public async Task<ActionResult<Order>> CreateOrder(CreateOrderDTO orderDto)
         {
             // Fetch required entities from the database (Merchant and Customer)
-           
+
             var merchant = await _context.Merchants.FindAsync(orderDto.MerchantId);
             if (merchant == null)
             {
@@ -60,9 +60,9 @@ namespace OrderDeliverySystemApi.Controllers
             {
                 return NotFound($"Customer with ID {orderDto.CustomerId} not found.");
             }
-           
+
             var worker = await _context.DeliveryWorkers
-                .Where(w => w.WorkerAvailability == true ) // Ensure worker is available and has a task history
+                .Where(w => w.WorkerAvailability == true) // Ensure worker is available and has a task history
                 .OrderBy(w => w.LastTaskAssigned) // Get the worker with the oldest LastTaskAssigned date
                 .FirstOrDefaultAsync();
             if (worker == null)
@@ -74,7 +74,7 @@ namespace OrderDeliverySystemApi.Controllers
                 .Where(a => a.UserId == customer.UserId)
                 .ToListAsync(); // ToListAsync if it's a collection
             var isExist = false;
-            int dropoffAddressId=0;
+            int dropoffAddressId = 0;
 
 
             if (customerAddresses == null)
@@ -85,8 +85,8 @@ namespace OrderDeliverySystemApi.Controllers
             {
                 foreach (var address in customerAddresses)
                 {
-                   if(address == null) continue;
-                   if (address.Unit!=null && address.Address != null && address.City != null && address.Province != null && address.Postcode != null)
+                    if (address == null) continue;
+                    if (address.Unit != null && address.Address != null && address.City != null && address.Province != null && address.Postcode != null)
                     {
                         if (address.Unit.Equals(orderDto.Unit) && address.Address.Equals(orderDto.Address) && address.City.Equals(orderDto.City) && address.Province.Equals(orderDto.Province) && address.Postcode.Equals(orderDto.PostCode))
                         {
@@ -95,10 +95,10 @@ namespace OrderDeliverySystemApi.Controllers
                             break;
                         }
                     }
-                        
+
                 }
             }
-           
+
             if (!isExist) {
                 AddressModel newAddress = new AddressModel()
                 {
@@ -141,7 +141,7 @@ namespace OrderDeliverySystemApi.Controllers
                 UpdatedAt = DateTime.Now,
                 Merchant = merchant,
                 Customer = customer,
-               
+
 
             };
 
@@ -177,10 +177,10 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
         [HttpPut("update")]
-     
+
         public async Task<IActionResult> UpdateOrder(OrderDTO updatedOrder)
         {
-          
+
 
             var order = await _context.Orders.FindAsync(updatedOrder.OrderId);
             if (order == null)
@@ -189,7 +189,7 @@ namespace OrderDeliverySystemApi.Controllers
             }
 
             // Update order fields
-           
+
             order.Status = updatedOrder.Status;
             order.UpdatedAt = DateTime.Now;
 
@@ -202,8 +202,8 @@ namespace OrderDeliverySystemApi.Controllers
                 Order = order,
                 OrderId = order.OrderId,
                 AssignedTime = DateTime.Now,
-                WorkerId= order.DeliveryWorker.WorkerId,
-                DeliveryWorker=order.DeliveryWorker,
+                WorkerId = order.DeliveryWorker.WorkerId,
+                DeliveryWorker = order.DeliveryWorker,
                 Status = updatedOrder.Status,
             };
             _context.DeliveryTasks.Add(newTracking);
@@ -265,7 +265,7 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
         [HttpDelete("{id}")]
-      
+
         public async Task<IActionResult> DeleteOrder(int id)
         {
             var order = await _context.Orders.FindAsync(id);
@@ -287,7 +287,7 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
         [HttpGet("{role}/{id}")]
-        public async Task<IActionResult> GetOrdersByRole(string role, int id,  bool recent = false)
+        public async Task<IActionResult> GetOrdersByRole(string role, int id, bool recent = false)
         {
             IQueryable<Order> query = _context.Orders
                 .Include(o => o.Customer)
@@ -417,7 +417,7 @@ namespace OrderDeliverySystemApi.Controllers
 
         }
         [HttpGet("order/{id}")]
-        public async Task<IActionResult> GetOrderByID( int id)
+        public async Task<IActionResult> GetOrderByID(int id)
         {
             var order = await _context.Orders
                 .Include(o => o.Customer)
@@ -430,7 +430,7 @@ namespace OrderDeliverySystemApi.Controllers
                 .Include(o => o.DeliveryWorker)
                 .FirstOrDefaultAsync(o => o.OrderId == id);
 
-            if(order == null)
+            if (order == null)
             {
                 return Ok(order);
             }
@@ -506,112 +506,113 @@ namespace OrderDeliverySystemApi.Controllers
 
 
 
-        [HttpGet("table/{role}/{userId}")]
-        public async Task<IActionResult> GetOrdersTableByRole(string role ,int userId, bool recent, int pageNumber = 1, int pageSize = 10)
-        {
-              IQueryable<Order> query = _context.Orders
-                .Include(o => o.Customer)
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Item)
-                .Include(o => o.Merchant)
-                .Include(o => o.DeliveryWorker);
-            
-
-            switch (role.ToLower())
+            [HttpGet("table/{role}/{userId}")]
+             async Task<IActionResult> GetOrdersTableByRole(string role, int userId, bool recent, int pageNumber = 1, int pageSize = 10)
             {
-                case "customer":
-                    query = query.Where(o => o.Customer.UserId == userId); break;
-                case "merchant":
-                    query = query.Where(o => o.Merchant.UserId == userId); break;
-                case "worker":
-                    query = query.Where(o => o.DeliveryWorker.UserId == userId); break;
-            }
-
-            if (recent)
-            {
-                query = query.Where(o => o.Status != "Delivered");
-            }
-            else
-            {
-                query = query.Where(o => o.Status == "Delivered" || o.Status == "Cancelled");
-            }
+                IQueryable<Order> query = _context.Orders
+                  .Include(o => o.Customer)
+                  .Include(o => o.OrderItems)
+                      .ThenInclude(oi => oi.Item)
+                  .Include(o => o.Merchant)
+                  .Include(o => o.DeliveryWorker);
 
 
-            // 将 Item 实体转换为 ViewItemDTO
-            var orders = await query
-                .OrderByDescending(o => o.CreatedAt)
-                .Select(o => new OrderDTO
+                switch (role.ToLower())
                 {
-                    OrderId = o.OrderId,
-                    CustomerId = o.CustomerId,
-                    MerchantId = o.MerchantId,
-                    WorkerId = o.WorkerId,
-                    TotalAmount = o.TotalAmount,
-                    CreatedAt = o.CreatedAt,
-                    Status = o.Status,
-                    Customer = new CustomerDTO1
-                    {
-                        CustomerId = o.Customer.CustomerId,
-                        User = new UserDTO1
-                        {
-                            UserId = o.Customer.User.UserId,
-                            FirstName = o.Customer.User.FirstName,
-                            LastName = o.Customer.User.LastName,
-                            Email = o.Customer.User.Email,
-                            Phone = o.Customer.User.Phone,
-                            Role = o.Customer.User.Role,
-                            Addresses = o.Customer.User.Addresses.Select(a => new AddressModelDTO1
-                            {
-                                Type = a.Type,
-                                Unit = a.Unit,
-                                Address = a.Address,
-                                City = a.City,
-                                Province = a.Province,
-                                Postcode = a.Postcode,
-                            }).ToList()
-                        }
-                    },
-                    Merchant = new MerchantDTO1
-                    {
-                        MerchantId = o.Merchant.MerchantId,
-                        BusinessName = o.Merchant.BusinessName,
-                        MerchantPic = o.Merchant.MerchantPic,
-                        MerchantDescription = o.Merchant.MerchantDescription,
-                        PreparingTime = o.Merchant.PreparingTime,
-                        User = new UserDTO1
-                        {
-                            UserId = o.Merchant.User.UserId,
-                            FirstName = o.Merchant.User.FirstName,
-                            LastName = o.Merchant.User.LastName,
-                            Email = o.Merchant.User.Email,
-                            Phone = o.Merchant.User.Phone,
-                            Role = o.Merchant.User.Role,
-                            Addresses = o.Merchant.User.Addresses.Select(a => new AddressModelDTO1
-                            {
-                                Type = a.Type,
-                                Unit = a.Unit,
-                                Address = a.Address,
-                                City = a.City,
-                                Province = a.Province,
-                                Postcode = a.Postcode
-                            }).ToList()
-                        }
-                    },
-                    OrderItems = o.OrderItems.Select(oi => new AppOrderItem
-                    {
-                        OrderItemId = oi.OrderItemId,
-                        ItemId = oi.ItemId,
-                        ItemName = oi.Item.ItemName,
-                        OrderId = oi.OrderId,
-                        Quantity = oi.Quantity
+                    case "customer":
+                        query = query.Where(o => o.Customer.UserId == userId); break;
+                    case "merchant":
+                        query = query.Where(o => o.Merchant.UserId == userId); break;
+                    case "worker":
+                        query = query.Where(o => o.DeliveryWorker.UserId == userId); break;
+                }
 
-                    }).ToList()
-                })
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+                if (recent)
+                {
+                    query = query.Where(o => o.Status != "Delivered");
+                }
+                else
+                {
+                    query = query.Where(o => o.Status == "Delivered" || o.Status == "Cancelled");
+                }
 
-            return Ok(orders);
+
+                // 将 Item 实体转换为 ViewItemDTO
+                var orders = await query
+                    .OrderByDescending(o => o.CreatedAt)
+                    .Select(o => new OrderDTO
+                    {
+                        OrderId = o.OrderId,
+                        CustomerId = o.CustomerId,
+                        MerchantId = o.MerchantId,
+                        WorkerId = o.WorkerId,
+                        TotalAmount = o.TotalAmount,
+                        CreatedAt = o.CreatedAt,
+                        Status = o.Status,
+                        Customer = new CustomerDTO1
+                        {
+                            CustomerId = o.Customer.CustomerId,
+                            User = new UserDTO1
+                            {
+                                UserId = o.Customer.User.UserId,
+                                FirstName = o.Customer.User.FirstName,
+                                LastName = o.Customer.User.LastName,
+                                Email = o.Customer.User.Email,
+                                Phone = o.Customer.User.Phone,
+                                Role = o.Customer.User.Role,
+                                Addresses = o.Customer.User.Addresses.Select(a => new AddressModelDTO1
+                                {
+                                    Type = a.Type,
+                                    Unit = a.Unit,
+                                    Address = a.Address,
+                                    City = a.City,
+                                    Province = a.Province,
+                                    Postcode = a.Postcode,
+                                }).ToList()
+                            }
+                        },
+                        Merchant = new MerchantDTO1
+                        {
+                            MerchantId = o.Merchant.MerchantId,
+                            BusinessName = o.Merchant.BusinessName,
+                            MerchantPic = o.Merchant.MerchantPic,
+                            MerchantDescription = o.Merchant.MerchantDescription,
+                            PreparingTime = o.Merchant.PreparingTime,
+                            User = new UserDTO1
+                            {
+                                UserId = o.Merchant.User.UserId,
+                                FirstName = o.Merchant.User.FirstName,
+                                LastName = o.Merchant.User.LastName,
+                                Email = o.Merchant.User.Email,
+                                Phone = o.Merchant.User.Phone,
+                                Role = o.Merchant.User.Role,
+                                Addresses = o.Merchant.User.Addresses.Select(a => new AddressModelDTO1
+                                {
+                                    Type = a.Type,
+                                    Unit = a.Unit,
+                                    Address = a.Address,
+                                    City = a.City,
+                                    Province = a.Province,
+                                    Postcode = a.Postcode
+                                }).ToList()
+                            }
+                        },
+                        OrderItems = o.OrderItems.Select(oi => new AppOrderItem
+                        {
+                            OrderItemId = oi.OrderItemId,
+                            ItemId = oi.ItemId,
+                            ItemName = oi.Item.ItemName,
+                            OrderId = oi.OrderId,
+                            Quantity = oi.Quantity
+
+                        }).ToList()
+                    })
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                return Ok(orders);
+            }
         }
-    }
-}
+    } }
+
