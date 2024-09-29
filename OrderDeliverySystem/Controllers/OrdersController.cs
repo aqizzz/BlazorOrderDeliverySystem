@@ -4,10 +4,9 @@ using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
 using OrderDeliverySystem.Share.Data.Models;
 using System.Security.Claims;
-using static OrderDeliverySystem.Share.Data.Constants;
-using static MudBlazor.CategoryTypes;
-using OrderDeliverySystem.Share.DTOs.CartDTO;
 using Microsoft.AspNetCore.Authorization;
+
+
 
 namespace OrderDeliverySystemApi.Controllers
 {
@@ -610,7 +609,7 @@ namespace OrderDeliverySystemApi.Controllers
 
             return Ok(orderDto);
         }
-        // GET: api/cart/getCart/{customerId}
+        /*// GET: api/cart/getCart/{customerId}
         [HttpGet("getCart")]
         public async Task<IActionResult> GetCartItems()
         {
@@ -627,9 +626,10 @@ namespace OrderDeliverySystemApi.Controllers
             }
 
             int customerId = customer.CustomerId;
-
             var cart = await _context.Carts
                 .Include(c => c.Customer)
+                .ThenInclude(cust => cust.User)
+                .ThenInclude(ca => ca.Addresses)
                 .Include(c => c.CartItems)
                 .ThenInclude(ci => ci.Item)
                 .FirstOrDefaultAsync(c => c.CustomerId == customerId);
@@ -637,16 +637,60 @@ namespace OrderDeliverySystemApi.Controllers
             if (cart == null)
             {
 
-                cart = new Cart
-                {
-                    CustomerId = customerId,
-                    Customer = customer,
-                    CartItems = new List<CartItem>()
-                };
-                _context.Carts.Add(cart);
-                await _context.SaveChangesAsync();
+                return NotFound("Customer not found.");
+            }
+            var cartItems = cart.CartItems;
+            if (cartItems == null)
+            {
+
+                return NotFound("Items not found.");
+            }
+            var itemDto = cartItems.Select(i => new GetOrderItemResposeDTO
+            {
+                ItemId = i.ItemId,
+                ItemName = i.Item.ItemName,
+                ItemPrice = i.Item.ItemPrice,
+                ItemPic = i.Item.ItemPic,  
+                Quantity = i.Quantity,
+            }).ToList();
+
+            var merchant = await _context.Merchants
+                .Include(m => m.User)
+                .ThenInclude(u => u.Addresses)
+                .Include(m => m.Items)
+                .FirstOrDefaultAsync();
+        
+            if (merchant == null)
+            {
+
+                return NotFound("Items not found.");
             }
 
+            var merchantDto =  new GetMerchantResponseDTO
+            {
+
+                MerchantId = merchant.MerchantId,
+                UserId = merchant.UserId,
+                BusinessName = merchant.BusinessName,
+                MerchantDescription = merchant.MerchantDescription,
+                MinTime = merchant.PreparingTime.HasValue ? merchant.PreparingTime.Value + 15 : 30,
+                MaxTime = merchant.PreparingTime.HasValue ? merchant.PreparingTime.Value + 30 : 45,
+                FullAddress = merchant.User.Addresses.Select(ad => new AddressDTO
+                {
+                    AddressId = ad.AddressId,
+                    UserId = ad.UserId,
+                    Type = ad.Type,
+                    Unit = ad.Unit,
+                    Address = ad.Address,
+                    City = ad.City,
+                    Province = ad.Province,
+                    Postcode = ad.Postcode,
+
+                }).FirstOrDefault(),
+                OrderList = itemDto
+            };
+            
+            
 
             var cartDto = new GetCartReponseDTO(
                 cart.CartId,
@@ -663,7 +707,7 @@ namespace OrderDeliverySystemApi.Controllers
 
             return Ok(cartDto);
         }
-
+*/
 
         /*[HttpGet("getOrderByCart")]
 

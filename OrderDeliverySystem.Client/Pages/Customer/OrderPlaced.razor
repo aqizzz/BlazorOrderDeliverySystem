@@ -43,12 +43,11 @@ else
     <MudContainer Class="my-3">
         <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Start" GutterBottom="true" Style="color:rgba(112, 0, 0, 1);">Place Order</MudText>
             <MudDivider Class=" border-2" Style="border-color:rgba(112, 0, 0, 1);" />
-           
-                
-
-  
-                    <MudGrid >
+          
+              <MudGrid >
                 <MudItem xs="12" sm="12" md="3">
+                    @if (merchant != null)
+                    {
                     <MudGrid Class="ps-10 " >
                         <MudItem xs="12" >
                              <MudImage Src="@merchant.MerchantPic" Width="120" Height="80" Alt="@merchant.FirstName" Class="rounded-lg mt-4" />
@@ -89,9 +88,9 @@ else
                            
                         </MudItem>
                     </MudGrid>
-
+                    }
                 </MudItem>
-        
+                
            
                 <MudItem xs="12" sm="9" md="9"> 
                     <MudGrid>
@@ -155,7 +154,7 @@ else
     private List<GetCartItemsResponseDTO> cartItems = new();
 
     private bool isLoading = true;
-    private MerchantDTO1 merchant { get; set; }
+    private MerchantProfileDTO merchant { get; set; }
     private List<CreateItemDTO> orderItems = new();
 
     bool success;
