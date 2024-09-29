@@ -16,133 +16,143 @@
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveAuto
 
-<br>
-<br />
-<br />
-<br />
+ <MudContainer Class="my-10 d-flex justify-content-center align-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
 @if (isLoading)
 {
     <p>Loading profile...</p>
 }
 else if (model != null)
 {
-<MudContainer>
+ <MudPaper Class="pa-16 ma-2" Elevation="3" Width="60%">
+         
     <EditForm Model="@model" OnValidSubmit="HandleUpdateProfile" FormName="profileForm">
-        <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
+        <ErrorsList ShowErrors="@ShowErrors" Errors="@Errors" />
         <DataAnnotationsValidator />
         <MudGrid>
+             <MudItem xs="12">
+                    <MudText Class="py-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">Edit profile</MudText>
+                        <div Style="display:none;">
+                            <MudTextField id="userId" @bind-Value="model.UserId" ReadOnly="true" />
+                        </div>
+             </MudItem>
+             <MudItem xs="12" Class="d-flex justify-content-center">
+                 <div class="object-center">
+                <MudGrid>
+                    <MudItem xs="2">
+                        <MudField Label="Firstname:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                                <MudTextField id="firstName" @bind-Value="model.FirstName" For="@(() => model.FirstName)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
 
-            <div Style="display:none;">
-                <MudTextField id="userId" @bind-Value="model.UserId" ReadOnly="true" />
-            </div>
-            <MudGrid>
-                <MudItem xs="2">
-                    <MudField Label="Firstname:" AlignLabel="Align.Start" Underline="false" />
-                </MudItem>
-                <MudItem xs="8">
-                    <MudField Underline="false">
-                            <MudTextField id="firstName" @bind-Value="model.FirstName" For="@(() => model.FirstName)" Variant="Variant.Filled" />
-                    </MudField>
-                </MudItem>
-                <MudItem xs="2">
-                </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
 
-                <MudItem xs="2">
-                    <MudField Label="Lastname:" AlignLabel="Align.Start" Underline="false" />
-                </MudItem>
-                <MudItem xs="8">
-                    <MudField Underline="false">
-                            <MudTextField id="lastName" @bind-Value="model.LastName" For="@(() => model.LastName)" Variant="Variant.Filled" />
-                    </MudField>
-                </MudItem>
-                <MudItem xs="2">
-                </MudItem>
+                    <MudItem xs="2">
+                        <MudField Label="Lastname:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                                <MudTextField id="lastName" @bind-Value="model.LastName" For="@(() => model.LastName)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
+                    
+                    <MudItem xs="2" >
+                        <MudField Label="Email:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                                        <MudTextField id="email" @bind-Value="model.Email" For="@(() => model.Email)" Variant="Variant.Filled" dissab="true" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
 
-                <MudItem xs="2">
-                    <MudField Label="Email:" AlignLabel="Align.Start" Underline="false" />
-                </MudItem>
-                <MudItem xs="8">
-                    <MudField Underline="false">
-                            <MudTextField id="email" @bind-Value="model.Email" For="@(() => model.Email)" Variant="Variant.Filled" />
-                    </MudField>
-                </MudItem>
-                <MudItem xs="2">
-                </MudItem>
+                    <MudItem xs="2">
+                        <MudField Label="Phone:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                                <MudTextField id="phone" @bind-Value="model.Phone" For="@(() => model.Phone)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
 
-                <MudItem xs="2">
-                    <MudField Label="Phone:" AlignLabel="Align.Start" Underline="false" />
-                </MudItem>
-                <MudItem xs="8">
-                    <MudField Underline="false">
-                            <MudTextField id="phone" @bind-Value="model.Phone" For="@(() => model.Phone)" Variant="Variant.Filled" />
-                    </MudField>
-                </MudItem>
-                <MudItem xs="2">
-                </MudItem>
+                    <MudItem xs="2">
+                        <MudField Label="Unit:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                                <MudTextField id="unit" @bind-Value="model.Unit" For="@(() => model.Unit)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
 
-                <MudItem xs="2">
-                    <MudField Label="Unit:" AlignLabel="Align.Start" Underline="false" />
-                </MudItem>
-                <MudItem xs="8">
-                    <MudField Underline="false">
-                            <MudTextField id="unit" @bind-Value="model.Unit" For="@(() => model.Unit)" Variant="Variant.Filled" />
-                    </MudField>
-                </MudItem>
-                <MudItem xs="2">
-                </MudItem>
+                    <MudItem xs="2">
+                        <MudField Label="Address:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                            <MudTextField id="address" @bind-Value="model.Address" For="@(() => model.Address)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
 
-                <MudItem xs="2">
-                    <MudField Label="Address:" AlignLabel="Align.Start" Underline="false" />
-                </MudItem>
-                <MudItem xs="8">
-                    <MudField Underline="false">
-                        <MudTextField id="address" @bind-Value="model.Address" For="@(() => model.Address)" Variant="Variant.Filled" />
-                    </MudField>
-                </MudItem>
-                <MudItem xs="2">
-                </MudItem>
+                    <MudItem xs="2">
+                        <MudField Label="City:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                            <MudTextField id="city" @bind-Value="model.City" For="@(() => model.City)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
 
-                <MudItem xs="2">
-                    <MudField Label="City:" AlignLabel="Align.Start" Underline="false" />
-                </MudItem>
-                <MudItem xs="8">
-                    <MudField Underline="false">
-                        <MudTextField id="city" @bind-Value="model.City" For="@(() => model.City)" Variant="Variant.Filled" />
-                    </MudField>
-                </MudItem>
-                <MudItem xs="2">
-                </MudItem>
+                    <MudItem xs="2">
+                        <MudField Label="Province:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                                <MudTextField id="province" @bind-Value="model.Province" For="@(() => model.Province)"  Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
 
-                <MudItem xs="2">
-                    <MudField Label="Province:" AlignLabel="Align.Start" Underline="false" />
-                </MudItem>
-                <MudItem xs="8">
-                    <MudField Underline="false">
-                            <MudTextField id="province" @bind-Value="model.Province" For="@(() => model.Province)"  Variant="Variant.Filled" />
-                    </MudField>
-                </MudItem>
-                <MudItem xs="2">
-                </MudItem>
-
-                <MudItem xs="2">
-                    <MudField Label="Postcode:" AlignLabel="Align.Start" Underline="false" />
-                </MudItem>
-                <MudItem xs="8">
-                    <MudField Underline="false">
-                        <MudTextField id="postcode" @bind-Value="model.Postcode" For="@(() => model.Postcode)" Variant="Variant.Filled" />
-                    </MudField>
-                </MudItem>
-            </MudGrid>
-            <MudItem xs="2">
+                    <MudItem xs="2">
+                        <MudField Label="Postcode:" AlignLabel="Align.Start" Underline="false" />
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudField Underline="false">
+                            <MudTextField id="postcode" @bind-Value="model.Postcode" For="@(() => model.Postcode)" Variant="Variant.Filled" />
+                        </MudField>
+                    </MudItem>
+                    <MudItem xs="2">
+                    </MudItem>
+                </MudGrid>
+                </div>
             </MudItem>
-
-            <MudItem xs="12" Class="object-center">
-                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Profile</MudButton>
-            </MudItem>
+          
+            <MudItem xs="12" Class="d-flex justify-content-start">
+                <MudButton Class="m-2" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Profile</MudButton>
+                     <MudButton Class="m-2" ButtonType="ButtonType.Reset" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LockReset" Color="Color.Primary" >Reset</MudButton>
+                <MudButton Class="m-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/customer-profile">Cancel</MudButton>
+             </MudItem>
         </MudGrid>
     </EditForm>
-</MudContainer>
+            <MudDivider DividerType="DividerType.Middle" Class="my-3" />
+            <ChangePassword/>
+        </MudPaper>
 }
+</MudContainer>
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
@@ -156,7 +166,7 @@ else if (model != null)
 
 
     public bool ShowErrors { get; set; } = false;
-    public IEnumerable<string> Errors { get; set; } = new List<string>();
+    public string Errors { get; set; } = string.Empty;
 
     private bool isLoading = true;
 
@@ -164,62 +174,45 @@ else if (model != null)
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         user = authState.User;
-        await LogToBrowserConsole($"OnInitializedAsync");
         await LoadUserProfile();
     }
 
     private async Task LoadUserProfile()
     {
-        try
+        if (authenticationState is not null)
         {
-            if (authenticationState is not null)
+            if (user is not null)
             {
-                if (user is not null)
+                if (user.IsInRole("Admin"))
                 {
-                    if (user.IsInRole("Admin"))
-                    {
-                        model = await ProfileService.GetCustomerProfile(UserId);
-                    }
-                    else if (user.IsInRole("Customer"))
-                    {
-                        model= await ProfileService.GetCustomerProfile();
-
-                    }
-                    isLoading = false;
-                    StateHasChanged();
+                    model = await ProfileService.GetCustomerProfile(UserId);
                 }
+                else if (user.IsInRole("Customer"))
+                {
+                    model= await ProfileService.GetCustomerProfile();
+
+                }
+                isLoading = false;
+                StateHasChanged();
             }
         }
-        catch (Exception ex)
-        {
-            await LogToBrowserConsole($"Error loading: {ex.Message}");
-        }
-
     }
 
     private async Task HandleUpdateProfile()
     {
-        try
-        {
-            await LogToBrowserConsole($"Update Data: {model}");
-            var result = await this.ProfileService.UpdateCustomerProfile(model); // Update customer data
+        var result = await this.ProfileService.UpdateCustomerProfile(model); // Update customer data
             
 
-            if (result.Succeeded)
-            {
-                ShowErrors = false;
-            }
-            else
-            {
-                Errors = result.Errors;
-                ShowErrors = true;
-            }
-        }
-        catch (Exception ex)
+        if (result.Succeeded)
         {
-            Console.WriteLine($"An error occurred: {ex.Message}");
+            ShowErrors = false;
+
+            NavigationManager.NavigateTo("/customer-profile");
+        }
+        else
+        {
+            Errors = result.Error;
+            ShowErrors = true;
         }
     }
-
-    private async Task LogToBrowserConsole(string message) => await JSRuntime.InvokeVoidAsync("console.log", message);
 }

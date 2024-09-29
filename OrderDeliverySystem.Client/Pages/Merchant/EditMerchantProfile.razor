@@ -28,7 +28,7 @@ else if (model != null)
 {
     <MudContainer>
         <EditForm Model="@model" OnValidSubmit="HandleUpdateProfile" FormName="profileForm">
-            <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
+            <ErrorsList ShowErrors="@ShowErrors" Errors="@Errors" />
             <DataAnnotationsValidator />
             <MudGrid>
 
@@ -187,9 +187,10 @@ else if (model != null)
     private MerchantProfileDTO model = new MerchantProfileDTO { BusinessName = "New business" };
     private ClaimsPrincipal user;
 
+    private int userId = 4;
 
     public bool ShowErrors { get; set; } = false;
-    public IEnumerable<string> Errors { get; set; } = new List<string>();
+    public string Errors { get; set; } = string.Empty;
 
     private bool isLoading = true;
 
@@ -202,55 +203,39 @@ else if (model != null)
 
     private async Task LoadMerchantProfile()
     {
-        try
+        if (authenticationState is not null)
         {
-            if (authenticationState is not null)
+            if (user is not null)
             {
-                if (user is not null)
+                if (user.IsInRole("Admin"))
                 {
-                    if (user.IsInRole("Admin"))
-                    {
-                        model = await ProfileService.GetMerchantProfile(UserId);
+                    model = await ProfileService.GetMerchantProfile(userId);
 
-                    }
-                    else if (user.IsInRole("Merchant"))
-                    {
-                        model = await ProfileService.GetMerchantProfile();
-
-                    }
-                    isLoading = false;
-                    StateHasChanged();
                 }
+                else if (user.IsInRole("Merchant"))
+                {
+                    model = await ProfileService.GetMerchantProfile();
+
+                }
+                isLoading = false;
+                StateHasChanged();
             }
-        }
-        catch (Exception ex)
-        {
-            await LogToBrowserConsole($"Error loading: {ex.Message}");
         }
     }
 
     private async Task HandleUpdateProfile()
     {
-        try
+        var result = await this.ProfileService.UpdateMerchantProfile(model); // Update customer data
+
+
+        if (result.Succeeded)
         {
-            var result = await this.ProfileService.UpdateMerchantProfile(model); // Update customer data
-
-
-            if (result.Succeeded)
-            {
-                ShowErrors = false;
-            }
-            else
-            {
-                Errors = result.Errors;
-                ShowErrors = true;
-            }
+            ShowErrors = false;
         }
-        catch (Exception ex)
+        else
         {
-            Console.WriteLine($"An error occurred: {ex.Message}");
+            Errors = result.Error;
+            ShowErrors = true;
         }
     }
-
-    private async Task LogToBrowserConsole(string message) => await JSRuntime.InvokeVoidAsync("console.log", message);
 }

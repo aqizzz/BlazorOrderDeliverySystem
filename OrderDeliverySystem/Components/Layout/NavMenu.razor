@@ -58,13 +58,12 @@
         </NotAuthorized>
     </AuthorizeView>
 
-
 </MudHidden>
 
 <MudCollapse Expanded="_cartExpanded">
     @if (_cartExpanded)
     {
-        <Cart OnClose="CloseCart" />
+        <CartCollapse OnClose="CloseCart" />
     }
 </MudCollapse>
 
@@ -103,7 +102,7 @@
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-
+        NavigationManager.LocationChanged += OnLocationChanged;
     }
     bool _menuExpanded = true;
 
@@ -111,6 +110,14 @@
     {
         _menuExpanded = !_menuExpanded;
     }
+
+    private void OnLocationChanged(object sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        _cartExpanded = false;
+        StateHasChanged();
+    }
+
+
     private void OnExpandCartClick()
     {
         _cartExpanded = !_cartExpanded;
@@ -125,17 +132,21 @@
     {
         if (AuthService != null)
         {
-            StateHasChanged();
             await AuthService.Logout();
-
+            Navigation.NavigateTo("/", forceLoad: true);
+            StateHasChanged();
         }
+        NavigationManager.NavigateTo("/");
     }
     public async Task LogIn()
     {
         NavigationManager.NavigateTo("/login");
     }
 
-
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
 
 
 }

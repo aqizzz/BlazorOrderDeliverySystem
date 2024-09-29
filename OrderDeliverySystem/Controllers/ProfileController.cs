@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
 using OrderDeliverySystem.Share.Data.Models;
+using static OrderDeliverySystem.Share.Data.Constants.Merchant;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 
@@ -20,7 +21,7 @@ namespace OrderDeliverySystem.Controllers
 
             var profile = await GetUserProfile(userId);
             if (profile == null)
-                return NotFound("User not found");
+                return NotFound(new { Error = "User not found" });
 
             return Ok(profile);
         }
@@ -36,7 +37,7 @@ namespace OrderDeliverySystem.Controllers
 
             var profile = await GetUserProfile(userId);
             if (profile == null)
-                return NotFound("User not found");
+                return NotFound(new { Error = "User not found" });
 
             return Ok(profile);
         }
@@ -51,7 +52,7 @@ namespace OrderDeliverySystem.Controllers
 
             if (profile == null)
             {
-                return NotFound("Worker not found");
+                return NotFound(new { Error = "Worker not found" });
             }
 
             return Ok(profile);
@@ -70,14 +71,13 @@ namespace OrderDeliverySystem.Controllers
 
             if (profile == null)
             {
-                return NotFound("Worker not found");
+                return NotFound(new { Error = "Worker not found" });
             }
 
             return Ok(profile);
         }
 
         [HttpGet("merchant")]
-        [Authorize]
         public async Task<IActionResult> GetMerchantInfo()
         {
             var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
@@ -85,7 +85,7 @@ namespace OrderDeliverySystem.Controllers
 
             if (profile == null)
             {
-                return NotFound("Merchant not found");
+                return NotFound(new { Error = "Merchant not found" });
             }
 
             return Ok(profile);
@@ -98,7 +98,7 @@ namespace OrderDeliverySystem.Controllers
 
             if (profile == null)
             {
-                return NotFound("Merchant not found");
+                return NotFound(new { Error = "Merchant not found" });
             }
 
             return Ok(profile);
@@ -117,51 +117,42 @@ namespace OrderDeliverySystem.Controllers
 
             if (dto == null)
             {
-                return BadRequest("Profile data is required.");
+                return BadRequest(new { Error = "Profile data is required." });
             }
 
             using var transaction = await context.Database.BeginTransactionAsync();
 
-            try
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == dto.UserId);
+            if (user == null)
             {
-                var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == dto.UserId);
-                if (user == null)
-                {
-                    return NotFound("User not found.");
-                }
-
-                var existingUserWithEmail = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.UserId != dto.UserId);
-                if (existingUserWithEmail != null)
-                    return Conflict("Email already exists for another user");
-
-                var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == dto.UserId && a.Type == "Main");
-                if (address == null)
-                {
-                    address = new AddressModel { User = user, UserId = dto.UserId, Type = "Main" };
-                    context.Addresses.Add(address); // Add the new Address entity to the context
-                }
-
-                user.FirstName = dto.FirstName;
-                user.LastName = dto.LastName;
-                user.Phone = dto.Phone;
-                user.Email = dto.Email;
-
-                address.Unit = dto.Unit;
-                address.Address = dto.Address;
-                address.City = dto.City;
-                address.Province = dto.Province;
-                address.Postcode = dto.Postcode;
-
-                await context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                return Ok("Profile has been successfully updated");
+                return NotFound(new { Error = "User not found." });
             }
-            catch (Exception)
+
+            var existingUserWithEmail = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.UserId != dto.UserId);
+            if (existingUserWithEmail != null)
+                return Conflict(new { Error = "Email already exists for another user" });
+
+            var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == dto.UserId && a.Type == "Main");
+            if (address == null)
             {
-                await transaction.RollbackAsync();
-
-                return StatusCode(500, "An error occurred while updating the profile");
+                address = new AddressModel { User = user, UserId = dto.UserId, Type = "Main" };
+                context.Addresses.Add(address); // Add the new Address entity to the context
             }
+
+            user.FirstName = dto.FirstName;
+            user.LastName = dto.LastName;
+            user.Phone = dto.Phone;
+            user.Email = dto.Email;
+
+            address.Unit = dto.Unit;
+            address.Address = dto.Address;
+            address.City = dto.City;
+            address.Province = dto.Province;
+            address.Postcode = dto.Postcode;
+
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return Ok("Profile has been successfully updated");
         }
 
         [HttpPut("edit/worker")]
@@ -178,60 +169,47 @@ namespace OrderDeliverySystem.Controllers
 
             if (dto == null)
             {
-                return BadRequest("Profile data is required.");
+                return BadRequest(new { Error = "Profile data is required." });
             }
 
 
             using var transaction = await context.Database.BeginTransactionAsync();
 
-            try
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == dto.UserId);
+            if (user == null)
+                return NotFound(new { Error = "User not found" });
+
+            var existingUserWithEmail = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.UserId != dto.UserId);
+            if (existingUserWithEmail != null)
+                return Conflict(new { Error = "Email already exists for another user" });
+
+            var worker = await context.DeliveryWorkers.FirstOrDefaultAsync(d => d.UserId == dto.UserId);
+            if (worker == null)
+                return NotFound(new { Error = "Delivery worker not found" });
+
+            var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == dto.UserId && a.Type == "Main");
+            if (address == null)
             {
-                var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == dto.UserId);
-                if (user == null)
-                    return NotFound("User not found");
-
-                var existingUserWithEmail = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.UserId != dto.UserId);
-                if (existingUserWithEmail != null)
-                    return Conflict("Email already exists for another user");
-
-                var worker = await context.DeliveryWorkers.FirstOrDefaultAsync(d => d.UserId == dto.UserId);
-                if (worker == null)
-                    return NotFound("Delivery worker not found");
-
-                var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == dto.UserId && a.Type == "Main");
-                if (address == null)
-                {
-                    address = new AddressModel { User = user, UserId = dto.UserId, Type = "Main" };
-                    context.Addresses.Add(address); // Add the new Address entity to the context
-                }
-
-                user.FirstName = dto.FirstName;
-                user.LastName = dto.LastName;
-                user.Phone = dto.Phone;
-                user.Email = dto.Email;
-
-                await context.SaveChangesAsync();
-
-                worker.CommissionRate = dto.CommissionRate;
-
-                await context.SaveChangesAsync();
-
-                address.Unit = dto.Unit;
-                address.Address = dto.Address;
-                address.City = dto.City;
-                address.Province = dto.Province;
-                address.Postcode = dto.Postcode;
-
-                await context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                return Ok("Profile has been successfully updated");
+                address = new AddressModel { User = user, UserId = dto.UserId, Type = "Main" };
+                context.Addresses.Add(address); // Add the new Address entity to the context
             }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync();
 
-                return StatusCode(500, "An error occurred while updating the profile");
-            }
+            user.FirstName = dto.FirstName;
+            user.LastName = dto.LastName;
+            user.Phone = dto.Phone;
+            user.Email = dto.Email;
+
+            worker.CommissionRate = dto.CommissionRate;
+
+            address.Unit = dto.Unit;
+            address.Address = dto.Address;
+            address.City = dto.City;
+            address.Province = dto.Province;
+            address.Postcode = dto.Postcode;
+
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return Ok("Profile has been successfully updated");
         }
 
         [HttpPut("edit/merchant")]
@@ -247,59 +225,50 @@ namespace OrderDeliverySystem.Controllers
 
             if (dto == null)
             {
-                return BadRequest("Profile data is required.");
+                return BadRequest(new { Error = "Profile data is required." });
             }
 
 
             using var transaction = await context.Database.BeginTransactionAsync();
 
-            try
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == dto.UserId);
+            if (user == null)
+                return NotFound(new { Error = "User not found" });
+
+            var merchant = await context.Merchants.FirstOrDefaultAsync(m => m.UserId == dto.UserId);
+            if (merchant == null)
+                return NotFound(new { Error = "Merchant not found" });
+
+            var existingUserWithEmail = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.UserId != dto.UserId);
+            if (existingUserWithEmail != null)
+                return Conflict(new { Error = "Email already exists for another user" });
+
+            var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == dto.UserId && a.Type == "Main");
+            if (address == null)
             {
-                var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == dto.UserId);
-                if (user == null)
-                    return NotFound("User not found");
-
-                var merchant = await context.Merchants.FirstOrDefaultAsync(m => m.UserId == dto.UserId);
-                if (merchant == null)
-                    return NotFound("Merchant not found");
-
-                var existingUserWithEmail = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.UserId != dto.UserId);
-                if (existingUserWithEmail != null)
-                    return Conflict("Email already exists for another user");
-
-                var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == dto.UserId && a.Type == "Main");
-                if (address == null)
-                {
-                    address = new AddressModel { User = user, UserId = dto.UserId, Type = "Main" };
-                    context.Addresses.Add(address); // Add the new Address entity to the context
-                }
-
-                user.FirstName = dto.FirstName;
-                user.LastName = dto.LastName;
-                user.Phone = dto.Phone;
-                user.Email = dto.Email;
-
-                merchant.BusinessName = dto.BusinessName;
-                merchant.MerchantPic = dto.MerchantPic;
-                merchant.MerchantDescription = dto.MerchantDescription;
-                merchant.PreparingTime = dto.PreparingTime;
-
-                address.Unit = dto.Unit;
-                address.Address = dto.Address;
-                address.City = dto.City;
-                address.Province = dto.Province;
-                address.Postcode = dto.Postcode;
-
-                await context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                return Ok("Profile has been successfully updated");
+                address = new AddressModel { User = user, UserId = dto.UserId, Type = "Main" };
+                context.Addresses.Add(address); // Add the new Address entity to the context
             }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync();
 
-                return StatusCode(500, "An error occurred while updating the profile");
-            }
+            user.FirstName = dto.FirstName;
+            user.LastName = dto.LastName;
+            user.Phone = dto.Phone;
+            user.Email = dto.Email;
+
+            merchant.BusinessName = dto.BusinessName;
+            merchant.MerchantPic = dto.MerchantPic;
+            merchant.MerchantDescription = dto.MerchantDescription;
+            merchant.PreparingTime = dto.PreparingTime;
+
+            address.Unit = dto.Unit;
+            address.Address = dto.Address;
+            address.City = dto.City;
+            address.Province = dto.Province;
+            address.Postcode = dto.Postcode;
+
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return Ok("Profile has been successfully updated");
         }
 
         [HttpGet("merchants")]
@@ -310,19 +279,19 @@ namespace OrderDeliverySystem.Controllers
 
             if (merchants == null || !merchants.Any()) // Check if the list is null or empty
             {
-                return NotFound("Merchant not found");
+                return NotFound(new { Error = "Merchant not found" });
             }
 
 
             var results = new List<MerchantProfileDTO>();
             var userIds = merchants.Select(m => m.UserId).ToList();
             var addresses = await context.Addresses
-        .Where(a => userIds.Contains(a.UserId))
-        .ToListAsync();
+                .Where(a => userIds.Contains(a.UserId))
+                .ToListAsync();
 
             var users = await context.Users
-       .Where(a => userIds.Contains(a.UserId))
-       .ToListAsync();
+               .Where(a => userIds.Contains(a.UserId))
+               .ToListAsync();
 
             foreach (var merchant in merchants)
             {
@@ -337,7 +306,7 @@ namespace OrderDeliverySystem.Controllers
                     Phone = user.Phone,
                     Email = user.Email,
                     BusinessName = merchant.BusinessName ?? "New Business",
-                    MerchantPic = merchant.MerchantPic ?? "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png",
+                    MerchantPic = merchant.MerchantPic ?? DefaultPic,
                     MerchantDescription = merchant.MerchantDescription ?? "",
                     PreparingTime = merchant.PreparingTime ?? 0,
                     Unit = address?.Unit ?? "",
@@ -349,9 +318,6 @@ namespace OrderDeliverySystem.Controllers
 
                 results.Add(profile);
             }
-
-
-
             return Ok(results);
         }
         private async Task<UserProfileDTO?> GetUserProfile(int userId)
@@ -412,7 +378,7 @@ namespace OrderDeliverySystem.Controllers
 
 
             var merchant = await context.Merchants.FirstOrDefaultAsync(m => m.UserId == userId);
-            //if (merchant == null) return null;
+            if (merchant == null) return null;
 
             var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == userId && a.Type == "Main");
 
