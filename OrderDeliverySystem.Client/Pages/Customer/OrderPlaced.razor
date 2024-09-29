@@ -208,39 +208,6 @@ else
 
     }
 
-    private async Task LoadMerchantInfo()
-    {
-        try
-        {
-            foreach( var id in merchants)
-            {
-                if (id > 0)
-                {
-                    var response = await ProfileService.GetMerchantProfile(id);
-
-                    if (response != null)
-                    {
-                        merchant = response;
-
-                        break;
-
-                    }
-                }
-            }
-
-
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading cart: {ex.Message}");
-        }
-        finally
-        {
-            isLoading = false;
-            StateHasChanged();
-        }
-
-    }
 
 
     private async Task LoadCartItems()
@@ -253,7 +220,7 @@ else
             {
 
                 cartItems = response.CartItems;
-                merchants = response.CartItems.Select(i => i.MerchantId).ToList();
+                itemId = cartItems.FirstOrDefault().ItemId;
                 subtotal = cartItems.Sum(ci => ci.Quantity * ci.ItemPrice);
                 tax = GetTaxAmount();
                 total = GetTotalAfterTax();
@@ -262,7 +229,7 @@ else
                 cartId = response.CartId;
                 customerId = response.CustomerId;
 
-                await LoadMerchantInfo();
+                merchant = await ProfileService.GetMerchantProfileByItemId(itemId);
             }
         }
         catch (Exception ex)
