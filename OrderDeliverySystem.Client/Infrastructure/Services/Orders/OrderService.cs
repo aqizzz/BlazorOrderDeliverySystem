@@ -1,14 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Data;
-using System.Net.Http;
-using System.Net.Http.Json;
-using Azure.Messaging;
+﻿using System.Net.Http.Json;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
 
 namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 {
