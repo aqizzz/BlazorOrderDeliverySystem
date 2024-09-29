@@ -64,6 +64,7 @@
     @if (_cartExpanded)
     {
         <CartCollapse OnClose="CloseCart" />
+        
     }
 </MudCollapse>
 
@@ -140,7 +141,9 @@
     }
     public async Task LogIn()
     {
+      
         NavigationManager.NavigateTo("/login");
+        
     }
 
     public void Dispose()
@@ -148,5 +151,6 @@
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
 
+    
 
 }

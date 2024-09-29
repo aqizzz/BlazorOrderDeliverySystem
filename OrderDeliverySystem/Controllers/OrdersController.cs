@@ -52,132 +52,133 @@ namespace OrderDeliverySystemApi.Controllers
         public async Task<ActionResult<Order>> CreateOrder(CreateOrderDTO orderDto)
         {
             // Fetch required entities from the database (Merchant and Customer)
-           
-            var merchant = await _context.Merchants.FindAsync(orderDto.MerchantId);
-            if (merchant == null)
-            {
-                return NotFound($"Merchant with ID {orderDto.MerchantId} not found.");
-            }
 
-            var customer = await _context.Customers.FindAsync(1);
-            if (customer == null)
-            {
-                return NotFound($"Customer with ID {orderDto.CustomerId} not found.");
-            }
-           
-            var worker = await _context.DeliveryWorkers
-                .Where(w => w.WorkerAvailability == true ) // Ensure worker is available and has a task history
-                .OrderBy(w => w.LastTaskAssigned) // Get the worker with the oldest LastTaskAssigned date
-                .FirstOrDefaultAsync();
-            if (worker == null)
-            {
-                return NotFound($"No worker was found.");
-            }
+            /*  var merchant = await _context.Merchants.FindAsync(orderDto.Merchant.UserId);
+              if (merchant == null)
+              {
+                  return NotFound($"Merchant with ID {orderDto.Merchant.UserId} not found.");
+              }
 
-            var customerAddresses = await _context.Addresses
-                .Where(a => a.UserId == customer.UserId)
-                .ToListAsync(); // ToListAsync if it's a collection
-            var isExist = false;
-            int dropoffAddressId=0;
+              var customer = await _context.Customers.FindAsync(1);
+              if (customer == null)
+              {
+                  return NotFound($"Customer with ID {orderDto.CustomerId} not found.");
+              }
 
+              var worker = await _context.DeliveryWorkers
+                  .Where(w => w.WorkerAvailability == true ) // Ensure worker is available and has a task history
+                  .OrderBy(w => w.LastTaskAssigned) // Get the worker with the oldest LastTaskAssigned date
+                  .FirstOrDefaultAsync();
+              if (worker == null)
+              {
+                  return NotFound($"No worker was found.");
+              }
 
-            if (customerAddresses == null)
-            {
-                return NotFound($"Customer with ID {orderDto.CustomerId} not found.");
-            }
-            else
-            {
-                foreach (var address in customerAddresses)
-                {
-                   if(address == null) continue;
-                   if (address.Unit!=null && address.Address != null && address.City != null && address.Province != null && address.Postcode != null)
-                    {
-                        if (address.Unit.Equals(orderDto.Unit) && address.Address.Equals(orderDto.Address) && address.City.Equals(orderDto.City) && address.Province.Equals(orderDto.Province) && address.Postcode.Equals(orderDto.PostCode))
-                        {
-                            isExist = true;
-                            dropoffAddressId = address.AddressId;
-                            break;
-                        }
-                    }
-                        
-                }
-            }
-           
-            if (!isExist) {
-                AddressModel newAddress = new AddressModel()
-                {
-                    UserId = customer.UserId,
-                    User = customer.User,
-                    Type = "",
-                    Unit = orderDto.Unit,
-                    Address = orderDto.Address,
-                    City = orderDto.City,
-                    Province = orderDto.Province,
-                    Postcode = orderDto.PostCode
-                };
-
-                _context.Addresses.Add(newAddress);
-                await _context.SaveChangesAsync();
-                dropoffAddressId = newAddress.AddressId;
-            }
-            if (dropoffAddressId <= 0)
-            {
-                return NotFound($"Address with ID {dropoffAddressId} not found.");
-            }
-            var meechantAddress = await _context.Addresses.FindAsync(orderDto.MerchantId);
+              var customerAddresses = await _context.Addresses
+                  .Where(a => a.UserId == customer.UserId)
+                  .ToListAsync(); // ToListAsync if it's a collection
+              var isExist = false;
+              int dropoffAddressId=0;
 
 
-            if (meechantAddress == null)
-            {
-                return NotFound($"Customer with ID {orderDto.CustomerId} not found.");
-            }
+              if (customerAddresses == null)
+              {
+                  return NotFound($"Customer with ID {orderDto.CustomerId} not found.");
+              }
+              else
+              {
+                  foreach (var address in customerAddresses)
+                  {
+                     if(address == null) continue;
+                     if (address.Unit!=null && address.Address != null && address.City != null && address.Province != null && address.Postcode != null)
+                      {
+                          if (address.Unit.Equals(orderDto.Unit) && address.Address.Equals(orderDto.Address) && address.City.Equals(orderDto.City) && address.Province.Equals(orderDto.Province) && address.Postcode.Equals(orderDto.PostCode))
+                          {
+                              isExist = true;
+                              dropoffAddressId = address.AddressId;
+                              break;
+                          }
+                      }
 
-            var order = new Order
-            {
-                CustomerId = orderDto.CustomerId,
-                MerchantId = orderDto.MerchantId,
-                WorkerId = worker.WorkerId,
-                PickupAddressId = meechantAddress.AddressId,
-                DropoffAddressId = dropoffAddressId,
-                TotalAmount = orderDto.TotalAmount,
-                Status = "Pending",
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now,
-                Merchant = merchant,
-                Customer = customer,
-               
+                  }
+              }
 
-            };
+              if (!isExist) {
+                  AddressModel newAddress = new AddressModel()
+                  {
+                      UserId = customer.UserId,
+                      User = customer.User,
+                      Type = "",
+                      Unit = orderDto.Unit,
+                      Address = orderDto.Address,
+                      City = orderDto.City,
+                      Province = orderDto.Province,
+                      Postcode = orderDto.PostCode
+                  };
 
-            order.OrderItems = new List<OrderItem>();
-            foreach (var orderItemDto in orderDto.OrderItems)
-            {
-                // Fetch the Item based on ItemId from the DTO
-                var item = await _context.Items.FindAsync(orderItemDto.ItemId);
-                if (item == null)
-                {
-                    return NotFound($"Item with ID {orderItemDto.ItemId} not found.");
-                }
-
-                var orderItem = new OrderItem
-                {
-                    ItemId = orderItemDto.ItemId,
-                    Quantity = orderItemDto.Quantity,
-                    Order = order, // Set the Order property
-                    Item = item    // Set the Item property (required)
-                };
-
-                order.OrderItems.Add(orderItem);
-            }
+                  _context.Addresses.Add(newAddress);
+                  await _context.SaveChangesAsync();
+                  dropoffAddressId = newAddress.AddressId;
+              }
+              if (dropoffAddressId <= 0)
+              {
+                  return NotFound($"Address with ID {dropoffAddressId} not found.");
+              }
+              var meechantAddress = await _context.Addresses.FindAsync(orderDto.MerchantId);
 
 
+              if (meechantAddress == null)
+              {
+                  return NotFound($"Customer with ID {orderDto.CustomerId} not found.");
+              }
 
-            // Add order to context
-            _context.Orders.Add(order);
-            await _context.SaveChangesAsync();
+              var order = new Order
+              {
+                  CustomerId = orderDto.CustomerId,
+                  MerchantId = orderDto.MerchantId,
+                  WorkerId = worker.WorkerId,
+                  PickupAddressId = meechantAddress.AddressId,
+                  DropoffAddressId = dropoffAddressId,
+                  TotalAmount = orderDto.TotalAmount,
+                  Status = "Pending",
+                  CreatedAt = DateTime.Now,
+                  UpdatedAt = DateTime.Now,
+                  Merchant = merchant,
+                  Customer = customer,
 
-            // Return created order
-            return CreatedAtAction(nameof(GetOrder), new { id = order.OrderId }, order);
+
+              };
+
+              order.OrderItems = new List<OrderItem>();
+              foreach (var orderItemDto in orderDto.OrderItems)
+              {
+                  // Fetch the Item based on ItemId from the DTO
+                  var item = await _context.Items.FindAsync(orderItemDto.ItemId);
+                  if (item == null)
+                  {
+                      return NotFound($"Item with ID {orderItemDto.ItemId} not found.");
+                  }
+
+                  var orderItem = new OrderItem
+                  {
+                      ItemId = orderItemDto.ItemId,
+                      Quantity = orderItemDto.Quantity,
+                      Order = order, // Set the Order property
+                      Item = item    // Set the Item property (required)
+                  };
+
+                  order.OrderItems.Add(orderItem);
+              }
+
+
+
+              // Add order to context
+              _context.Orders.Add(order);
+              await _context.SaveChangesAsync();
+
+              // Return created order
+              return CreatedAtAction(nameof(GetOrder), new { id = order.OrderId }, order);*/
+            return Ok();
         }
 
         [HttpPut("update")]

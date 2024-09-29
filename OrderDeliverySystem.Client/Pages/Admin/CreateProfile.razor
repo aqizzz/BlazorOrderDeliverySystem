@@ -16,16 +16,14 @@
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveAuto
 
-<br>
-<br />
-<br />
-<br />
-<MudContainer>
-    <MudGrid>
+<MudContainer Class="my-10 d-flex justify-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
+    <MudPaper Class="pa-10" >
+       
+    <MudGrid >
         <MudItem xs="12">
-            <h3>Assign User Role</h3>
+            <h4>Assign User Role</h4>
         </MudItem>
-        <MudItem xs="2">
+        <MudItem xs="2" >
             <MudField Label="User Role:" AlignLabel="Align.Start" Underline="false" />
         </MudItem>
         <MudItem xs="8">
@@ -41,8 +39,7 @@
         <MudItem xs="2">
         </MudItem>
     </MudGrid>
-    <MudContainer>
-
+        <MudDivider Class="my-5 border-4" Style="border-color:rgba(112, 0, 0, 1);" />
     @if (!isWorker)
     {
     <EditForm Model="@merchantModel" OnValidSubmit="HandleCreateProfile" FormName="profileForm">
@@ -50,7 +47,7 @@
         <DataAnnotationsValidator />
         <MudGrid>
                 <MudItem xs="12">
-                    <h3>Basic Information</h3>
+                    <h4>Basic Information</h4>
                 </MudItem>
 
                 <MudItem xs="2">
@@ -218,8 +215,10 @@
                 <MudItem xs="2">
                 </MudItem>
 
-                <MudItem xs="12">
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleCreateProfile())" Class="object-center">Create Merchant</MudButton>
+                 <MudItem xs="12" Class="d-flex justify-content-start">
+                    <MudButton Class="m-2" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleCreateProfile())" >Create Merchant</MudButton>
+                    <MudButton Class="m-2" ButtonType="ButtonType.Reset" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LockReset" Color="Color.Primary">Reset</MudButton>
+                    <MudButton Class="m-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/user-management">Cancel</MudButton>
                 </MudItem>
             </MudGrid>
         </ChildContent>
@@ -407,7 +406,7 @@
             </ChildContent>
         </EditForm>
     }
-    </MudContainer>
+        </MudPaper>
 </MudContainer>
 @code {
     [CascadingParameter]

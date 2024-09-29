@@ -71,21 +71,14 @@
     <MudMainContent Class="my-1" Style="min-height:700px;">
 
         @Body
+        
     </MudMainContent>
-    <AuthorizeView Roles="Admin,Merchant,Worker">
-        <Authorized>
-            <MudAppBar Bottom="true" Class="mt-4 bg-light p-5" Style="height:220px;">
+   
+          
+    <MudPaper Bottom="true" Class="mt-4 bg-light p-5">
 
-                <Footer />
-            </MudAppBar>
-        </Authorized>
-        <NotAuthorized>
-            <MudPaper Bottom="true" Class="mt-4 bg-light p-5">
-
-                <Footer />
-            </MudPaper>
-        </NotAuthorized>
-    </AuthorizeView>
+        <Footer />
+    </MudPaper>
    
     <div id="blazor-error-ui">
         An unhandled error has occurred.
