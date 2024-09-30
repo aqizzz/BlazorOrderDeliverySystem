@@ -13,5 +13,6 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Cart
         Task<HttpResponseMessage> GetTotalCartQuantity();
 
         event Action OnCartChanged;
+        void NotifyCartChanged();
     }
 }
