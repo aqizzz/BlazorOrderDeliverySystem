@@ -210,7 +210,7 @@ else if (model != null)
             {
                 if (user.IsInRole("Admin"))
                 {
-                    model = await ProfileService.GetMerchantProfile(userId);
+                    model = await ProfileService.GetMerchantProfile(UserId);
 
                 }
                 else if (user.IsInRole("Merchant"))
