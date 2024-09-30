@@ -19,7 +19,7 @@ namespace OrderDeliverySystemApi.Controllers
             _context = context;
         }
 
-        // API1: Customer can add a review
+        // Customer can add a review
         [HttpPost("addReview")]
         [Authorize(Roles = "Customer")]
         public async Task<IActionResult> AddReview([FromBody] CreateReviewRequestDTO reviewDto)
@@ -46,7 +46,7 @@ namespace OrderDeliverySystemApi.Controllers
             return Ok("Review added successfully.");
         }
 
-        // API2: Admin can delete a review
+        // Admin can delete a review
         [HttpDelete("deleteReview/{reviewId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteReview(int reviewId)
@@ -60,7 +60,7 @@ namespace OrderDeliverySystemApi.Controllers
             return Ok("Review deleted successfully.");
         }
 
-        // API3: Customer can view all reviews based on different merchantId
+        // Customer can view reviews based on different merchantId
         [HttpGet("customerReviews/{merchantId}")]
         [Authorize(Roles = "Customer")]
         public async Task<IActionResult> customerGetReviews(int merchantId)
@@ -87,7 +87,7 @@ namespace OrderDeliverySystemApi.Controllers
             return Ok(reviews);
         }
 
-        // API4: Merchant can view its own reviews
+        // Merchant can view its own reviews
         [HttpGet("merchantReviews")]
         [Authorize(Roles = "Merchant")]
         public async Task<IActionResult> MerchantGetReviews()
@@ -128,7 +128,37 @@ namespace OrderDeliverySystemApi.Controllers
             
         }
 
-        // API5: Merchant can update the reply and reply time to his own restaurant's orders
+
+        // Admin can view all reviews
+        [HttpGet("adminReviews")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAdminReviews()
+        {
+            var reviews = await _context.Reviews
+                .Include(r => r.Order)
+                .Select(r => new GetReviewResponseDTO
+                {
+                    ReviewId = r.ReviewId,
+                    OrderId = r.OrderId,
+                    CustomerId = r.CustomerId,
+                    Comment = r.Comment,
+                    Rating = r.Rating,
+                    CreatedAt = r.CreatedAt,
+                    Reply = r.Reply,
+                    ReplyCreatedAt = r.ReplyCreatedAt
+                })
+                .ToListAsync();
+
+            if (!reviews.Any())
+                return NotFound("No reviews found.");
+
+            return Ok(reviews);
+        }
+
+
+
+
+        // Merchant can update the reply and reply time to his own restaurant's orders
         [HttpPut("updateReply/{reviewId}")]
         [Authorize(Roles = "Merchant")]
         public async Task<IActionResult> UpdateReply(int reviewId, [FromBody] UpdateReplyRequestDTO replyDto)

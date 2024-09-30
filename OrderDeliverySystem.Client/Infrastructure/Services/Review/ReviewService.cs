@@ -18,6 +18,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Review
         private const string DeleteReviewPath = "api/review/deleteReview";
         private const string ReviewsByMerchantPath = "api/review/customerReviews";
         private const string MerchantReviewsPath = "api/review/merchantReviews";
+        private const string AdminReviewsPath = "api/review/adminReviews";
         private const string UpdateReplyPath = "api/review/updateReply";
 
     
@@ -47,7 +48,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Review
         }
 
         // Get Reviews by Merchant
-        public async Task<List<GetReviewResponseDTO>> customerGetReviews(int merchantId)
+        public async Task<List<GetReviewResponseDTO>> CustomerGetReviews(int merchantId)
         {
             var httpClient = _httpClientFactory.CreateClient("API");
             await _tokenHelper.ConfigureHttpClientAuthorization(httpClient);
@@ -61,6 +62,15 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Review
             var httpClient = _httpClientFactory.CreateClient("API");
             await _tokenHelper.ConfigureHttpClientAuthorization(httpClient);
             var response = await httpClient.GetFromJsonAsync<List<GetReviewResponseDTO>>(MerchantReviewsPath);
+            return response ?? new List<GetReviewResponseDTO>();
+        }
+
+        // // Get all Reviews
+        public async Task<List<GetReviewResponseDTO>> AdminGetReviews()
+        {
+            var httpClient = _httpClientFactory.CreateClient("API");
+            await _tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+            var response = await httpClient.GetFromJsonAsync<List<GetReviewResponseDTO>>(AdminReviewsPath);
             return response ?? new List<GetReviewResponseDTO>();
         }
 

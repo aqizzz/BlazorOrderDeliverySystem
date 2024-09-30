@@ -7,10 +7,11 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Review
     {
         Task<HttpResponseMessage> AddReview(CreateReviewRequestDTO reviewDto);
         Task<HttpResponseMessage> DeleteReview(int reviewId);
-        Task<List<GetReviewResponseDTO>> customerGetReviews(int merchantId);
+        Task<List<GetReviewResponseDTO>> CustomerGetReviews(int merchantId);
         Task<List<GetReviewResponseDTO>> MerchantGetReviews();
+        Task<List<GetReviewResponseDTO>> AdminGetReviews();
         Task<HttpResponseMessage> UpdateReply(int reviewId, UpdateReplyRequestDTO replyDto);
-
         
+
     }
 }
