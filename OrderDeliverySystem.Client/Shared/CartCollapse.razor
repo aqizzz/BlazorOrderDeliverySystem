@@ -47,6 +47,11 @@
 
         <MudGrid Justify="Justify.Center" Style="margin-top: 20px;">
             <MudItem xs="12" sm="6" class="d-flex justify-center">
+                <MudButton Variant="Variant.Filled" Size="Size.Small" Style="background-color:rgba(112, 0, 0, 1); color:white;" OnClick="ClearCart">
+                    Clear Cart
+                </MudButton>
+            </MudItem>
+            <MudItem xs="12" sm="6" class="d-flex justify-center">
                 <MudButton Variant="Variant.Filled" Size="Size.Small" Style="background-color:rgba(112, 0, 0, 1); color:white;" OnClick="PlaceOrder">
                     Place Order
                 </MudButton>
@@ -65,7 +70,7 @@
     private List<GetCartItemsResponseDTO> cartItems = new();
     private decimal subtotal;
     private bool isLoading = true;
-    
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -161,6 +166,29 @@
             cartItems = cartItems.Where(ci => ci.ItemId != itemId).ToList();
             subtotal = cartItems.Sum(ci => ci.Quantity * ci.ItemPrice);
             StateHasChanged();
+        }
+    }
+
+    public async Task ClearCart()
+    {
+        try
+        {
+            var response = await CartService.ClearCartItems();
+
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadCartItems();
+                Console.WriteLine("Cart cleared successfully.");
+            }
+            else
+            {
+                var errorMsg = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Failed to clear cart. Error: {errorMsg}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error clearing cart: {ex.Message}");
         }
     }
 
