@@ -6,13 +6,12 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
-using OrderDeliverySystem.Share.DTOs.CartDTO;
-using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO;
-using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO.OrderDeliverySystem.Share.DTOs.CartDTO;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
 
 namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 {
-    public class OrderService : IOrderService
+    public class OrderService
     {
         private readonly ILocalStorageService localStorage;
         private readonly AuthenticationStateProvider authenticationStateProvider;
@@ -43,8 +42,8 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             var httpClient = this.httpClientFactory.CreateClient("API");
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
             var uri = $"{Base}{role}/{id}?recent={recent.ToString().ToLower()}";
-
-			var orders = await httpClient.GetFromJsonAsync<List<OrderDTO>>(uri);
+            Console.WriteLine($"making request to { uri}");
+			var orders = await _httpClient.GetFromJsonAsync<List<OrderDTO>>(uri);
 			return orders ?? new List<OrderDTO>();
 		}
 
@@ -69,19 +68,13 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             var response = await httpClient.PostAsJsonAsync(uri, cartItems);
 
 
-            if (!response.IsSuccessStatusCode)
-            {
-                var responseContent = await response.Content.ReadAsStringAsync();
-
-
-                var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(responseContent, new JsonSerializerOptions
+                if (!response.IsSuccessStatusCode)
                 {
-                    PropertyNameCaseInsensitive = true
-                });
-
-
-                return Result.Failure(errorResponse?.Error ?? "An unknown error occurred.");
-            }
+                    var errors = await response.Content.ReadFromJsonAsync<string[]>();
+                    return errors != null
+                        ? Result.Failure(errors) // Return the errors if present
+                        : Result.Failure(new[] { "An unknown error occurred." });
+                }
 
             return Result.Success;
         }

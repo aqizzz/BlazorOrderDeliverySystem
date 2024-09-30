@@ -14,7 +14,6 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Authentication
         private readonly ILocalStorageService localStorage;
         private readonly AuthenticationStateProvider authenticationStateProvider;
         private readonly IHttpClientFactory httpClientFactory;
-        private readonly TokenHelper tokenHelper;
 
         private const string LoginPath = "/api/Auth/login";
         private const string RegisterPath = "/api/Auth/register";
@@ -29,13 +28,11 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Authentication
         public AuthService(
             ILocalStorageService localStorage,
             AuthenticationStateProvider authenticationStateProvider,
-            IHttpClientFactory httpClientFactory,
-            TokenHelper tokenHelper)
+            IHttpClientFactory httpClientFactory)
         {
             this.localStorage = localStorage;
             this.authenticationStateProvider = authenticationStateProvider;
             this.httpClientFactory = httpClientFactory;
-            this.tokenHelper = tokenHelper;
         }
 
         public async Task<Result> Register(CustomerRegisterDTO model)
@@ -46,24 +43,6 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Authentication
                 .ToResult();
         }
 
-        public async Task<Result> WorkerRegister(WorkerRegisterDTO model)
-        {
-            var httpClient = this.httpClientFactory.CreateClient("API");
-            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
-            return await httpClient
-                .PostAsJsonAsync(WorkerRegisterPath, model)
-                .ToResult();
-        }
-
-        public async Task<Result> MerchantRegister(MerchantRegisterDTO model)
-        {
-            var httpClient = this.httpClientFactory.CreateClient("API");
-            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
-            return await httpClient
-                .PostAsJsonAsync(MerchantRegisterPath, model)
-                .ToResult();
-        }
-
         public async Task<Result> Login(LoginRequestDTO model)
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
@@ -71,16 +50,9 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 
             if (!response.IsSuccessStatusCode)
             {
-                var responseContent = await response.Content.ReadAsStringAsync();
+                var errors = await response.Content.ReadFromJsonAsync<string[]>();
 
-
-                var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(responseContent, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true 
-                });
-
-    
-                return Result.Failure(errorResponse?.Error ?? "An unknown error occurred.");
+                return Result.Failure(errors);
             }
 
             var responseAsString = await response.Content.ReadAsStringAsync();
@@ -104,7 +76,6 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Authentication
         public async Task<Result> ChangePassword(ChangePasswordRequestDto model)
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
-            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
             return await httpClient
                 .PostAsJsonAsync(ChangePasswordPath, model)
                 .ToResult();

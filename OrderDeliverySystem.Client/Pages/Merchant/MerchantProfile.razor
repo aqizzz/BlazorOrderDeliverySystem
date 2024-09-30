@@ -16,26 +16,20 @@
 @inject IJSRuntime JSRuntime
 @inject IAuthorizationService AuthorizationService
 @rendermode InteractiveAuto
-
-
-
- <MudContainer Class="my-10 d-flex justify-content-center align-content-center" Style="min-height:620px">
+<br>
+<br />
+<br />
+<br />
 @if (isLoading)
 {
     <p>Loading profile...</p>
 }
 else if (model != null)
 {
-        <MudPaper Class="px-16 pt-5 ma-2" Elevation="3" Width="100%">
+    <MudContainer>
         <div Style="display:none;">
             <MudField id="userId" Text="@model.UserId" />
         </div>
-        <div class=" d-flex justify-content-between align-content-center">
-            <MudText Class="py-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My profile</MudText>
-                <MudFab Href="/merchant-profile/edit" Style="color:white;background-color:rgba(112, 0, 0, 1);" Label="Edit Profile"></MudFab>
-               
-        </div>
-            <MudDivider Class=" border-4" Style="border-color:rgba(112, 0, 0, 1);" />
         <MudGrid>
             <MudItem xs="10">
                 <MudItem xs="2">
@@ -154,10 +148,18 @@ else if (model != null)
                 </MudItem>
             </MudItem>
         </MudGrid>
-    </MudPaper>
+        <AuthorizeView Roles="Merchant">
+            @*Example of set with role: <AuthorizeView Roles="Admin">*@
+            <Authorized >
+                <p>You are merchant@user.Identity  </p>
+            </Authorized>
+            <NotAuthorized>
+                <p>You are not merchant @user.Identity</p>
+            </NotAuthorized>
+        </AuthorizeView>
+    </MudContainer>
 
-    }
-</MudContainer>
+}
 @code {
     private ClaimsPrincipal user;
 
@@ -177,23 +179,30 @@ else if (model != null)
 
     private async Task LoadMerchantProfile()
     {
-        if (authenticationState is not null)
+        try
         {
-            if (user is not null)
+            if (authenticationState is not null)
             {
-                if (user.IsInRole("Merchant"))
+                if (user is not null)
                 {
-                    model = await ProfileService.GetMerchantProfile();
+                    if (user.IsInRole("Merchant"))
+                    {
+                        model = await ProfileService.GetMerchantProfile();
 
-                }
-                else
-                {
-                    model = await ProfileService.GetMerchantProfile(UserId);
+                    }
+                    else
+                    {
+                        model = await ProfileService.GetMerchantProfile(UserId);
 
+                    }
+                    isLoading = false;
+                    StateHasChanged();
                 }
-                isLoading = false;
-                StateHasChanged();
             }
+        }
+        catch (Exception ex)
+        {
+            await LogToBrowserConsole($"Error loading: {ex.Message}");
         }
     }
 
@@ -203,4 +212,6 @@ else if (model != null)
         user = authState.User;
         await LoadMerchantProfile();
     }
+
+    private async Task LogToBrowserConsole(string message) => await JSRuntime.InvokeVoidAsync("console.log", message);
 }

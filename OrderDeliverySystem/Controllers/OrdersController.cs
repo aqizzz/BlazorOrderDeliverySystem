@@ -14,7 +14,6 @@ namespace OrderDeliverySystemApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Customer")]
     public class OrdersController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -55,28 +54,11 @@ namespace OrderDeliverySystemApi.Controllers
         public async Task<ActionResult<Order>> CreateOrder(CreateOrderDTO orderDto)
         {
             // Fetch required entities from the database (Merchant and Customer)
-            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-
-            var customer = await _context.Customers.Include(c => c.User).FirstOrDefaultAsync(c => c.UserId == userId);
-
-
-            if (customer == null)
-            {
-                return NotFound("Customer not found.");
-            }
-            var customerId = orderDto.CustomerId;
-            if (customerId != customer.CustomerId)
-            {
-                return NotFound("Not the user");
-            }
-
-
-
+           
             var merchant = await _context.Merchants.FindAsync(orderDto.MerchantId);
             if (merchant == null)
             {
-                return NotFound($"Merchant with ID {orderDto.Merchant.UserId} not found.");
+                return NotFound($"Merchant with ID {orderDto.MerchantId} not found.");
             }
 
 
@@ -90,32 +72,71 @@ namespace OrderDeliverySystemApi.Controllers
                 return NotFound($"No worker was found.");
             }
 
-            var customerAddress = await _context.Addresses
+            var customerAddresses = await _context.Addresses
                 .Where(a => a.UserId == customer.UserId)
-                .FirstOrDefaultAsync(); // ToListAsync if it's a collection
+                .ToListAsync(); // ToListAsync if it's a collection
+            var isExist = false;
+            int dropoffAddressId=0;
 
-            if (customerAddress == null)
+
+            if (customerAddresses == null)
             {
-                return NotFound($"Customer with ID {customer.UserId} not found.");
+                return NotFound($"Customer with ID {orderDto.CustomerId} not found.");
             }
-
-            var merchantAddress = await _context.Addresses
-               .Where(a => a.UserId == merchant.UserId)
-               .FirstOrDefaultAsync();
-
-            if (merchantAddress == null)
+            else
             {
-                return NotFound($"Address with ID {merchant.UserId} not found.");
+                foreach (var address in customerAddresses)
+                {
+                   if(address == null) continue;
+                   if (address.Unit!=null && address.Address != null && address.City != null && address.Province != null && address.Postcode != null)
+                    {
+                        if (address.Unit.Equals(orderDto.Unit) && address.Address.Equals(orderDto.Address) && address.City.Equals(orderDto.City) && address.Province.Equals(orderDto.Province) && address.Postcode.Equals(orderDto.PostCode))
+                        {
+                            isExist = true;
+                            dropoffAddressId = address.AddressId;
+                            break;
+                        }
+                    }
+                        
+                }
             }
+           
+            if (!isExist) {
+                AddressModel newAddress = new AddressModel()
+                {
+                    UserId = customer.UserId,
+                    User = customer.User,
+                    Type = "",
+                    Unit = orderDto.Unit,
+                    Address = orderDto.Address,
+                    City = orderDto.City,
+                    Province = orderDto.Province,
+                    Postcode = orderDto.PostCode
+                };
 
+                _context.Addresses.Add(newAddress);
+                await _context.SaveChangesAsync();
+                dropoffAddressId = newAddress.AddressId;
+            }
+            if (dropoffAddressId <= 0)
+            {
+                return NotFound($"Address with ID {dropoffAddressId} not found.");
+            }
+            var meechantAddress = await _context.Addresses.FindAsync(orderDto.MerchantId);
+
+
+            if (meechantAddress == null)
+            {
+                return NotFound($"Customer with ID {orderDto.CustomerId} not found.");
+            }
 
             var order = new Order
             {
-                CustomerId = customer.CustomerId,
-                MerchantId = merchant.MerchantId,
+                CustomerId = orderDto.CustomerId,
+                MerchantId = orderDto.MerchantId,
                 WorkerId = worker.WorkerId,
-                PickupAddressId = merchantAddress.AddressId,
-                DropoffAddressId = customerAddress.AddressId,
+                PickupAddressId = meechantAddress.AddressId,
+                DropoffAddressId = dropoffAddressId,
                 TotalAmount = orderDto.TotalAmount,
                 Status = "Pending",
                 CreatedAt = DateTime.Now,
@@ -127,7 +148,7 @@ namespace OrderDeliverySystemApi.Controllers
             };
 
             order.OrderItems = new List<OrderItem>();
-            foreach (var orderItemDto in orderDto.CartItems)
+            foreach (var orderItemDto in orderDto.OrderItems)
             {
                 // Fetch the Item based on ItemId from the DTO
                 var item = await _context.Items.FindAsync(orderItemDto.ItemId);
@@ -155,7 +176,6 @@ namespace OrderDeliverySystemApi.Controllers
 
             // Return created order
             return CreatedAtAction(nameof(GetOrder), new { id = order.OrderId }, order);
-
         }
 
         [HttpPut("update")]
@@ -178,9 +198,7 @@ namespace OrderDeliverySystemApi.Controllers
             // Update the order in the context
             _context.Entry(order).State = EntityState.Modified;
 
-            await _context.SaveChangesAsync();
-
-            var newTracking = new DeliveryTask
+            try
             {
                 Order = order,
                 OrderId = order.OrderId,
@@ -270,7 +288,7 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
         [HttpGet("{role}/{id}")]
-        public async Task<IActionResult> GetOrdersByRole(string role, int id, bool recent = false)
+        public async Task<IActionResult> GetOrdersByRole(string role, int id,  bool recent = false)
         {
             IQueryable<Order> query = _context.Orders
                 .Include(o => o.Customer)

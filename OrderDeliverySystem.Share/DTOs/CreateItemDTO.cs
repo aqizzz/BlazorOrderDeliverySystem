@@ -9,7 +9,6 @@ namespace OrderDeliverySystem.Share.DTOs
         public string? ItemName { get; set; }
         public string? ItemDescription { get; set; }
         public decimal ItemPrice { get; set; }
-        public int Quantity { get; set; }
         public string? ItemPic { get; set; }
         public bool ItemIsAvailable { get; set; }
     }

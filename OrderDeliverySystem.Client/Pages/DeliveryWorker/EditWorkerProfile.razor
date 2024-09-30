@@ -16,15 +16,17 @@
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveAuto
 
-<MudContainer Class="my-10 d-flex justify-content-center align-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
-
+<br>
+<br />
+<br />
+<br />
 @if (isLoading)
 {
     <p>Loading profile...</p>
 }
 else if (model != null)
 {
-        <MudPaper Class="pa-16 ma-2" Elevation="3" >
+    <MudContainer>
         <EditForm Model="@model" OnValidSubmit="HandleUpdateProfile" FormName="profileForm">
             <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
             <DataAnnotationsValidator />
@@ -179,17 +181,12 @@ else if (model != null)
                     <MudItem xs="2">
                     </MudItem>
                 <MudItem xs="12" Class="object-center">
-                        <MudButton Class="mx-2" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Profile</MudButton>
-                        <MudButton Class="mx-2" ButtonType="ButtonType.Reset" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LockReset" Color="Color.Primary">Reset</MudButton>
-                        <MudButton Class="mx-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/worker-profile">Cancel</MudButton>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Profile</MudButton>
                 </MudItem>
             </MudGrid>
         </EditForm>
-    </MudPaper>
-   
+    </MudContainer>
 }
-</MudContainer>
-
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
@@ -203,7 +200,7 @@ else if (model != null)
 
 
     public bool ShowErrors { get; set; } = false;
-    public string Errors { get; set; } = string.Empty;
+    public IEnumerable<string> Errors { get; set; } = new List<string>();
 
     private int userId = 2;
     private bool isLoading = true;
@@ -217,40 +214,56 @@ else if (model != null)
 
     private async Task LoadUserProfile()
     {
-
-        if (authenticationState is not null)
+        try
         {
-            if (user is not null)
+            if (authenticationState is not null)
             {
-                if (user.IsInRole("Admin"))
+                if (user is not null)
                 {
-                    model = await ProfileService.GetWorkerProfile(UserId);
-                }
-                else if (user.IsInRole("Worker"))
-                {
-                    model = await ProfileService.GetWorkerProfile();
+                    if (user.IsInRole("Admin"))
+                    {
+                        model = await ProfileService.GetWorkerProfile(UserId);
+                    }
+                    else if (user.IsInRole("Worker"))
+                    {
+                        model = await ProfileService.GetWorkerProfile();
 
+                    }
+                    isLoading = false;
+                    StateHasChanged();
                 }
-                isLoading = false;
-                StateHasChanged();
             }
+        }
+        catch (Exception ex)
+        {
+            await LogToBrowserConsole($"Error loading: {ex.Message}");
         }
 
     }
 
     private async Task HandleUpdateProfile()
     {
-        var result = await this.ProfileService.UpdateWorkerProfile(model); // Update customer data
-
-
-        if (result.Succeeded)
+        try
         {
-            ShowErrors = false;
+            await LogToBrowserConsole($"Update Data: {model}");
+            var result = await this.ProfileService.UpdateWorkerProfile(model); // Update customer data
+
+
+            if (result.Succeeded)
+            {
+                ShowErrors = false;
+            }
+            else
+            {
+                Errors = result.Errors;
+                ShowErrors = true;
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Errors = result.Error;
-            ShowErrors = true;
+            Console.WriteLine($"An error occurred: {ex.Message}");
         }
     }
+
+    private async Task LogToBrowserConsole(string message) => await JSRuntime.InvokeVoidAsync("console.log", message);
 }
