@@ -63,7 +63,7 @@ namespace OrderDeliverySystemApi.Controllers
         // API3: Customer can view all reviews based on different merchantId
         [HttpGet("customerReviews/{merchantId}")]
         [Authorize(Roles = "Customer")]
-        public async Task<IActionResult> GetReviewsByMerchant(int merchantId)
+        public async Task<IActionResult> customerGetReviews(int merchantId)
         {
             var reviews = await _context.Reviews
                 .Include(r => r.Order)
@@ -90,7 +90,7 @@ namespace OrderDeliverySystemApi.Controllers
         // API4: Merchant can view its own reviews
         [HttpGet("merchantReviews")]
         [Authorize(Roles = "Merchant")]
-        public async Task<IActionResult> GetMerchantReviews()
+        public async Task<IActionResult> MerchantGetReviews()
         {
             var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
