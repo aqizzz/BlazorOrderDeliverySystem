@@ -88,11 +88,17 @@
 
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
 
+    [Parameter]
+    public int UserId { get; set; }
     [Parameter]
     public bool recent { get; set; }
     [Parameter]
     public string role { get; set; }
+  
+
 
     private bool dense = false;
     private bool hover = true;
@@ -117,15 +123,17 @@
 
 
         int merchantId = 2;
-
-        recentOrders = await Orderservice.GetOrdersByRoleAsync(role, merchantId, recent);
+        if(role !=null && recent != null){
+            recentOrders = await Orderservice.GetOrdersByRole(role, merchantId, recent);
+        }
+       
 
     }
 
     private async Task ApproveOrder(OrderDTO order)
     {
        
-       await Orderservice.UpdateOrderAsync(order);
+       await Orderservice.UpdateOrder(order);
         StateHasChanged();
     }
 

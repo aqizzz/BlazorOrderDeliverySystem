@@ -4,8 +4,9 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @inject AuthenticationStateProvider AuthenticationStateProvider
-
 @inject IJSRuntime JSRuntime
+
+
 <MudThemeProvider/>
 <MudPopoverProvider/>
 <MudDialogProvider/>
@@ -61,7 +62,7 @@
  
 
        <Authorized>
-            <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Style="max-height:650px;">
+            <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Style="min-height:400px;max-height:650px;">
                 <LeftNavBar />
             </MudDrawer>
           
@@ -71,21 +72,14 @@
     <MudMainContent Class="my-1" Style="min-height:700px;">
 
         @Body
+        
     </MudMainContent>
-    <AuthorizeView Roles="Admin,Merchant,Worker">
-        <Authorized>
-            <MudStack Bottom="true" Class="mt-4 bg-light p-2" >
+   
+          
+    <MudPaper Bottom="true" Class="mt-4 bg-light p-5">
 
-                <Footer />
-            </MudStack>
-        </Authorized>
-        <NotAuthorized>
-            <MudPaper Bottom="true" Class="mt-4 bg-light p-5">
-
-                <Footer />
-            </MudPaper>
-        </NotAuthorized>
-    </AuthorizeView>
+        <Footer />
+    </MudPaper>
    
     <div id="blazor-error-ui">
         An unhandled error has occurred.
@@ -98,7 +92,8 @@
 
 @code {
 
-    
+     [Inject]
+    private IAuthService AuthService { get; set; }
     protected override async Task OnInitializedAsync()
     {
       

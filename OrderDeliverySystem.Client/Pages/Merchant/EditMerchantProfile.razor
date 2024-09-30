@@ -16,19 +16,16 @@
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveAuto
 
-<br>
-<br />
-<br />
-<br />
+<MudContainer Class="my-10 d-flex justify-content-center align-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
 @if (isLoading)
 {
     <p>Loading profile...</p>
 }
 else if (model != null)
 {
-    <MudContainer>
+        <MudPaper Class="pa-16 ma-2" Elevation="3">
         <EditForm Model="@model" OnValidSubmit="HandleUpdateProfile" FormName="profileForm">
-            <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
+            <ErrorsList ShowErrors="@ShowErrors" Errors="@Errors" />
             <DataAnnotationsValidator />
             <MudGrid>
 
@@ -41,7 +38,7 @@ else if (model != null)
                     </MudItem>
                     <MudItem xs="8">
                         <MudField Underline="false">
-                            <MudTextField id="firstName" @bind-Value="model.BusinessName" For="@(() => model.BusinessName)" Variant="Variant.Filled" />
+                            <MudTextField id="businessName" @bind-Value="model.BusinessName" For="@(() => model.BusinessName)" Variant="Variant.Filled" />
                         </MudField>
                     </MudItem>
                     <MudItem xs="2">
@@ -74,7 +71,7 @@ else if (model != null)
                     </MudItem>
                     <MudItem xs="8">
                         <MudField Underline="false">
-                            <MudTextField id="email" @bind-Value="model.Email" For="@(() => model.Email)" Variant="Variant.Filled" />
+                            <MudTextField id="email" @bind-Value="model.Email" For="@(() => model.Email)" Variant="Variant.Filled" Disabled="true"/>
                         </MudField>
                     </MudItem>
                     <MudItem xs="2">
@@ -169,13 +166,17 @@ else if (model != null)
                 <MudItem xs="2">
                 </MudItem>
 
-                <MudItem xs="12" Class="object-center">
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Profile</MudButton>
+                    <MudItem xs="12" Class="d-flex justify-content-start align-items-center">
+                    <MudButton Class="m-2" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Profile</MudButton>
+                    <MudButton Class="m-2" ButtonType="ButtonType.Reset" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LockReset" Color="Color.Primary">Reset</MudButton>
+                    <MudButton Class="m-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/merchant-profile">Cancel</MudButton>
+                       
                 </MudItem>
             </MudGrid>
         </EditForm>
-    </MudContainer>
-}
+    </MudPaper>
+    }
+</MudContainer>
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
@@ -187,9 +188,10 @@ else if (model != null)
     private MerchantProfileDTO model = new MerchantProfileDTO { BusinessName = "New business" };
     private ClaimsPrincipal user;
 
+    private int userId = 4;
 
     public bool ShowErrors { get; set; } = false;
-    public IEnumerable<string> Errors { get; set; } = new List<string>();
+    public string Errors { get; set; } = string.Empty;
 
     private bool isLoading = true;
 
@@ -202,55 +204,39 @@ else if (model != null)
 
     private async Task LoadMerchantProfile()
     {
-        try
+        if (authenticationState is not null)
         {
-            if (authenticationState is not null)
+            if (user is not null)
             {
-                if (user is not null)
+                if (user.IsInRole("Admin"))
                 {
-                    if (user.IsInRole("Admin"))
-                    {
-                        model = await ProfileService.GetMerchantProfile(UserId);
+                    model = await ProfileService.GetMerchantProfile(userId);
 
-                    }
-                    else if (user.IsInRole("Merchant"))
-                    {
-                        model = await ProfileService.GetMerchantProfile();
-
-                    }
-                    isLoading = false;
-                    StateHasChanged();
                 }
+                else if (user.IsInRole("Merchant"))
+                {
+                    model = await ProfileService.GetMerchantProfile();
+
+                }
+                isLoading = false;
+                StateHasChanged();
             }
-        }
-        catch (Exception ex)
-        {
-            await LogToBrowserConsole($"Error loading: {ex.Message}");
         }
     }
 
     private async Task HandleUpdateProfile()
     {
-        try
+        var result = await this.ProfileService.UpdateMerchantProfile(model); // Update customer data
+
+
+        if (result.Succeeded)
         {
-            var result = await this.ProfileService.UpdateMerchantProfile(model); // Update customer data
-
-
-            if (result.Succeeded)
-            {
-                ShowErrors = false;
-            }
-            else
-            {
-                Errors = result.Errors;
-                ShowErrors = true;
-            }
+            ShowErrors = false;
         }
-        catch (Exception ex)
+        else
         {
-            Console.WriteLine($"An error occurred: {ex.Message}");
+            Errors = result.Error;
+            ShowErrors = true;
         }
     }
-
-    private async Task LogToBrowserConsole(string message) => await JSRuntime.InvokeVoidAsync("console.log", message);
 }
