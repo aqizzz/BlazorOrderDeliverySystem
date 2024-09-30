@@ -25,6 +25,15 @@ namespace OrderDeliverySystem.Share.Data
         public DbSet<WorkerLocation> WorkerLocations { get; set; }
         public DbSet<AddressModel> Addresses { get; set; }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder options)
+        {
+            if (!options.IsConfigured)
+            {
+                string dbPath = Path.Combine(AppContext.BaseDirectory, "OrderDeliverySystem.db");
+                options.UseSqlite($"Data Source={dbPath}");
+            }
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Configure User Table

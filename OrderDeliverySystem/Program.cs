@@ -20,6 +20,7 @@ using OrderDeliverySystem.Hubs;
 
 using OrderDeliverySystem.Client.Infrastructure.Services.Cart;
 using OrderDeliverySystem.Client.Infrastructure.Services.Item;
+using Microsoft.Extensions.Options;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
@@ -47,9 +48,20 @@ builder.Services.AddSwaggerGen(options =>
     options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
 
+//builder.Services.AddDbContext<AppDbContext>(options =>
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+//    sqlOptions => sqlOptions.MigrationsAssembly("OrderDeliverySystem.Share")));
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
-    sqlOptions => sqlOptions.MigrationsAssembly("OrderDeliverySystem.Share")));
+{
+    // 获取启动项目的根目录（OrderDeliverySystem.Server）
+    string dbPath = Path.Combine(AppContext.BaseDirectory, "OrderDeliverySystem.db");
+
+    options.UseSqlite($"Data Source={dbPath}",
+        sqliteOptions => sqliteOptions.MigrationsAssembly("OrderDeliverySystem.Share"))
+        .EnableSensitiveDataLogging()
+        .LogTo(Console.WriteLine, LogLevel.Information);
+});
 
 // Bind JWT settings
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
@@ -189,5 +201,20 @@ app.MapHub<OrderTrackingHub>("/orderTrackingHub");
 {
     endpoints.MapHub<OrderTrackingHub>("/orderTrackingHub");
 });*/
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    try
+    {
+        context.Database.OpenConnection();
+        Console.WriteLine("数据库连接成功");
+        context.Database.CloseConnection();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"数据库连接失败: {ex.Message}");
+    }
+}
 
 app.Run();

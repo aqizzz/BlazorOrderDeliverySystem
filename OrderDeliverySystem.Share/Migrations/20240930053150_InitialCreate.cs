@@ -15,16 +15,16 @@ namespace OrderDeliverySystem.Share.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    UserId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Role = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    PasswordHash = table.Column<string>(type: "TEXT", nullable: true),
+                    Email = table.Column<string>(type: "TEXT", nullable: false),
+                    FirstName = table.Column<string>(type: "TEXT", nullable: true),
+                    LastName = table.Column<string>(type: "TEXT", nullable: true),
+                    Phone = table.Column<string>(type: "TEXT", nullable: true),
+                    Role = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -35,15 +35,15 @@ namespace OrderDeliverySystem.Share.Migrations
                 name: "Addresses",
                 columns: table => new
                 {
-                    AddressId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    Unit = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    City = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Province = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Postcode = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    AddressId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Type = table.Column<string>(type: "TEXT", nullable: true),
+                    Unit = table.Column<string>(type: "TEXT", nullable: true),
+                    Address = table.Column<string>(type: "TEXT", nullable: true),
+                    City = table.Column<string>(type: "TEXT", nullable: true),
+                    Province = table.Column<string>(type: "TEXT", nullable: true),
+                    Postcode = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -60,9 +60,9 @@ namespace OrderDeliverySystem.Share.Migrations
                 name: "Customers",
                 columns: table => new
                 {
-                    CustomerId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false)
+                    CustomerId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -79,12 +79,12 @@ namespace OrderDeliverySystem.Share.Migrations
                 name: "DeliveryWorkers",
                 columns: table => new
                 {
-                    WorkerId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    WorkerAvailability = table.Column<bool>(type: "bit", nullable: false),
-                    CommissionRate = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: true),
-                    LastTaskAssigned = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    WorkerId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
+                    WorkerAvailability = table.Column<bool>(type: "INTEGER", nullable: false),
+                    CommissionRate = table.Column<decimal>(type: "TEXT", precision: 5, scale: 2, nullable: true),
+                    LastTaskAssigned = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -101,13 +101,13 @@ namespace OrderDeliverySystem.Share.Migrations
                 name: "Merchants",
                 columns: table => new
                 {
-                    MerchantId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    BusinessName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    MerchantPic = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    MerchantDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PreparingTime = table.Column<int>(type: "int", nullable: true)
+                    MerchantId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
+                    BusinessName = table.Column<string>(type: "TEXT", nullable: true),
+                    MerchantPic = table.Column<string>(type: "TEXT", nullable: true),
+                    MerchantDescription = table.Column<string>(type: "TEXT", nullable: true),
+                    PreparingTime = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -124,9 +124,9 @@ namespace OrderDeliverySystem.Share.Migrations
                 name: "Carts",
                 columns: table => new
                 {
-                    CartId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    CustomerId = table.Column<int>(type: "int", nullable: false)
+                    CartId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    CustomerId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -143,12 +143,12 @@ namespace OrderDeliverySystem.Share.Migrations
                 name: "WorkerLocations",
                 columns: table => new
                 {
-                    WorkerLocationId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    WorkerId = table.Column<int>(type: "int", nullable: false),
-                    Latitude = table.Column<decimal>(type: "decimal(11,8)", nullable: true),
-                    Longitude = table.Column<decimal>(type: "decimal(11,8)", nullable: true),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    WorkerLocationId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    WorkerId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Latitude = table.Column<decimal>(type: "decimal(11, 8)", nullable: true),
+                    Longitude = table.Column<decimal>(type: "decimal(11, 8)", nullable: true),
+                    LastUpdated = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -165,14 +165,14 @@ namespace OrderDeliverySystem.Share.Migrations
                 name: "Items",
                 columns: table => new
                 {
-                    ItemId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    MerchantId = table.Column<int>(type: "int", nullable: false),
-                    ItemName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ItemDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ItemPrice = table.Column<decimal>(type: "decimal(10,2)", precision: 10, scale: 2, nullable: false),
-                    ItemPic = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ItemIsAvailable = table.Column<bool>(type: "bit", nullable: false)
+                    ItemId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    MerchantId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ItemName = table.Column<string>(type: "TEXT", nullable: true),
+                    ItemDescription = table.Column<string>(type: "TEXT", nullable: true),
+                    ItemPrice = table.Column<decimal>(type: "TEXT", precision: 10, scale: 2, nullable: false),
+                    ItemPic = table.Column<string>(type: "TEXT", nullable: true),
+                    ItemIsAvailable = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -189,18 +189,18 @@ namespace OrderDeliverySystem.Share.Migrations
                 name: "Orders",
                 columns: table => new
                 {
-                    OrderId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    CustomerId = table.Column<int>(type: "int", nullable: false),
-                    MerchantId = table.Column<int>(type: "int", nullable: false),
-                    WorkerId = table.Column<int>(type: "int", nullable: true),
-                    PickupAddressId = table.Column<int>(type: "int", nullable: true),
-                    DropoffAddressId = table.Column<int>(type: "int", nullable: true),
-                    TotalAmount = table.Column<decimal>(type: "decimal(10,2)", precision: 10, scale: 2, nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DeliveryWorkerWorkerId = table.Column<int>(type: "int", nullable: true)
+                    OrderId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    CustomerId = table.Column<int>(type: "INTEGER", nullable: false),
+                    MerchantId = table.Column<int>(type: "INTEGER", nullable: false),
+                    WorkerId = table.Column<int>(type: "INTEGER", nullable: true),
+                    PickupAddressId = table.Column<int>(type: "INTEGER", nullable: true),
+                    DropoffAddressId = table.Column<int>(type: "INTEGER", nullable: true),
+                    TotalAmount = table.Column<decimal>(type: "TEXT", precision: 10, scale: 2, nullable: false),
+                    Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    DeliveryWorkerWorkerId = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -239,11 +239,11 @@ namespace OrderDeliverySystem.Share.Migrations
                 name: "CartItems",
                 columns: table => new
                 {
-                    CartItemId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ItemId = table.Column<int>(type: "int", nullable: false),
-                    CartId = table.Column<int>(type: "int", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false)
+                    CartItemId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    ItemId = table.Column<int>(type: "INTEGER", nullable: false),
+                    CartId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Quantity = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -266,13 +266,13 @@ namespace OrderDeliverySystem.Share.Migrations
                 name: "DeliveryTasks",
                 columns: table => new
                 {
-                    TaskId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    WorkerId = table.Column<int>(type: "int", nullable: false),
-                    OrderId = table.Column<int>(type: "int", nullable: false),
-                    AssignedTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CompletedTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    TaskId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    WorkerId = table.Column<int>(type: "INTEGER", nullable: false),
+                    OrderId = table.Column<int>(type: "INTEGER", nullable: false),
+                    AssignedTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    CompletedTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    Status = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -296,14 +296,14 @@ namespace OrderDeliverySystem.Share.Migrations
                 name: "OrderItems",
                 columns: table => new
                 {
-                    OrderItemId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ItemId = table.Column<int>(type: "int", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    PriceAtOrder = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    OrderId = table.Column<int>(type: "int", nullable: false),
-                    Discount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Tax = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    OrderItemId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    ItemId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Quantity = table.Column<int>(type: "INTEGER", nullable: false),
+                    PriceAtOrder = table.Column<decimal>(type: "decimal(18, 2)", nullable: false),
+                    OrderId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Discount = table.Column<decimal>(type: "decimal(5, 2)", nullable: false),
+                    Tax = table.Column<decimal>(type: "decimal(5, 2)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -326,13 +326,13 @@ namespace OrderDeliverySystem.Share.Migrations
                 name: "Reviews",
                 columns: table => new
                 {
-                    ReviewId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    OrderId = table.Column<int>(type: "int", nullable: false),
-                    CustomerId = table.Column<int>(type: "int", nullable: false),
-                    Rating = table.Column<int>(type: "int", nullable: false),
-                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    ReviewId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    OrderId = table.Column<int>(type: "INTEGER", nullable: false),
+                    CustomerId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Rating = table.Column<int>(type: "INTEGER", nullable: false),
+                    Comment = table.Column<string>(type: "TEXT", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -356,8 +356,7 @@ namespace OrderDeliverySystem.Share.Migrations
                 name: "IX_Addresses_UserId_Type",
                 table: "Addresses",
                 columns: new[] { "UserId", "Type" },
-                unique: true,
-                filter: "[Type] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_CartItems_CartId",
