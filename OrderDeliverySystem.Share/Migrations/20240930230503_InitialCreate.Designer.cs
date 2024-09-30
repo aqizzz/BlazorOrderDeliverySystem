@@ -12,7 +12,7 @@ using OrderDeliverySystem.Share.Data;
 namespace OrderDeliverySystem.Share.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240930053150_InitialCreate")]
+    [Migration("20240930230503_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

@@ -54,9 +54,7 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    string projectRoot = Directory.GetCurrentDirectory();
-
-    string dbPath = Path.Combine(projectRoot, "OrderDeliverySystem", "OrderDeliverySystem.db", "OrderDeliverySystem.db");
+    string dbPath = Path.Combine(AppContext.BaseDirectory, "OrderDeliverySystem.db");
 
     options.UseSqlite($"Data Source={dbPath}",
         sqliteOptions => sqliteOptions.MigrationsAssembly("OrderDeliverySystem.Share"))
@@ -155,6 +153,12 @@ builder.Services.AddControllers();
 builder.Services.AddSignalR();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await UserSeeder.EnsureAdminUserExists(context);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

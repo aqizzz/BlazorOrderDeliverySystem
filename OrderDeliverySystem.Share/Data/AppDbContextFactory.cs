@@ -14,10 +14,8 @@ namespace OrderDeliverySystem.Share.Data
         {
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
-            // 获取启动项目的根目录并生成数据库文件路径
             string dbPath = Path.Combine(AppContext.BaseDirectory, "OrderDeliverySystem.db");
 
-            // 配置 SQLite 数据库并指向启动项目的路径
             optionsBuilder.UseSqlite($"Data Source={dbPath}");
 
             return new AppDbContext(optionsBuilder.Options);
