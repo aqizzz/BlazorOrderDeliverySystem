@@ -5,241 +5,255 @@
 @using OrderDeliverySystem.Client.Shared.Common
 @using OrderDeliverySystem.Client.Shared
 @using OrderDeliverySystem.Share.DTOs
-@using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO
 @using OrderDeliverySystem.Share.DTOs.CartDTO
 @using OrderDeliverySystem.Share.Data.Models
+@using OrderDeliverySystem.Client.Infrastructure.Services.Orders
 @using Microsoft.AspNetCore.Components.Authorization
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
-@using System.Security.Claims
-@using OrderDeliverySystem.Client.Infrastructure.Services.Orders
-@using OrderDeliverySystem.Client.Infrastructure.Services.Cart
-@using OrderDeliverySystem.Client.Infrastructure.Services.Profile
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
-@inject IProfileService ProfileService
-@inject ICartService CartService
+@rendermode InteractiveServer
 @inject OrderService Orderservice
 @inject NavigationManager Navigation
-@inject IJSRuntime JSRuntime
-@rendermode InteractiveServer
 
+<EditForm Model="order" OnValidSubmit="OrderCreationSubmit">
+<DataAnnotationsValidator />
 
 <MudContainer Class="my-10">
-@if (isLoading)
-{
-    <MudText Typo="Typo.body1">Loading...</MudText>
-}
-else
-{
     <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="true">Place Order</MudText>
     <MudDivider Class=" border-4" Style="border-color:rgba(112, 0, 0, 1);" />
    <MudContainer Class="my-3">
         <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Start" GutterBottom="true" Style="color:rgba(112, 0, 0, 1);">Customer Info</MudText>
         <MudDivider Class=" border-2" Style="border-color:rgba(112, 0, 0, 1);" />
-           
-          <AddressCreate/>
-          
-    </MudContainer>
-    <MudContainer Class="my-3">
-        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Start" GutterBottom="true" Style="color:rgba(112, 0, 0, 1);">Place Order</MudText>
-            <MudDivider Class=" border-2" Style="border-color:rgba(112, 0, 0, 1);" />
-          
-              <MudGrid >
-                <MudItem xs="12" sm="12" md="3">
-                    @if (merchant == null )
+            <MudForm>
+                <MudRadioGroup @bind-Value="SelectedOption">
+                    @if(order.Address == null)
                     {
-                        <MudText Typo="Typo.body2">No merchant</MudText>
+                        <MudRadio Value="@("Radio 1")" Disabled="true">Default Address</MudRadio>
+                        <MudRadio Value="@("Radio 2")" Color="Color.Primary" Dense="true">Create New Address</MudRadio>
                     }
                     else
                     {
-                   
-                    <MudGrid Class="ps-10 " >
-                        <MudItem xs="12" >
-                            <MudImage Src="@merchant.MerchantPic" Width="120" Height="80" Alt="@merchant.FirstName" Class="rounded-lg mt-4" />
-                        </MudItem>
-                    
-                        <MudItem xs="12">
-                            <MudText Typo="Typo.h4">@merchant.BusinessName</MudText>
-                                    <MudText Typo="Typo.body2">@merchant.MerchantDescription</MudText>
-                        </MudItem>
-                        <MudItem xs="2">
-                            <MudIcon Class="inline-block" Icon="@Icons.Material.Outlined.AccessTime"></MudIcon>
-                        </MudItem>
-                        <MudItem xs="10">
-                            <MudText Typo="Typo.body2">
-                                Time:
-                                @(merchant.PreparingTime.HasValue? merchant.PreparingTime.Value+ 15 : 30) ~ @(merchant.PreparingTime.HasValue ? merchant.PreparingTime.Value + 30 : 45) mins
-                            </MudText>
-                            </MudItem>
-                        <MudItem xs="2">
-                            <MudIcon Class="inline-block" Icon="@Icons.Material.Outlined.LocationOn"></MudIcon>
-                        </MudItem>
-                        <MudItem xs="10">
-                              @if (merchant.Address == null && merchant.City == null )
-                            {
-                                <MudText Typo="Typo.body2">Address: No Addres Information.</MudText>
-                            }
-                            else
-                            {
-                                @if (merchant.Unit == "")
-                                {
-                                        <MudText Typo="Typo.body2">Address:  @merchant.Address , @merchant.City , @merchant.Postcode</MudText>
-                                }
-                                else
-                                {
-                                     <MudText Typo="Typo.body2">Address: @merchant.Unit, @merchant.Address, @merchant.City, @merchant.Postcode</MudText>
-                                }
-                            }
-                           
-                        </MudItem>
-                    </MudGrid>
-                        
-
+                        <MudRadio Value="@("Radio 1")" >Default Addresses</MudRadio>
+                        <MudRadio Value="@("Radio 2")" Color="Color.Primary">Create New Address</MudRadio>
                     }
-                </MudItem>
-                
-           
-                <MudItem xs="12" sm="9" md="9"> 
-                    <MudGrid>
-                        <MudItem xs="12" sm="12" md="8">
-                            @if (cartItems != null)
-                            {
-                            foreach ( var theitem in cartItems)
-                            { 
-                                <div class="d-flex justify-content-around align-items-center">
-                                        <MudImage Src="@theitem.ItemPic" Width="120" Height="80" Alt="@merchant.FirstName" Class="rounded-lg mt-4" />
-                                        <MudText> ItemId :@theitem.ItemId</MudText>
-                                        <MudText>@theitem.ItemName</MudText>
-                                        <MudText>@theitem.Quantity</MudText>
-                                </div>
-                            }
-                            }
+                    
+                    
                    
-                        </MudItem>
-                        <MudItem xs="12" sm="12" md="4">
-                            <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(Before tax): $@subtotal</MudText>
-                            <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Tax (15%): $@tax</MudText>
-                            <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(After tax):  $@total</MudText>
-                            <MudText Class="pt-4 ps-6 border-b-2 border-solid mb-2" Typo="Typo.body2" Align="Align.Start" GutterBottom="true" Style="border-color:rgba(112, 0, 0, 1);">Delevery Fee:  $@DeliveryFee ( $3/ km )</MudText>
-                            <MudText Class="pt-4 ps-6" Typo="Typo.subtitle2" Align="Align.Start" GutterBottom="true">Total Amount:  $@totalAmount</MudText>
-                        </MudItem>
-                    </MudGrid>
-                </MudItem>
-        </MudGrid> 
-                <MudDivider Class="mt-5 border-2" Style="border-color:rgba(112, 0, 0, 1);" />
-   
+                </MudRadioGroup>
+            </MudForm>
+            @if (SelectedOption == "Radio 1")
+            {
+                <MudText Class="" Typo="Typo.h4">Default Address : </MudText>
+                <MudText Typo="Typo.h5">Name : @order.FirstName @order.LastName</MudText>
+                <MudText Typo="Typo.h5">Phone : @order.Phone</MudText>
+                <MudText Typo="Typo.h5">Address : @order.Address</MudText>
+            }
+            else if (SelectedOption == "Radio 2")
+            {
+                <MudGrid Class="d-block">
+                    <MudItem xs="12" sm="7">
+                        <MudCard>
+                            <MudCardContent>
+                                <MudTextField @bind-Value="order.CustomerId" For="@(() => order.CustomerId)" InputType="InputType.Hidden" />
+                                <MudTextField @bind-Value="order.MerchantId" For="@(() => order.MerchantId)" InputType="InputType.Hidden" />
+                                <MudTextField @bind-Value="order.CartId" For="@(() => order.CartId)" InputType="InputType.Hidden" />
+                                <MudTextField Label="First name" HelperText="Enter your first name"
+                                              @bind-Value="order.FirstName" For="@(() => order.FirstName)" />
+                                <MudTextField Label="Last name" HelperText="Enter your last name"
+                                              @bind-Value="order.LastName" For="@(() => order.LastName)" />
+                                <MudTextField Label="Phone" HelperText="Enter your phone number" Class="mt-3"
+                                              @bind-Value="order.Phone" For="@(() => order.Phone)" InputType="InputType.Telephone" />
+                                <MudTextField Label="Unit" HelperText="Enter your Unit" Class="mt-3"
+                                              @bind-Value="order.Unit" For="@(() => order.Unit)" InputType="InputType.Text" />
+                                <MudTextField Label="Address" HelperText="Enter your address" Class="mt-3"
+                                              @bind-Value="order.Address" For="@(() => order.Address)" InputType="InputType.Text" />
+                                <MudTextField Label="City" HelperText="Enter your City" Class="mt-3"
+                                              @bind-Value="order.City" For="@(() => order.City)" InputType="InputType.Text" />
+                                <MudTextField Label="Provice" HelperText="Enter your Provice" Class="mt-3"
+                                              @bind-Value="order.Province" For="@(() => order.Province)" InputType="InputType.Text" />
+                                <MudTextField Label="Postcode" HelperText="Enter your PostCode" Class="mt-3"
+                                              @bind-Value="order.PostCode" For="@(() => order.PostCode)" InputType="InputType.Text" />
+
+                            </MudCardContent>
+
+                        </MudCard>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.body2" Align="Align.Center">
+                            Fill out the form correctly to see the success message.
+                        </MudText>
+                    </MudItem>
+                </MudGrid>
+            }
+            
+           
+         
+       
+    </MudContainer>
+    <MudContainer Class="my-3">
+        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Start" GutterBottom="true" Style="color:rgba(112, 0, 0, 1);">Place Order</MudText>
+        <MudDivider Class=" border-2" Style="border-color:rgba(112, 0, 0, 1);"  />
+        <MudGrid >
+            <MudItem xs="12" sm="12" md="3">
+                <MudGrid Class="ps-10 " >
+                    <MudItem xs="12" >
+                        <MudImage Src="images/food.png" Width="120" Height="80" Alt="Swedish Farm House" Class="rounded-lg mt-4" />
+                    </MudItem>
+                    
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h5">Merchant Name</MudText>
+                    </MudItem>
+                    <MudItem xs="2">
+                        <MudIcon Class="inline-block" Icon="@Icons.Material.Outlined.AccessTime"></MudIcon>
+                    </MudItem>
+                    <MudItem xs="10">
+                        <MudText Typo="Typo.body2">Time: 40 ~ 50 mins</MudText>
+                    </MudItem>
+                    <MudItem xs="2">
+                        <MudIcon Class="inline-block" Icon="@Icons.Material.Outlined.LocationOn"></MudIcon>
+                    </MudItem>
+                    <MudItem xs="10">
+                        <MudText Typo="Typo.body2">Address: This Merchant's Address'</MudText>
+                    </MudItem>
+                </MudGrid>
+
+            </MudItem>
+        
+           
+            <MudItem xs="12" sm="9" md="9"> 
+                <MudGrid>
+                    <MudItem xs="12" sm="12" md="8">
+                        <ItemCard />
+                    </MudItem>
+                    <MudItem xs="12" sm="12" md="4">
+                        <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(Before tax):  $19.98</MudText>
+                        <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Tax (15%):  $2.99</MudText>
+                        <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(After tax):  $22.98</MudText>
+                        <MudText Class="pt-4 ps-6 border-b-2 border-solid mb-2" Typo="Typo.body2" Align="Align.Start" GutterBottom="true" Style="border-color:rgba(112, 0, 0, 1);">Delevery Fee:  $6 ( $3/ km )</MudText>
+                        <MudText Class="pt-4 ps-6" Typo="Typo.subtitle2" Align="Align.Start" GutterBottom="true">Total Amount:  $28.98</MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudItem>
+        </MudGrid>
+        <MudDivider Class="mt-5 border-2" Style="border-color:rgba(112, 0, 0, 1);" />
     </MudContainer>
     <MudCardActions>
             <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" >Register</MudButton>
     </MudCardActions>
-    }
 </MudContainer>
-
+ </EditForm>
 
 @code {
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationState { get; set; }
-    private ClaimsPrincipal user;
 
-    [Parameter]
-    public int UserId { get; set; }
-
-    [Parameter]
-    public CreateOrderDTO order { get; set; }
 
     private const decimal TaxRate = 0.15m;
     private const decimal DeliveryFee = 6.00m;
-
-
+    int customerId;
+    int merchantId;
     int itemId;
+    int cartId;
+    decimal subtotal;
 
-
-    private decimal subtotal;
-    private decimal total;
-    private decimal fee;
-    private decimal totalAmount;
-    private decimal tax;
-    private decimal deliveryFee;
-    private int cartId { get; set; }
-    private int customerId { get; set; }
-    private int merchantId { get; set; }
-    private string businessName { get; set; }
-
-
-    private bool isLoading = true;
-    private List<int>merchants{ get; set; }
-    private MerchantProfileDTO merchant { get; set; }
-    private List<GetOrderItemResponseDTO> cartItems = new();
-
-
-
+    private List<GetCartItemsResponseDTO> cartItems = new();
+    private CreateOrderDTO order = new CreateOrderDTO();
     bool success;
 
     [Inject]
     private IAuthService AuthService { get; set; }
 
     public string SelectedOption { get; set; } 
-
-    private UserProfileDTO model = new();
-
     protected override async Task OnInitializedAsync()
     {
-
+        await GetCustomerId();
+        await LoadCartItems();
+        await GetMerchantId();
+        order.CustomerId = customerId;
+        order.MerchantId = merchantId;
+        order.OrderItems = cartItems;
+        order.TotalAmount = GetTotalAmount();
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        if (user.Identity.IsAuthenticated)
-        {
-            if (user.IsInRole("Customer"))
-            {
-                await LoadCartItems();
-
-            }
-            else
-            {
-                Console.WriteLine("User is not in the Customer role.");
-            }
-        }
-        else
-        {
-            Console.WriteLine("User is not authenticated");
-        }
+        
 
     }
+   
 
-
+    private void Reset()
+    {
+        SelectedOption = null;
+    }
+   
 
     private async Task LoadCartItems()
     {
         try
         {
-            var response = await Orderservice.GetOrderByCart();
+            var httpClient = HttpClientFactory.CreateClient("API");
+            var response = await httpClient.GetFromJsonAsync<GetCartReponseDTO>($"api/cart/getCartByUser");
 
             if (response != null)
             {
-
+                order.CartId = response.CartId;
+               
                 cartItems = response.CartItems;
-                itemId = cartItems.FirstOrDefault().ItemId;
                 subtotal = cartItems.Sum(ci => ci.Quantity * ci.ItemPrice);
-                tax = GetTaxAmount();
-                total = GetTotalAfterTax();
-                totalAmount = GetTotalAmount();
-   
-                cartId = response.CartId;
-                customerId = response.CustomerId;
-
-                merchant = await ProfileService.GetMerchantProfileByItemId(itemId);
+                itemId = cartItems.FirstOrDefault().ItemId;
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading cart: {ex.Message}");
         }
-        finally
+        
+    }
+
+    private async Task GetCustomerId()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+    
+        if (user.Identity.IsAuthenticated)
         {
-            isLoading = false;
-            StateHasChanged();
+            // Retrieve the CustomerId from claims, assuming it is stored as a claim
+            var customerIdClaim = user.FindFirst("CustomerId");
+
+            if (customerIdClaim != null)
+            {
+                // Parse CustomerId as needed (e.g., to int)
+                customerId = int.Parse(customerIdClaim.Value);
+                Console.WriteLine($"CustomerId: {customerId}");
+            }
+            else
+            {
+                Console.WriteLine("CustomerId claim not found.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("User is not authenticated.");
+        };
+    }
+
+    private async Task GetMerchantId()
+    {
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("API");
+            var response = await httpClient.GetFromJsonAsync<ViewItemDTO>($"api/items/{itemId}");
+
+            if (response != null)
+            {
+                merchantId = response.MerchantId;
+              
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading cart: {ex.Message}");
         }
     }
 
@@ -255,17 +269,13 @@ else
     {
         return GetTotalAfterTax() + DeliveryFee;
     }
-
-
-
     private async Task OrderCreationSubmit()
     {
+
+        await Orderservice.CreateOrderAsync(this.order);
         
-           
-        await Orderservice.CreateOrder(cartItems);
-        StateHasChanged();
         Navigation.NavigateTo("/my-orders", forceLoad: true);
-       
+        StateHasChanged();
     }
 
 }

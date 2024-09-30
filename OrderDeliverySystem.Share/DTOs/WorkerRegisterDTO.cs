@@ -8,10 +8,12 @@ namespace OrderDeliverySystem.Share.DTOs
     public class WorkerRegisterDTO : WorkerProfileDTO
     {
         [Required(ErrorMessage = RequiredAttributeErrorMessage)]
+        [DataType(DataType.Password)]
         [StringLength(MaxPasswordLength, ErrorMessage = StringLengthErrorMessage, MinimumLength = MinPasswordLength)]
         public string Password { get; set; } = string.Empty;
 
         [Required(ErrorMessage = RequiredAttributeErrorMessage)]
+        [DataType(DataType.Password)]
         [StringLength(MaxPasswordLength, ErrorMessage = StringLengthErrorMessage, MinimumLength = MinPasswordLength)]
         [RegularExpression(PasswordRegularExpression,
             ErrorMessage = InvalidPasswordFormatErrorMessage)]

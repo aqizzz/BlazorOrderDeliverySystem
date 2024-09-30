@@ -1,15 +1,12 @@
-﻿@page "/cart"
-@using OrderDeliverySystem.Client.Shared
+﻿@using OrderDeliverySystem.Client.Shared
 @using OrderDeliverySystem.Share.DTOs.CartDTO
 @using OrderDeliverySystem.Client.Infrastructure.Services.Cart;
 @using MudBlazor
-@using Microsoft.AspNetCore.Components.Authorization
+@inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
-@inject NavigationManager Navigation
-@inject ICartService CartService
-@inject AuthenticationStateProvider AuthenticationStateProvider
-@inject IJSRuntime JSRuntime
+@inject CartService CartService
 @rendermode InteractiveServer
+
 
 <MudPaper Class="pa-4" Elevation="3" Style="position: absolute; top: 70px; right: 20px; z-index: 1000; width: 400px;">
     <div class="d-flex justify-content-between align-items-center">
@@ -47,11 +44,6 @@
 
         <MudGrid Justify="Justify.Center" Style="margin-top: 20px;">
             <MudItem xs="12" sm="6" class="d-flex justify-center">
-                <MudButton Variant="Variant.Filled" Size="Size.Small" Style="background-color:rgba(112, 0, 0, 1); color:white;" OnClick="ClearCart">
-                    Clear Cart
-                </MudButton>
-            </MudItem>
-            <MudItem xs="12" sm="6" class="d-flex justify-center">
                 <MudButton Variant="Variant.Filled" Size="Size.Small" Style="background-color:rgba(112, 0, 0, 1); color:white;" OnClick="PlaceOrder">
                     Place Order
                 </MudButton>
@@ -67,39 +59,22 @@
 @code {
     [Parameter] public EventCallback OnClose { get; set; }
 
+    string customerId = "3";
     private List<GetCartItemsResponseDTO> cartItems = new();
     private decimal subtotal;
     private bool isLoading = true;
 
-
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        if (user.Identity.IsAuthenticated)
-        {
-            if (user.IsInRole("Customer"))
-            {
-                await LoadCartItems();
-            }
-            else
-            {
-                Console.WriteLine("User is not in the Customer role.");
-            }
-        }
-        else
-        {
-            Console.WriteLine("User is not authenticated");
-        }
+        await LoadCartItems();
     }
-
 
     private async Task LoadCartItems()
     {
         try
         {
-            var response = await CartService.GetCartItems();
+            var httpClient = HttpClientFactory.CreateClient("API");
+            var response = await httpClient.GetFromJsonAsync<GetCartReponseDTO>($"api/cart/getCart/{customerId}");
 
             if (response != null)
             {
@@ -148,7 +123,8 @@
     private async Task UpdateCartItem(int itemId, int quantity)
     {
         var updateDto = new AddUpdateCartItemsRequestDTO(itemId, quantity);
-        var response = await CartService.UpdateCartItems(updateDto);
+        var httpClient = HttpClientFactory.CreateClient("API");
+        var response = await httpClient.PutAsJsonAsync($"api/cart/updateCart/{customerId}", updateDto);
 
         if (response.IsSuccessStatusCode)
         {
@@ -159,7 +135,7 @@
 
     private async Task RemoveItem(int itemId)
     {
-        var response = await CartService.RemoveCartItems(itemId);
+        var response = await CartService.RemoveCartItems(customerId, itemId);
 
         if (response.IsSuccessStatusCode)
         {
@@ -168,33 +144,10 @@
             StateHasChanged();
         }
     }
-
-    public async Task ClearCart()
-    {
-        try
-        {
-            var response = await CartService.ClearCartItems();
-
-            if (response.IsSuccessStatusCode)
-            {
-                await LoadCartItems();
-                Console.WriteLine("Cart cleared successfully.");
-            }
-            else
-            {
-                var errorMsg = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Failed to clear cart. Error: {errorMsg}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error clearing cart: {ex.Message}");
-        }
-    }
-
     private void PlaceOrder()
     {
-        Navigation.NavigateTo($"/order-now", forceLoad:true);
+        NavigationManager.NavigateTo($"/order-now");
+
     }
 
     public string FormatCurrency(decimal value)

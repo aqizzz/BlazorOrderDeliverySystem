@@ -10,7 +10,6 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
         Task<WorkerProfileDTO> GetWorkerProfile();
         Task<WorkerProfileDTO> GetWorkerProfile(int userId);
         Task<MerchantProfileDTO> GetMerchantProfile();
-        Task<MerchantProfileDTO> GetMerchantProfileByItemId(int itemId);
         Task<MerchantProfileDTO> GetMerchantProfile(int userId);
         Task<Result> UpdateCustomerProfile(UserProfileDTO model);
         Task<Result> UpdateWorkerProfile(WorkerProfileDTO model);

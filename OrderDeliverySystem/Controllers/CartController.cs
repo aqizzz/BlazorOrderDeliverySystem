@@ -4,15 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using OrderDeliverySystem.Share.Data.Models;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs.CartDTO;
-using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
+
 
 
 namespace OrderDeliverySystemApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Customer")]
+    /* [Authorize(Roles = "Customer")]*/
     public class CartController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -23,24 +22,10 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
 
-
         // GET: api/cart/getCart/{customerId}
-        [HttpGet("getCart")]
-        public async Task<IActionResult> GetCartItems()
+        [HttpGet("getCart/{customerId}")]
+        public async Task<IActionResult> GetCartItems(int customerId)
         {
-
-            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-
-            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
-
-
-            if (customer == null)
-            {
-                return NotFound("Customer not found.");
-            }
-
-            int customerId = customer.CustomerId;
 
             var cart = await _context.Carts
                 .Include(c => c.Customer)
@@ -48,8 +33,15 @@ namespace OrderDeliverySystemApi.Controllers
                 .ThenInclude(ci => ci.Item)
                 .FirstOrDefaultAsync(c => c.CustomerId == customerId);
 
+
             if (cart == null)
             {
+                var customer = await _context.Customers.FindAsync(customerId);
+                if (customer == null)
+                {
+                    return NotFound("Customer not found.");
+                }
+
 
                 cart = new Cart
                 {
@@ -80,25 +72,10 @@ namespace OrderDeliverySystemApi.Controllers
 
 
 
-
         // POST: api/cart/addCart/{customerId}
-        [HttpPost("addCart")]
-        public async Task<IActionResult> AddCartItems([FromBody] List<AddUpdateCartItemsRequestDTO> cartItemsDto)
+        [HttpPost("addCart/{customerId}")]
+        public async Task<IActionResult> AddCartItems(int customerId, [FromBody] List<AddUpdateCartItemsRequestDTO> cartItemsDto)
         {
-
-            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-
-            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
-
-            if (customer == null)
-            {
-                return NotFound("Customer not found.");
-            }
-
-
-            int customerId = customer.CustomerId;
-
 
             var cart = await _context.Carts
                 .Include(c => c.Customer)
@@ -107,6 +84,12 @@ namespace OrderDeliverySystemApi.Controllers
 
             if (cart == null)
             {
+
+                var customer = await _context.Customers.FindAsync(customerId);
+                if (customer == null)
+                {
+                    return NotFound("Customer not found.");
+                }
 
                 cart = new Cart
                 {
@@ -138,6 +121,7 @@ namespace OrderDeliverySystemApi.Controllers
                     }
                     else
                     {
+
                         existingCartItem.Quantity += itemDto.Quantity;
                     }
                 }
@@ -163,23 +147,10 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
 
-
         // PUT: api/cart/updateCart/{customerId}
-        [HttpPut("updateCart")]
-        public async Task<IActionResult> UpdateCartItem([FromBody] AddUpdateCartItemsRequestDTO cartItemDto)
+        [HttpPut("updateCart/{customerId}")]
+        public async Task<IActionResult> UpdateCartItem(int customerId, [FromBody] AddUpdateCartItemsRequestDTO cartItemDto)
         {
-            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-
-            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
-
-            if (customer == null)
-            {
-                return NotFound("Customer not found.");
-            }
-
-            int customerId = customer.CustomerId;
-
             var cart = await _context.Carts.Include(c => c.CartItems)
                                            .FirstOrDefaultAsync(c => c.CustomerId == customerId);
 
@@ -191,15 +162,15 @@ namespace OrderDeliverySystemApi.Controllers
             if (cartItem == null)
                 return NotFound($"Item with ID {cartItemDto.ItemId} not found in the cart.");
 
-
+            
             if (cartItemDto.Quantity <= 0)
             {
-
+                
                 cart.CartItems?.Remove(cartItem);
             }
             else
             {
-
+                
                 cartItem.Quantity = cartItemDto.Quantity;
             }
 
@@ -209,21 +180,9 @@ namespace OrderDeliverySystemApi.Controllers
 
 
         // DELETE: api/cart/clearCart/{customerId}
-        [HttpDelete("clearCart")]
-        public async Task<IActionResult> ClearCartItems()
+        [HttpDelete("clearCart/{customerId}")]
+        public async Task<IActionResult> ClearCartItems(int customerId)
         {
-            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-
-            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
-
-
-            if (customer == null)
-            {
-                return NotFound("Customer not found.");
-            }
-
-            int customerId = customer.CustomerId;
             var cart = await _context.Carts.Include(c => c.CartItems).FirstOrDefaultAsync(c => c.CustomerId == customerId);
 
             if (cart == null)
@@ -242,21 +201,9 @@ namespace OrderDeliverySystemApi.Controllers
 
 
         // DELETE: api/cart/deleteItem/{customerId}/{itemId}
-        [HttpDelete("deleteItem/{itemId}")]
-        public async Task<IActionResult> DeleteCartItem(int itemId)
+        [HttpDelete("deleteItem/{customerId}/{itemId}")]
+        public async Task<IActionResult> DeleteCartItem(int customerId, int itemId)
         {
-            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-
-            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
-
-
-            if (customer == null)
-            {
-                return NotFound("Customer not found.");
-            }
-
-            int customerId = customer.CustomerId;
 
             var cart = await _context.Carts
                 .Include(c => c.CartItems)
@@ -281,35 +228,6 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
 
-        // GET: api/cart/totalQuantity
-        [HttpGet("totalQuantity")]
-        public async Task<IActionResult> GetTotalCartQuantity()
-        {
-            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
-
-            if (customer == null)
-            {
-                return NotFound("Customer not found.");
-            }
-
-            int customerId = customer.CustomerId;
-
-            var cart = await _context.Carts
-                .Include(c => c.CartItems)
-                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
-
-            if (cart == null || cart.CartItems == null || !cart.CartItems.Any())
-            {
-                return Ok(0); // Return 0 if no cart exists or it's empty
-            }
-
-            // Calculate total quantity of items in the cart
-            int totalQuantity = cart.CartItems.Sum(ci => ci.Quantity);
-
-            return Ok(totalQuantity);
-        }
 
 
 

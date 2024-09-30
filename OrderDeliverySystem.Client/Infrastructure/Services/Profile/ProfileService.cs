@@ -3,9 +3,8 @@ using Microsoft.AspNetCore.Components.Authorization;
 using OrderDeliverySystem.Client.Infrastructure.Extensions;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
-using System.Net.Http.Json;
 using System.Net.Http.Headers;
-using System.Text.Json;
+using System.Net.Http.Json;
 
 namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
 {
@@ -36,6 +35,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
         }
         public async Task<UserProfileDTO> GetCustomerProfile()
         {
+            //var token = await localStorage.GetItemAsync<string>("authToken");
             var httpClient = this.httpClientFactory.CreateClient("API");
 
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
@@ -109,16 +109,9 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
 
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+
             var path = GetMerchantPath + "/" + userId;
-
-            return await httpClient.GetFromJsonAsync<MerchantProfileDTO>(path);
-        }
-
-        public async Task<MerchantProfileDTO> GetMerchantProfileByItemId(int itemId)
-        {
-            var httpClient = this.httpClientFactory.CreateClient("API");
-
-            var path = GetMerchantPath + "/item/" + itemId;
 
             return await httpClient.GetFromJsonAsync<MerchantProfileDTO>(path);
         }

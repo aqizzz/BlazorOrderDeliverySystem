@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OrderDeliverySystem.Share.DTOs
 {
-    public class AddressDTO
+    internal class AddressDTO
     {
         public int AddressId { get; set; }
         public int UserId { get; set; }

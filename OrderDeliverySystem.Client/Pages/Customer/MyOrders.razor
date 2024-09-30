@@ -78,8 +78,8 @@
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         int customerId = 3;
-        recentOrders = await OrderService.GetOrdersByRole("customer", customerId, true);
-        orderHistory = await OrderService.GetOrdersByRole("customer", customerId, false);
+        recentOrders = await OrderService.GetOrdersByRoleAsync("customer", customerId, true);
+        orderHistory = await OrderService.GetOrdersByRoleAsync("customer", customerId, false);
     }
     private void ShowOrderDetails(OrderDTO order)
     {

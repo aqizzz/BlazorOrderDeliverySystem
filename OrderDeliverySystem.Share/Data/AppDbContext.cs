@@ -44,6 +44,9 @@ namespace OrderDeliverySystem.Share.Data
                 entity.Property(u => u.IsActive)
                     .HasDefaultValue(true);
 
+                entity.Property(u => u.CreatedAt)
+                    .HasDefaultValueSql("GETDATE()") // SQL Server
+                    .ValueGeneratedOnAdd();
             });
 
             // Configure Customer Table

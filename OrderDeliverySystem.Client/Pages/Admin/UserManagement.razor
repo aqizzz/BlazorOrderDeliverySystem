@@ -1,14 +1,8 @@
 ﻿@page "/user-management"
 <h3>Users</h3>
-<MudContainer Class=" d-flex justify-content-center"  MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
-        <MudPaper Class="px-16 pt-10 ma-2 " Elevation="3" Width="100%">
-        <div class=" mt-2 d-flex justify-content-between ">
-            <MudText Class="pt-4" Typo="Typo.h4" GutterBottom="false">My Orders</MudText>
-            <MudFab Href="/admin/create" Style="color:rgba(112, 0, 0, 1);" Label="Create New Merchant" />
-        </div>
-        <MudDivider Class=" border-4" Style="border-color:rgba(112, 0, 0, 1);" />
-       
-@for(var i=0;i<10;i++){
+<MudContainer Class="my-10  d-flex justify-content-center align-content-center border-2"  MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
+        <MudPaper Class="pa-16 ma-2 " Elevation="3" Width="100%">
+@for(var i=0;i<100;i++){
     
     <MudText>This is test lint @(i+1)</MudText>
 }

@@ -1,4 +1,4 @@
-﻿
+﻿@page "/menus"
 @using System.Net.Http.Json
 @using MudBlazor
 @inject HttpClient httpClient
@@ -84,9 +84,7 @@
 </MudContainer>
 
 @code {
-    [Parameter]
-    public int userId { get; set; }
-
+    private int userId = 12;
 
     private bool dense = false;
     private bool hover = true;

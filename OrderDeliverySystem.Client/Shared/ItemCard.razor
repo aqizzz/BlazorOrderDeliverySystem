@@ -1,6 +1,5 @@
-﻿@using OrderDeliverySystem.Client.Shared
-@using OrderDeliverySystem.Share.DTOs.CartDTO
-@using OrderDeliverySystem.Client.Infrastructure.Services.Cart;
+﻿
+
 
 <!--<MudTable Items="Elements.Take(4)" Hover="true" Breakpoint="Breakpoint.Sm" Loading="_loading" LoadingProgressColor="Color.Info">
     <HeaderContent>
@@ -24,17 +23,5 @@
 
 
 @code {
-    [Parameter]
-    public List<GetCartItemsResponseDTO> theItems { get; set; }
-
-    private List<GetCartItemsResponseDTO> cartItems = new();
-    private decimal subtotal;
-    private decimal tax;
-    private decimal total;
-    private decimal fee;
-    
-    
-
-   
 
 }
