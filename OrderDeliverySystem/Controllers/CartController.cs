@@ -281,6 +281,35 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
 
+        // GET: api/cart/totalQuantity
+        [HttpGet("totalQuantity")]
+        public async Task<IActionResult> GetTotalCartQuantity()
+        {
+            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (customer == null)
+            {
+                return NotFound("Customer not found.");
+            }
+
+            int customerId = customer.CustomerId;
+
+            var cart = await _context.Carts
+                .Include(c => c.CartItems)
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
+
+            if (cart == null || cart.CartItems == null || !cart.CartItems.Any())
+            {
+                return Ok(0); // Return 0 if no cart exists or it's empty
+            }
+
+            // Calculate total quantity of items in the cart
+            int totalQuantity = cart.CartItems.Sum(ci => ci.Quantity);
+
+            return Ok(totalQuantity);
+        }
 
 
 

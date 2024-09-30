@@ -19,6 +19,14 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Cart
         private const string UpdateCartPath = "api/cart/updateCart";
         private const string RemoveItemPath = "api/cart/deleteItem";
         private const string ClearCartPath = "api/cart/clearCart";
+        private const string GetTotalQuantityPath = "api/cart/totalQuantity";
+
+        public event Action OnCartChanged;
+
+        private void NotifyCartChanged()
+        {
+            OnCartChanged?.Invoke();  
+        }
 
         public CartService(
             ILocalStorageService localStorage,
@@ -38,6 +46,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Cart
             var httpClient = httpClientFactory.CreateClient("API");
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
             var response = await httpClient.GetFromJsonAsync<GetCartReponseDTO>(GetCartPath);
+            NotifyCartChanged();
             return response ?? new GetCartReponseDTO(0, 0, new List<GetCartItemsResponseDTO>());
         }
 
@@ -46,7 +55,9 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Cart
         {
             var httpClient = httpClientFactory.CreateClient("API");
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
-            return await httpClient.PutAsJsonAsync(UpdateCartPath, updateDto);
+            var response = await httpClient.PutAsJsonAsync(UpdateCartPath, updateDto);
+            NotifyCartChanged();  
+            return response;
         }
 
         // Remove Cart Items
@@ -54,7 +65,9 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Cart
         {
             var httpClient = httpClientFactory.CreateClient("API");
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
-            return await httpClient.DeleteAsync($"{RemoveItemPath}/{itemId}");
+            var response = await httpClient.DeleteAsync($"{RemoveItemPath}/{itemId}");
+            NotifyCartChanged();  
+            return response;
         }
 
         // Add to Cart Items
@@ -62,7 +75,9 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Cart
         {
             var httpClient = httpClientFactory.CreateClient("API");
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
-            return await httpClient.PostAsJsonAsync(AddCartPath, cartItems);
+            var response = await httpClient.PostAsJsonAsync(AddCartPath, cartItems);
+            NotifyCartChanged();
+            return response;
         }
 
         // Clear Cart Items
@@ -70,7 +85,17 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Cart
         {
             var httpClient = httpClientFactory.CreateClient("API");
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
-            return await httpClient.DeleteAsync(ClearCartPath);
+            var response = await httpClient.DeleteAsync(ClearCartPath);
+            NotifyCartChanged();
+            return response;
+        }
+
+        // Get Total Cart Quantity
+        public async Task<HttpResponseMessage> GetTotalCartQuantity()
+        {
+            var httpClient = httpClientFactory.CreateClient("API");
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+            return await httpClient.GetAsync(GetTotalQuantityPath);
         }
     }
 }
