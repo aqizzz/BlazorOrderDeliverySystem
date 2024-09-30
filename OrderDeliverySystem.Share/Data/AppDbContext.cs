@@ -29,7 +29,8 @@ namespace OrderDeliverySystem.Share.Data
         {
             if (!options.IsConfigured)
             {
-                string dbPath = Path.Combine(AppContext.BaseDirectory, "OrderDeliverySystem.db");
+                string projectRoot = Directory.GetCurrentDirectory();
+                string dbPath = Path.Combine(projectRoot, "OrderDeliverySystem", "OrderDeliverySystem.db", "OrderDeliverySystem.db");
                 options.UseSqlite($"Data Source={dbPath}");
             }
         }
