@@ -1,6 +1,68 @@
 ﻿@page "/merchant-reviews"
-<h3>Reviews</h3>
+@using OrderDeliverySystem.Client.Infrastructure.Services.Review
+@using OrderDeliverySystem.Share.DTOs.ReviewDTO
+@using MudBlazor
+@inject IReviewService ReviewService
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<MudContainer Class="my-10">
+    <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My Reviews</MudText>
+
+    @if (isLoading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else if (reviews != null && reviews.Count > 0)
+    {
+        <MudTable Items="@reviews" Striped="true" Bordered="true">
+            <HeaderContent>
+                <MudTh>Order ID</MudTh>
+                <MudTh>Customer ID</MudTh>
+                <MudTh>Rating</MudTh>
+                <MudTh>Comment</MudTh>
+                <MudTh>Reply</MudTh>
+                <MudTh>Created At</MudTh>
+                <MudTh>Reply Created At</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Order ID">@context.OrderId</MudTd>
+                <MudTd DataLabel="Customer ID">@context.CustomerId</MudTd>
+                <MudTd DataLabel="Rating">@context.Rating</MudTd>
+                <MudTd DataLabel="Comment">@context.Comment</MudTd>
+                <MudTd DataLabel="Reply">@context.Reply</MudTd>
+                <MudTd DataLabel="Created At">@context.CreatedAt.ToString("yyyy-MM-dd")</MudTd>
+                <MudTd DataLabel="Reply Created At">@context.ReplyCreatedAt?.ToString("yyyy-MM-dd")</MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+    else
+    {
+        <MudText Typo="Typo.subtitle1" Color="Color.Error">No reviews found for your merchant.</MudText>
+    }
+</MudContainer>
 
 @code {
+    private List<GetReviewResponseDTO> reviews = new();
+    private bool isLoading = true;
 
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        await LoadReviews();
+        isLoading = false;
+    }
+
+    private async Task LoadReviews()
+    {
+        try
+        {
+            reviews = await ReviewService.MerchantGetReviews();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading reviews: {ex.Message}");
+        }
+    }
 }
