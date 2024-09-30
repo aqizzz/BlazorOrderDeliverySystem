@@ -1,43 +1,101 @@
-﻿using System.Net.Http.Json;
+﻿using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components.Authorization;
 using OrderDeliverySystem.Share.DTOs.CartDTO;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 
 namespace OrderDeliverySystem.Client.Infrastructure.Services.Cart
 {
-    public class CartService
+    public class CartService : ICartService
     {
-        private readonly HttpClient _httpClient;
+        private readonly ILocalStorageService localStorage;
+        private readonly AuthenticationStateProvider authenticationStateProvider;
+        private readonly IHttpClientFactory httpClientFactory;
+        private readonly TokenHelper tokenHelper;
 
-        private const string BaseUrl = "https://localhost:7027/api/cart/";
+        private const string GetCartPath = "api/cart/getCart";
+        private const string AddCartPath = "api/cart/addCart";
+        private const string UpdateCartPath = "api/cart/updateCart";
+        private const string RemoveItemPath = "api/cart/deleteItem";
+        private const string ClearCartPath = "api/cart/clearCart";
+        private const string GetTotalQuantityPath = "api/cart/totalQuantity";
 
-        public CartService(HttpClient httpClient)
+        public event Action OnCartChanged;
+
+        private void NotifyCartChanged()
         {
-            _httpClient = httpClient;
+            OnCartChanged?.Invoke();  
         }
 
-        public async Task<GetCartReponseDTO> GetCartItems(string customerId)
+        public CartService(
+            ILocalStorageService localStorage,
+            AuthenticationStateProvider authenticationStateProvider,
+            IHttpClientFactory httpClientFactory,
+            TokenHelper tokenHelper)
         {
-            var response = await _httpClient.GetFromJsonAsync<GetCartReponseDTO>($"{BaseUrl}getCart/{customerId}");
-            return response ?? new GetCartReponseDTO(0, int.Parse(customerId), new List<GetCartItemsResponseDTO>());
+            this.localStorage = localStorage;
+            this.authenticationStateProvider = authenticationStateProvider;
+            this.httpClientFactory = httpClientFactory;
+            this.tokenHelper = tokenHelper;
         }
 
-        public async Task<HttpResponseMessage> UpdateCartItems(string customerId, AddUpdateCartItemsRequestDTO updateDto)
+        // Get Cart Items
+        public async Task<GetCartReponseDTO> GetCartItems()
         {
-            return await _httpClient.PutAsJsonAsync($"{BaseUrl}updateCart/{customerId}", updateDto);
+            var httpClient = httpClientFactory.CreateClient("API");
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+            var response = await httpClient.GetFromJsonAsync<GetCartReponseDTO>(GetCartPath);
+            NotifyCartChanged();
+            return response ?? new GetCartReponseDTO(0, 0, new List<GetCartItemsResponseDTO>());
         }
 
-        public async Task<HttpResponseMessage> RemoveCartItems(string customerId, int itemId)
+        // Update Cart Items
+        public async Task<HttpResponseMessage> UpdateCartItems(AddUpdateCartItemsRequestDTO updateDto)
         {
-            return await _httpClient.DeleteAsync($"{BaseUrl}deleteItem/{customerId}/{itemId}");
+            var httpClient = httpClientFactory.CreateClient("API");
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+            var response = await httpClient.PutAsJsonAsync(UpdateCartPath, updateDto);
+            NotifyCartChanged();  
+            return response;
         }
 
-        public async Task<HttpResponseMessage> AddToCartItems(int customerId, List<AddUpdateCartItemsRequestDTO> cartItems)
+        // Remove Cart Items
+        public async Task<HttpResponseMessage> RemoveCartItems(int itemId)
         {
-            return await _httpClient.PostAsJsonAsync($"{BaseUrl}addCart/{customerId}", cartItems);
+            var httpClient = httpClientFactory.CreateClient("API");
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+            var response = await httpClient.DeleteAsync($"{RemoveItemPath}/{itemId}");
+            NotifyCartChanged();  
+            return response;
         }
 
-        public async Task<HttpResponseMessage> ClearCartItems(int customerId)
+        // Add to Cart Items
+        public async Task<HttpResponseMessage> AddToCartItems(List<AddUpdateCartItemsRequestDTO> cartItems)
         {
-            return await _httpClient.DeleteAsync($"{BaseUrl}clearCart/{customerId}");
+            var httpClient = httpClientFactory.CreateClient("API");
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+            var response = await httpClient.PostAsJsonAsync(AddCartPath, cartItems);
+            NotifyCartChanged();
+            return response;
+        }
+
+        // Clear Cart Items
+        public async Task<HttpResponseMessage> ClearCartItems()
+        {
+            var httpClient = httpClientFactory.CreateClient("API");
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+            var response = await httpClient.DeleteAsync(ClearCartPath);
+            NotifyCartChanged();
+            return response;
+        }
+
+        // Get Total Cart Quantity
+        public async Task<HttpResponseMessage> GetTotalCartQuantity()
+        {
+            var httpClient = httpClientFactory.CreateClient("API");
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+            return await httpClient.GetAsync(GetTotalQuantityPath);
         }
     }
 }

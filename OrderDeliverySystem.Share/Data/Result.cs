@@ -2,48 +2,40 @@
 
 namespace OrderDeliverySystem.Share.Data
 {
-    public class Result
+public class Result
+{
+    private readonly string error;
+
+    internal Result(bool succeeded, string error = null)
     {
-        private readonly List<string> errors;
-
-        internal Result(bool succeeded, List<string> errors)
-        {
-            this.Succeeded = succeeded;
-            this.errors = errors;
-        }
-
-        public bool Succeeded { get; }
-
-        public List<string> Errors
-            => this.Succeeded
-                ? new List<string>()
-                : this.errors;
-
-        public static Result Success
-            => new Result(true, new List<string>());
-
-        public static Result Failure(IEnumerable<string> errors)
-            => new Result(false, errors.ToList());
-
-        public static implicit operator Result(string error)
-            => Failure(new List<string> { error });
-
-        public static implicit operator Result(List<string> errors)
-            => Failure(errors.ToList());
-
-        public static implicit operator Result(bool success)
-            => success ? Success : Failure(new[] { "Unsuccessful operation." });
-
-        public static implicit operator bool(Result result)
-            => result.Succeeded;
+        this.Succeeded = succeeded;
+        this.error = error;
     }
+
+    public bool Succeeded { get; }
+
+    public string Error
+        => this.Succeeded ? null : this.error;
+
+    public static Result Success
+        => new Result(true);
+
+    public static Result Failure(string error)
+        => new Result(false, error);
+
+    public static implicit operator Result(string error)
+        => Failure(error);
+
+    public static implicit operator bool(Result result)
+        => result.Succeeded;
+}
 
     public class Result<TData> : Result
     {
         private readonly TData data;
 
         [JsonConstructor]
-        private Result(bool succeeded, TData data, List<string> errors)
+        private Result(bool succeeded, TData data, string errors)
             : base(succeeded, errors)
             => this.data = data;
 
@@ -51,13 +43,13 @@ namespace OrderDeliverySystem.Share.Data
             => this.Succeeded
                 ? this.data
                 : throw new InvalidOperationException(
-                    $"{nameof(this.Data)} is not available with a failed result. Use {this.Errors} instead.");
+                    $"{nameof(this.Data)} is not available with a failed result. Use {this.Error} instead.");
 
         public static Result<TData> SuccessWith(TData data)
-            => new Result<TData>(true, data, new List<string>());
+            => new Result<TData>(true, data, string.Empty);
 
         public new static Result<TData> Failure(IEnumerable<string> errors)
-            => new Result<TData>(false, default, errors.ToList());
+            => new Result<TData>(false, default, string.Empty);
 
         public static implicit operator Result<TData>(string error)
             => Failure(new List<string> { error });
