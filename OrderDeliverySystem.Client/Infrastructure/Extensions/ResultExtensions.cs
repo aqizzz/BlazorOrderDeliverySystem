@@ -1,5 +1,7 @@
 ﻿using OrderDeliverySystem.Share.Data;
 using System.Net.Http.Json;
+using static OrderDeliverySystem.Client.Infrastructure.Services.Authentication.AuthService;
+using System.Text.Json;
 
 namespace OrderDeliverySystem.Client.Infrastructure.Extensions
 {
@@ -11,9 +13,16 @@ namespace OrderDeliverySystem.Client.Infrastructure.Extensions
 
             if (!response.IsSuccessStatusCode)
             {
-                var errors = await response.Content.ReadFromJsonAsync<string[]>();
+                var responseContent = await response.Content.ReadAsStringAsync();
 
-                return Result.Failure(errors);
+
+                var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+
+                return Result.Failure(errorResponse?.Error ?? "An unknown error occurred.");
             }
 
             return Result.Success;

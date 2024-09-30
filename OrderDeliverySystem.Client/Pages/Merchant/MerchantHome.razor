@@ -8,10 +8,7 @@
 
 @if (merchant != null)
 {
-  
-
     <MudContainer Class="my-10">
-
         <MudText Class="pt-4" Typo="Typo.h3" Align="Align.Center" GutterBottom="true">@(merchant?.BusinessName ?? "Unknown Merchant")</MudText>
         <MudTabs TabHeaderClass="d-flex justify-content-center mt-10" Elevation="1" Rounded="true" PanelClass="pa-6" ActiveTabClass="border-solid border-2 mud-border-primary">
             <MudTabPanel>
@@ -24,7 +21,7 @@
             </MudTabPanel>
             <MudTabPanel>
                 <ChildContent>
-                    <AddCartTemp userId="@merchant.UserId"/>
+                    <AddCartTemp merchantUserId="@merchant.UserId" />
                 </ChildContent>
                 <TabContent>
                     Menus
@@ -40,12 +37,7 @@
 
             </MudTabPanel>
         </MudTabs>
-
-
-
     </MudContainer>
-    <MudText>Merchant: @merchant.BusinessName</MudText>
-
 }
 else
 {
