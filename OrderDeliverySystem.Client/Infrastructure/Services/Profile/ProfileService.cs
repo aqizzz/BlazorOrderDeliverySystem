@@ -22,6 +22,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
         private const string EditWorkerPath = "api/Profile/edit/worker";
         private const string GetMerchantPath = "api/Profile/merchant";
         private const string EditMerchantPath = "api/Profile/edit/merchant";
+        private const string GetUsersPath = "api/Profile/users";
 
         public ProfileService(
             ILocalStorageService localStorage,
@@ -34,16 +35,16 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
             this.httpClientFactory = httpClientFactory;
             this.tokenHelper = tokenHelper;
         }
-        public async Task<UserProfileDTO> GetCustomerProfile()
+        public async Task<CustomerProfileDTO> GetCustomerProfile()
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
 
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
 
-            return await httpClient.GetFromJsonAsync<UserProfileDTO>(GetCustomerPath);
+            return await httpClient.GetFromJsonAsync<CustomerProfileDTO>(GetCustomerPath);
         }
 
-        public async Task<UserProfileDTO> GetCustomerProfile(int userId)
+        public async Task<CustomerProfileDTO> GetCustomerProfile(int userId)
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
 
@@ -51,10 +52,10 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
 
             var path = GetCustomerPath + "/" + userId;
 
-            return await httpClient.GetFromJsonAsync<UserProfileDTO>(path);
+            return await httpClient.GetFromJsonAsync<CustomerProfileDTO>(path);
         }
 
-        public async Task<Result> UpdateCustomerProfile(UserProfileDTO model)
+        public async Task<Result> UpdateCustomerProfile(CustomerProfileDTO model)
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
 
@@ -132,6 +133,15 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
             return await httpClient
                 .PutAsJsonAsync(EditMerchantPath, model)
                 .ToResult();
+        }
+
+        public async Task<List<UserProfileDTO>> GetUsersList()
+        {
+            var httpClient = this.httpClientFactory.CreateClient("API");
+
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+
+            return await httpClient.GetFromJsonAsync<List<UserProfileDTO>>(GetUsersPath);
         }
     }
 }

@@ -63,7 +63,7 @@ namespace OrderDeliverySystemApi.Controllers
                 Postcode = ""
             };
             context.Addresses.Add(newAddress);
-            await context.SaveChangesAsync(); 
+            await context.SaveChangesAsync();
 
             await transaction.CommitAsync();
 
@@ -207,7 +207,7 @@ namespace OrderDeliverySystemApi.Controllers
                 Postcode = user.Postcode ?? ""
             };
             context.Addresses.Add(newAddress);
-            await context.SaveChangesAsync(); 
+            await context.SaveChangesAsync();
 
             await transaction.CommitAsync();
 
@@ -240,7 +240,7 @@ namespace OrderDeliverySystemApi.Controllers
             };
 
             context.Users.Add(newUser);
-            await context.SaveChangesAsync(); 
+            await context.SaveChangesAsync();
 
             var newMerchant = new Merchant
             {
@@ -268,13 +268,47 @@ namespace OrderDeliverySystemApi.Controllers
             };
             context.Addresses.Add(newAddress);
 
-            await context.SaveChangesAsync(); 
+            await context.SaveChangesAsync();
 
             await transaction.CommitAsync();
 
             return Ok("Success");
         }
 
+        [HttpDelete("delete/{userId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> Delete(int userId)
+        {
+            using var transaction = await context.Database.BeginTransactionAsync();
+
+            var addresses = await context.Addresses
+                .Where(a => a.UserId == userId)
+                .ToListAsync();
+
+            if (addresses.Any())
+            {
+                context.Addresses.RemoveRange(addresses);
+            }
+
+            var user = await context.Users
+            .FirstOrDefaultAsync(u => u.UserId == userId &&
+                                      (u.Role == "Merchant" || u.Role == "Worker"));
+
+            if (user != null)
+            {
+                context.Users.Remove(user);
+            }
+            else
+            {
+                return NotFound(new { Error = "User not found or role does not match" });
+            }
+
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return Ok(new { Message = "User and associated data deleted successfully" });
+
+        }
     }
  
 }
