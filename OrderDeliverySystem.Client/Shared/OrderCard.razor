@@ -51,7 +51,18 @@
             <MudDivider Class="border-t-2 border-solid mt-4" Style="border-color:rgba(112, 0, 0, 1);"></MudDivider>
             <MudGrid>
                 <MudItem xs="12" sm="12" md="9">
-                    <ItemCard />
+                    @if (Order.OrderItems!= null)
+                    {
+                        foreach (var theitem in Order.OrderItems)
+                        {
+                            <div class="d-flex justify-content-around align-items-center">
+                                @*<MudImage Src="@theitem.ItemPic" Width="60" Height="35" Alt="@merchant.FirstName" Class="rounded-lg mt-4" />*@
+                                <MudText>@theitem.ItemName</MudText>
+                                <MudText> @theitem.ItemPrice</MudText>
+                                <MudText>@theitem.Quantity</MudText>
+                            </div>
+                        }
+                    }
                 </MudItem>
                 <MudItem xs="12" sm="12" md="3">
                     <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(Before tax):  $@Order.TotalAmount</MudText>

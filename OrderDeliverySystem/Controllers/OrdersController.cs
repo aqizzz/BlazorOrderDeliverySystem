@@ -7,6 +7,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO;
 using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO.OrderDeliverySystem.Share.DTOs.CartDTO;
+using static MudBlazor.CategoryTypes;
 
 
 
@@ -51,9 +52,12 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
 
-        [HttpPost("create")]
-        public async Task<ActionResult<Order>> CreateOrder(CreateOrderDTO orderDto)
+        [HttpPost]
+        [Authorize(Roles = "Customer")]
+        public async Task<ActionResult> CreateOrder(CreateOrderDTO orderDto)
         {
+            
+
             // Fetch required entities from the database (Merchant and Customer)
             var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
@@ -71,16 +75,6 @@ namespace OrderDeliverySystemApi.Controllers
                 return NotFound("Not the user");
             }
 
-
-
-            var merchant = await _context.Merchants.FindAsync(orderDto.MerchantId);
-            if (merchant == null)
-            {
-                return NotFound($"Merchant with ID {orderDto.Merchant.UserId} not found.");
-            }
-
-
-
             var worker = await _context.DeliveryWorkers
                 .Where(w => w.WorkerAvailability == true) // Ensure worker is available and has a task history
                 .OrderBy(w => w.LastTaskAssigned) // Get the worker with the oldest LastTaskAssigned date
@@ -89,72 +83,104 @@ namespace OrderDeliverySystemApi.Controllers
             {
                 return NotFound($"No worker was found.");
             }
-
             var customerAddress = await _context.Addresses
-                .Where(a => a.UserId == customer.UserId)
-                .FirstOrDefaultAsync(); // ToListAsync if it's a collection
+              .Where(a => a.UserId == customer.UserId)
+              .FirstOrDefaultAsync(); // ToListAsync if it's a collection
 
             if (customerAddress == null)
             {
                 return NotFound($"Customer with ID {customer.UserId} not found.");
             }
 
-            var merchantAddress = await _context.Addresses
-               .Where(a => a.UserId == merchant.UserId)
-               .FirstOrDefaultAsync();
-
-            if (merchantAddress == null)
+            
+            var merchants = orderDto.Merchants;
+            if (merchants == null)
             {
-                return NotFound($"Address with ID {merchant.UserId} not found.");
+                return NotFound($"No merchant was found.");
             }
-
-
-            var order = new Order
-            {
-                CustomerId = customer.CustomerId,
-                MerchantId = merchant.MerchantId,
-                WorkerId = worker.WorkerId,
-                PickupAddressId = merchantAddress.AddressId,
-                DropoffAddressId = customerAddress.AddressId,
-                TotalAmount = orderDto.TotalAmount,
-                Status = "Pending",
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now,
-                Merchant = merchant,
-                Customer = customer,
-
-
-            };
-
-            order.OrderItems = new List<OrderItem>();
-            foreach (var orderItemDto in orderDto.CartItems)
-            {
-                // Fetch the Item based on ItemId from the DTO
-                var item = await _context.Items.FindAsync(orderItemDto.ItemId);
-                if (item == null)
+            if (merchants.Count() > 0) {
+                foreach (var thisMerchant in merchants)
                 {
-                    return NotFound($"Item with ID {orderItemDto.ItemId} not found.");
+                    if(thisMerchant == null)
+                    {
+                        return NotFound($"No merchant was found.");
+                    }
+
+                    
+                    var merchant = await _context.Merchants.FindAsync(thisMerchant.UserId);
+                    if (merchant == null)
+                    {
+                        return NotFound($"Merchant with ID {thisMerchant.UserId} not found.");
+                    }
+
+                    var merchantAddress = await _context.Addresses
+                       .Where(a => a.UserId == merchant.UserId)
+                       .FirstOrDefaultAsync();
+
+                    if (merchantAddress == null)
+                    {
+                        return NotFound($"Address with ID {merchant.UserId} not found.");
+                    }
+
+                   
+
+                    var order = new Order
+                    {
+                        CustomerId = customer.CustomerId,
+                        MerchantId = merchant.MerchantId,
+                        PickupAddressId = merchantAddress.AddressId,
+                        DropoffAddressId = customerAddress.AddressId,
+                        TotalAmount = 0.00m,
+                        Status = "Pending",
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now,
+                        Merchant = merchant,
+                        Customer = customer,
+                        OrderItems = new List<OrderItem>(),
+                    };
+
+                    _context.Orders.Add(order);
+                    await _context.SaveChangesAsync();
+                    var newOrderId = order.OrderId;
+                    decimal totalAmount = 0m;
+                    foreach (var orderItemDto in orderDto.CartItems)
+                    {
+                        // Fetch the Item based on ItemId from the DTO
+                        var item = await _context.Items.FindAsync(orderItemDto.ItemId);
+                        if (item == null)
+                        {
+                            return NotFound($"Item with ID {orderItemDto.ItemId} not found.");
+                        }
+                        if (item.MerchantId == merchant.MerchantId)
+                        {
+                            var orderItem = new OrderItem
+                            {
+                                ItemId = orderItemDto.ItemId,
+                                Quantity = orderItemDto.Quantity,
+                                PriceAtOrder = orderItemDto.ItemPrice,
+                                OrderId = newOrderId,
+                                Discount = 0.00m,
+                                Tax = 0.15m,
+                                Order = order, // Set the Order property
+                                Item = item    // Set the Item property (required)
+                            };
+
+                            order.OrderItems.Add(orderItem);
+                            totalAmount += (decimal)orderItemDto.ItemPrice * (decimal)orderItemDto.Quantity;
+                        }
+                    }
+
+                    order.TotalAmount = totalAmount;
+
+                    await _context.SaveChangesAsync();
+                    totalAmount = 0m;
                 }
-
-                var orderItem = new OrderItem
-                {
-                    ItemId = orderItemDto.ItemId,
-                    Quantity = orderItemDto.Quantity,
-                    Order = order, // Set the Order property
-                    Item = item    // Set the Item property (required)
-                };
-
-                order.OrderItems.Add(orderItem);
             }
-
-
-
-            // Add order to context
-            _context.Orders.Add(order);
-            await _context.SaveChangesAsync();
-
+            
+         
+           
             // Return created order
-            return CreatedAtAction(nameof(GetOrder), new { id = order.OrderId }, order);
+            return Ok("MenuItem has been successfully updated");
 
         }
 
@@ -328,6 +354,8 @@ namespace OrderDeliverySystemApi.Controllers
                     CustomerId = o.CustomerId,
                     MerchantId = o.MerchantId,
                     WorkerId = o.WorkerId,
+                    PickupAddressId = o.PickupAddressId,
+                    DropoffAddressId = o.DropoffAddressId,
                     TotalAmount = o.TotalAmount,
                     CreatedAt = o.CreatedAt,
                     Status = o.Status,
@@ -385,6 +413,7 @@ namespace OrderDeliverySystemApi.Controllers
                         ItemId = oi.ItemId,
                         ItemName = oi.Item.ItemName,
                         OrderId = oi.OrderId,
+                        ItemPrice = oi.PriceAtOrder,
                         Quantity = oi.Quantity
                     }).ToList()
                 })
@@ -508,178 +537,6 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
 
-        [HttpGet("getOrderByCart/{cartId}")]
-        public async Task<IActionResult> GetOrderByCart(int cartId)
-        {
-            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-
-            var user = await _context.Users.FirstOrDefaultAsync(c => c.UserId == userId);
-
-
-            if (user == null)
-            {
-                return NotFound("Customer not found.");
-            }
-
-            var cart = await _context.Carts.FindAsync(cartId);
-
-            Console.WriteLine("cartId is " + cartId);
-            if (cart == null)
-            {
-                return BadRequest("No item in the cart");
-            }
-            var cartItems = cart.CartItems;
-            if (cartItems == null)
-            {
-                return BadRequest("No item in the cart");
-            }
-
-            var items = cartItems.Select(c => c.Item).ToList();
-            if (items == null)
-            {
-                return BadRequest("No item in the cart");
-            }
-
-
-            var item = items.FirstOrDefault();
-            if (item == null)
-            {
-                return BadRequest("No item in the cart");
-            }
-            var merchantId = item.MerchantId;
-            Console.WriteLine("cartId is " + item);
-            if (merchantId <= 0)
-            {
-                return BadRequest("No item in the cart");
-            }
-            var merchant = await _context.Merchants.FindAsync(merchantId);
-            if (merchant == null)
-            {
-                return BadRequest("No item in the cart");
-            }
-            var merchantUser = await _context.Users.FindAsync(merchant.UserId);
-            if (merchantUser == null)
-            {
-                return BadRequest("No item in the cart");
-            }
-
-            var address = await _context.Addresses.FindAsync(merchant.UserId);
-            if (address == null)
-            {
-                return BadRequest("No item in the cart");
-            }
-
-            var orderDto = await _context.Carts
-                .Select(c => new CreateOrderDTO
-                {
-                    CartId = c.CartId,
-                    CustomerId = c.CustomerId,
-                    TotalAmount = 0, // This can be calculated based on CartItems if needed
-                    Merchant = new MerchantProfileDTO
-                    {
-                        BusinessName = merchant.BusinessName ?? "",
-                        MerchantPic = merchant.MerchantPic,
-                        PreparingTime = merchant.PreparingTime,
-                        MerchantDescription = merchant.MerchantDescription,
-                        UserId = merchant.UserId,
-                        FirstName = merchantUser.FirstName,
-                        LastName = merchantUser.LastName,
-                        Unit = address.Unit,
-                        Address = address.Address,
-                        City = address.City,
-                        Province = address.Province,
-                        Postcode = address.Postcode
-
-                    },
-                    CartItems = c.CartItems.Select(ci => new CreateItemDTO
-                    {
-                        MerchantId = ci.Item.MerchantId,
-                        ItemId = ci.ItemId,
-                        ItemName = ci.Item.ItemName ?? "Unknown Item",
-                        ItemPrice = ci.Item.ItemPrice,
-                        ItemPic = ci.Item.ItemPic ?? "",
-                        Quantity = ci.Quantity
-                    }).ToList() ?? new List<CreateItemDTO>()
-                })
-                .FirstOrDefaultAsync(); // Use async version for database query
-
-
-
-
-
-
-
-            return Ok(orderDto);
-        }
-        /*  /// GET: api/cart/getCart/{customerId}
-          [HttpGet("getCart")]
-          public async Task<IActionResult> GetCartItems()
-          {
-
-              var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-
-              var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
-
-
-              if (customer == null)
-              {
-                  return NotFound("Customer not found.");
-              }
-
-              int customerId = customer.CustomerId;
-              var cart = await _context.Carts
-                  .Include(c => c.Customer)
-                  .ThenInclude(cust => cust.User)
-                  .ThenInclude(ca => ca.Addresses)
-                  .Include(c => c.CartItems)
-                  .ThenInclude(ci => ci.Item)
-                  .FirstOrDefaultAsync(c => c.CustomerId == customerId);
-
-              if (cart == null)
-              {
-
-                  return NotFound("Customer not found.");
-              }
-              var cartItems = cart.CartItems;
-              if (cartItems == null)
-              {
-
-                  return NotFound("Items not found.");
-              }
-              var itemDto = cartItems.Select(i => new CreateItemDTO
-              {
-                  ItemId = i.ItemId,
-                  ItemName = i.Item.ItemName,
-                  ItemPrice = i.Item.ItemPrice,
-                  ItemPic = i.Item.ItemPic,  
-                  Quantity = i.Quantity,
-              }).ToList();
-
-
-
-
-
-              var orderDto = new CreateOrderDTO
-              {
-                  CartId = cart.CartId,
-                  CustomerId = cart.CustomerId,
-                  MerchantId = 
-                  cart.CartItems?.Select(ci => new GetCartItemsResponseDTO(
-                      ci.CartItemId,
-                      ci.ItemId,
-                      ci.Item.ItemName ?? "Unknown Item",
-                      ci.Item.ItemPrice,
-                      ci.Item.ItemPic ?? "",
-                      ci.Quantity
-                  )).ToList() ?? new List<GetCartItemsResponseDTO>()
-              };
-
-              return Ok(orderDto);
-          }
-  */
-
         // GET: api/cart/getCart/{customerId}
         [HttpGet("getCart")]
         public async Task<IActionResult> GetCartItems()
@@ -731,7 +588,25 @@ namespace OrderDeliverySystemApi.Controllers
                     ci.Item.ItemName ?? "Unknown Item",
                     ci.Item.ItemPrice,
                     ci.Item.ItemPic ?? "",
-                    ci.Quantity
+                    ci.Quantity,
+                    new MerchantProfileDTO
+                    {
+                        UserId = ci.Item.Merchant.UserId,
+                        FirstName = ci.Item.Merchant.User.FirstName,
+                        LastName = ci.Item.Merchant.User.LastName,
+                        Phone = ci.Item.Merchant.User.Phone,
+                        Email = ci.Item.Merchant.User.Email,
+                        BusinessName = ci.Item.Merchant.BusinessName ?? "New Business",
+                        MerchantPic = ci.Item.Merchant.MerchantPic ?? "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png",
+                        MerchantDescription = ci.Item.Merchant.MerchantDescription ?? "",
+                        PreparingTime = ci.Item.Merchant.PreparingTime ?? 0,
+                        Type = "Main",
+                        Unit = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Unit ?? "",
+                        Address = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Address ?? "",
+                        City = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.City ?? "",
+                        Province = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Province ?? "",
+                        Postcode = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Postcode ?? ""
+                    }
 
                 )).ToList() ?? new List<GetOrderItemResponseDTO>()
             );
@@ -740,117 +615,40 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
 
-        /*[HttpGet("getOrderByCart")]
-
-        public async Task<ActionResult<CreateOrderDTO>> GetCartByUser()
+  
+       /* public async Task<IActionResult> GetMerchantsByItems(List<int> itemId)
         {
+            var item = await context.Items
+                .Include(i => i.Merchant)
+                .ThenInclude(m => m.User)
+                .ThenInclude(u => u.Addresses)
+                .FirstOrDefaultAsync(i => i.ItemId == itemId);
 
-            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-
-            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
-
-
-            if (customer == null)
+            if (item == null)
             {
-                return NotFound("Customer not found.");
+                return NotFound(new { Error = "Merchant not found" });
             }
 
-            int customerId = customer.CustomerId;
-
-            var cart = await _context.Carts
-                .Include(c => c.Customer)
-                .Include(c => c.CartItems)
-                .ThenInclude(ci => ci.Item)
-                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
-
-            if (cart == null)
+            var profile = new MerchantProfileDTO
             {
-
-                cart = new Cart
-                {
-                    CustomerId = customerId,
-                    Customer = customer,
-                    CartItems = new List<CartItem>()
-                };
-                _context.Carts.Add(cart);
-                await _context.SaveChangesAsync();
-            }
-
-
-            var cartDto = new GetCartReponseDTO(
-                cart.CartId,
-                cart.CustomerId,
-                cart.CartItems?.Select(ci => new GetCartItemsResponseDTO(
-                    ci.CartItemId,
-                    ci.ItemId,
-                    ci.Item.ItemName ?? "Unknown Item",
-                    ci.Item.ItemPrice,
-                    ci.Item.ItemPic ?? "",
-                    ci.Quantity
-                )).ToList() ?? new List<GetCartItemsResponseDTO>()
-            );
-            if(cartDto== null)
-            {
-                return NotFound();
-            }
-            var orderItems = cartDto.CartItems.ToList();
-            if (orderItems.Count<=0)
-            {
-                return NotFound();
-            }
-
-            var merchantId = cart.CartItems.Select(item => item.Item.MerchantId).FirstOrDefault();
-            if(cartDto == null ) {
-                return NotFound();
-            }
-            var merchant = await _context.Merchants.FindAsync(merchantId);
-            if(merchant == null ) {
-                return NotFound();
-            }
-            var merchantUser = await _context.Users.FindAsync(merchantId);
-           
-            if ( merchantUser == null) {
-                return NotFound();
-            }
-            var Address = await _context.Addresses.FindAsync(merchantUser.UserId);
-            if (Address == null )
-            {
-                return NotFound();
-            }
-
-
-            var order = new CreateOrderDTO
-            {
-                CartId = cartDto.CartId,
-                TotalAmount = 0,
-                Merchant = new MerchantProfileDTO
-                {
-                    BusinessName = merchant.BusinessName ?? "",
-                    MerchantPic = merchant.MerchantPic,
-                    PreparingTime = merchant.PreparingTime,
-                    MerchantDescription = merchant.MerchantDescription,
-                    UserId = merchant.UserId,
-                    FirstName = merchantUser.FirstName,
-                    LastName = merchantUser.LastName,
-                    Unit = Address.Unit,
-                    Address = Address.Address,
-                    City = Address.City,
-                    Province = Address.Province,
-                    Postcode = Address.Postcode
-
-                },
-                OrderItems = orderItems
-
-
+                UserId = item.Merchant.UserId,
+                FirstName = item.Merchant.User.FirstName,
+                LastName = item.Merchant.User.LastName,
+                Phone = item.Merchant.User.Phone,
+                Email = item.Merchant.User.Email,
+                BusinessName = item.Merchant.BusinessName ?? "New Business",
+                MerchantPic = item.Merchant.MerchantPic ?? "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png",
+                MerchantDescription = item.Merchant.MerchantDescription ?? "",
+                PreparingTime = item.Merchant.PreparingTime ?? 0,
+                Type = "Main",
+                Unit = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Unit ?? "",
+                Address = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Address ?? "",
+                City = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.City ?? "",
+                Province = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Province ?? "",
+                Postcode = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Postcode ?? ""
             };
-           
-            if (order == null)
-            {
-                return NotFound();
-            }
 
-            return Ok(order);
-        }*/
-    }
+            return Ok(profile);
+        }
+*/    }
 }
