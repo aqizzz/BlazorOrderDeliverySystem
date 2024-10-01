@@ -1,4 +1,4 @@
-﻿
+﻿@page "/merchant-items"
 @using System.Net.Http.Json
 @using MudBlazor
 @inject HttpClient httpClient
@@ -18,13 +18,11 @@
 
     <h3>ItemList</h3>
 
+            
+       
     <!-- 表格显示部分 -->
         <MudTable Items="@Items" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<ViewItemDTO,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
-        <ToolBarContent>
-            <MudText Typo="Typo.h6">Items</MudText>
-            <MudSpacer />
-            <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-        </ToolBarContent>
+       
         <HeaderContent>
             <MudTh>Merchant ID</MudTh>
             <MudTh>Item ID</MudTh>
@@ -55,19 +53,9 @@
             <MudTablePager />
         </PagerContent>
     </MudTable>
-  
+      
+    </MudContainer>
  
-
-    <!-- Temporary debugging using foreach loop to display raw data -->
-   <div>
-        <h3>Raw Data (for debugging)</h3>
-        <ul>
-            @foreach (var item in Items)
-            {
-                <li>@item.MerchantId - @item.ItemId - @item.ItemName - @item.ItemDescription - @item.ItemPrice - @item.ItemPic - @item.ItemIsAvailable</li>
-            }
-        </ul>
-    </div> 
 
    <!-- 交互控件部分 -->
     <div class="d-flex flex-wrap mt-4">
@@ -81,7 +69,7 @@
         </div>
     </div> 
 
-</MudContainer>
+
 
 @code {
     [Parameter]
@@ -149,7 +137,7 @@
         {
             var httpClient = HttpClientFactory.CreateClient("ApiClient");
 
-            // PUT 请求到 /api/items/{itemId} 来更新 Item
+          
             var response = await httpClient.PutAsJsonAsync($"/api/items/{itemId}", item);
 
             if (response.IsSuccessStatusCode)
@@ -161,13 +149,13 @@
             else
             {
                 Console.WriteLine($"Failed to update item {item.ItemName}. Response: {response.StatusCode}");
-                // 处理失败情况，可以显示错误信息
+            
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error updating item: {ex.Message}");
-            // 可以选择显示异常消息或者做其他处理
+         
         }
    }
 
@@ -177,24 +165,24 @@
         {
             var httpClient = HttpClientFactory.CreateClient("ApiClient");
 
-            // DELETE 请求到 /api/items/{itemId} 来删除 Item
+        
             var response = await httpClient.DeleteAsync($"/api/items/{itemId}");
 
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine($"Item with id {itemId} deleted successfully.");
-                // 如果成功，可以在UI上更新列表，删除该 Item
+            
             }
             else
             {
                 Console.WriteLine($"Failed to delete item with id {itemId}. Response: {response.StatusCode}");
-                // 处理失败情况，可以显示错误信息
+          
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error deleting item: {ex.Message}");
-            // 可以选择显示异常消息或者做其他处理
+            
         }
     }
 

@@ -1,4 +1,4 @@
-﻿@page "/merchant-items"
+﻿@page "/create-item"
 
 @inject ISnackbar Snackbar
 @inject IHttpClientFactory HttpClientFactory
@@ -22,7 +22,8 @@
 @using OrderDeliverySystem.Client.Infrastructure.Services.Item
 @using OrderDeliverySystem.Client.Shared.Common
 @rendermode InteractiveServer
-<br /><br /><br /><br />
+<MudContainer Class="my-10 d-flex justify-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
+        <MudPaper Class="px-16 pt-10 ma-2 " Elevation="3" Width="100%">
 <AuthorizeView Roles="Merchant">
     <Authorized>
         <MudPaper Class="pa-4">
@@ -45,7 +46,8 @@
         <MudText Typo="Typo.h5" Color="Color.Error">Unauthorized: You do not have permission to create items.</MudText>
     </NotAuthorized>
 </AuthorizeView>
-
+    </MudPaper>
+</MudContainer>
 @code { 
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }

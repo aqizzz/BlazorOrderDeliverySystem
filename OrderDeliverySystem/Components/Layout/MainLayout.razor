@@ -5,7 +5,8 @@
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JSRuntime
-
+@inject NavigationManager NavigationManager
+@inject NavigationManager Navigation
 
 <MudThemeProvider/>
 <MudPopoverProvider/>
@@ -37,23 +38,88 @@
            
         </MudAppBar>
         <MudDrawer @bind-Open="@_open" Anchor="Anchor.Top" Elevation="1" Variant="@DrawerVariant.Temporary" OverlayAutoClose="true">
-            <MudDrawerHeader>
+            <MudDrawerHeader Class=" d-flex justify-content-between align-items-center">
                 <AuthorizeView Roles="Admin,Merchant,Worker">
                     <Authorized>
                         <MudLink Href="/"><MudImage Src="images/logo.png" Width="70" Height="40" Alt="Swedish Farm House" Href="/dashboard" Class="rounded-lg m-4" /></MudLink>
+                       
                     </Authorized>
                     <NotAuthorized>
                         <MudLink Href="/"><MudImage Src="images/logo.png" Width="70" Height="40" Alt="Swedish Farm House" Href="/" Class="rounded-lg m-4" /></MudLink>
                     </NotAuthorized>
                 </AuthorizeView>
-                 <MudSpacer />
-                <MudIconButton Href="/customer-profile" Icon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" />
+       
+                <MudSpacer />
+                <AuthorizeView Roles="Admin">
+                    <Authorized>
+                        <MudNavLink Class="text-right" Href="/password" Icon="@Icons.Material.Filled.PersonOutline"></MudNavLink>
+                    </Authorized>
+                </AuthorizeView>
+                <AuthorizeView Roles="Merchant">
+                    <Authorized>
+                        <MudNavLink Href="/merchant-profile" Icon="@Icons.Material.Filled.PersonOutline"></MudNavLink>
+                    </Authorized>
+                </AuthorizeView>
+
+                <AuthorizeView Roles="Worker">
+                    <Authorized>
+                        <MudNavLink Href="/worker-profile" Icon="@Icons.Material.Filled.PersonOutline"></MudNavLink>
+                    </Authorized>
+                </AuthorizeView>
+
+                <AuthorizeView Roles="Customer">
+                    <Authorized>
+                        <MudNavLink Href="/worker-profile" Icon="@Icons.Material.Filled.PersonOutline"></MudNavLink>
+                    </Authorized>
+                </AuthorizeView>
+              
             </MudDrawerHeader>
             <MudNavMenu>
-                <MudNavLink Match="NavLinkMatch.All">Store</MudNavLink>
-                <MudNavLink Match="NavLinkMatch.All">Library</MudNavLink>
-                <MudNavLink Match="NavLinkMatch.All">Community</MudNavLink>
-                <MudNavLink OnClick="_ => _open = false">Close Menu</MudNavLink>
+                <AuthorizeView Roles="Admin">
+                    <Authorized>
+                        <MudNavLink Href="/user-management" Icon="@Icons.Material.Filled.Dashboard">User Management</MudNavLink>
+                        <MudNavLink Href="/reviewlist" Icon="@Icons.Material.Filled.Dashboard">Review  Management</MudNavLink>
+                    </Authorized>
+                </AuthorizeView>
+
+                <AuthorizeView Roles="Merchant">
+                    <Authorized>
+                        <MudNavLink Href="/merchant-items" Icon="@Icons.Material.Filled.Dashboard">Product Management</MudNavLink>
+                        <MudNavLink Href="/merchant-orders" Icon="@Icons.Material.Filled.Dashboard">Order Management</MudNavLink>
+                        <MudNavLink Href="/merchant-reviews" Icon="@Icons.Material.Filled.Dashboard">Review Management</MudNavLink>
+                    </Authorized>
+                </AuthorizeView>
+
+                <AuthorizeView Roles="Worker">
+                    <Authorized>
+                        <MudNavLink Href="/worker-orders" Icon="@Icons.Material.Filled.Dashboard">Order</MudNavLink>
+                        <MudNavLink Href="/worker-history-orders" Icon="@Icons.Material.Filled.Dashboard">Histiry Order</MudNavLink>
+                    </Authorized>
+                </AuthorizeView>
+                <AuthorizeView Roles="Admin,Merchant,Worker">
+                    <NotAuthorized>
+                        <MudNavLink Href="/restaurants" Icon="@Icons.Material.Filled.Dashboard">Restaurants</MudNavLink>
+                        <MudNavLink Href="/about-us" Icon="@Icons.Material.Filled.Dashboard">About Us</MudNavLink>
+                        <MudNavLink Href="/contact" Icon="@Icons.Material.Filled.Dashboard">Contact</MudNavLink>
+                    </NotAuthorized>
+                </AuthorizeView>
+                <AuthorizeView Roles="Customer">
+                    <Authorized>
+                        <MudNavLink Href="/my-orders" Icon="@Icons.Material.Filled.Receipt">My Orders</MudNavLink>
+                    </Authorized>
+                </AuthorizeView>
+
+                <AuthorizeView >
+                    <Authorized>
+                        <MudNavLink Href="/password" Icon="@Icons.Material.Filled.LockReset">Password Reset</MudNavLink>
+                        <MudNavLink StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Log Out" OnClick="LogOut">Log Out</MudNavLink>
+                    </Authorized>
+                    <NotAuthorized>
+                        <MudNavLink Href="/register" Icon="@Icons.Material.Filled.Dashboard">Sign Up</MudNavLink>
+                        <MudNavLink StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Login" OnClick="LogIn">Log In</MudNavLink>
+                    </NotAuthorized>
+                </AuthorizeView>
+
             </MudNavMenu>
         </MudDrawer>
     </MudHidden>
@@ -128,4 +194,23 @@
             _ => Color.Error
         };
     }
+
+
+    public async Task LogOut()
+    {
+        if (AuthService != null)
+        {
+            await AuthService.Logout();
+            Navigation.NavigateTo("/", forceLoad: true);
+            StateHasChanged();
+        }
+        NavigationManager.NavigateTo("/");
+    }
+    public async Task LogIn()
+    {
+
+        Navigation.NavigateTo("/login",forceLoad:true);
+
+    }
+
 }
