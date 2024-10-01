@@ -154,8 +154,7 @@ else
     [Parameter]
     public int UserId { get; set; }
 
-    [Parameter]
-    public CreateOrderDTO order { get; set; }
+    public CreateOrderDTO order = new CreateOrderDTO();
 
     private const decimal TaxRate = 0.15m;
     private const decimal DeliveryFee = 6.00m;
@@ -318,14 +317,13 @@ else
 
     private async Task CreateOrder()
     {
-        order = new CreateOrderDTO
-        {
-            CartId = cartId,
-            CustomerId = customerId,
-            MerchantIds = merchantIds,
-            Merchants = merchants,
-            CartItems = cartItems
-        };
+
+        order.CartId = cartId;
+        order.CustomerId = customerId;
+        order.MerchantIds = merchantIds;
+        order.Merchants = merchants;
+        order.CartItems = cartItems;
+      
         var result = await OrderService.CreateOrder(order); // Update customer data
 
         if (result.Succeeded)
