@@ -1,5 +1,89 @@
-﻿<h3>ReviewList</h3>
+﻿@using OrderDeliverySystem.Client.Infrastructure.Services.Review
+@using OrderDeliverySystem.Share.DTOs.ReviewDTO
+@using MudBlazor
+@inject IReviewService ReviewService
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h3>Review List</h3>
+
+@if (isLoading)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else if (reviews != null && reviews.Count > 0)
+{
+    <MudTable Items="@reviews" Striped="true" Bordered="true">
+        <HeaderContent>
+            <MudTh>Order ID</MudTh>
+            <MudTh>Customer ID</MudTh>
+            <MudTh>Rating</MudTh>
+            <MudTh>Comment</MudTh>
+            <MudTh>Reply</MudTh>
+            <MudTh>Created At</MudTh>
+            <MudTh>Reply Created At</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Order ID">@context.OrderId</MudTd>
+            <MudTd DataLabel="Customer ID">@context.CustomerId</MudTd>
+            <MudTd DataLabel="Rating">@context.Rating</MudTd>
+            <MudTd DataLabel="Comment">@context.Comment</MudTd>
+            <MudTd DataLabel="Reply">@context.Reply</MudTd>
+            <MudTd DataLabel="Created At">@context.CreatedAt.ToString("yyyy-MM-dd")</MudTd>
+            <MudTd DataLabel="Reply Created At">@context.ReplyCreatedAt?.ToString("yyyy-MM-dd")</MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+else
+{
+    <MudText Typo="Typo.subtitle1" Color="Color.Error">No reviews found for this merchant.</MudText>
+}
 
 @code {
+    private List<GetReviewResponseDTO> reviews = new();
+    private bool isLoading = true;
 
+
+    [Parameter]
+    public int merchantUserId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            if (user.IsInRole("Customer"))
+            {
+                isLoading = true;
+                await LoadReviews();
+                isLoading = false;
+            }
+            else
+            {
+                Console.WriteLine("User is not in the Customer role.");
+
+                // NavigationManager.NavigateTo("/not-authorized");
+            }
+        }
+        else
+        {
+            Console.WriteLine("User is not authenticated");
+            NavigationManager.NavigateTo("/login");
+        }
+    }
+
+    private async Task LoadReviews()
+    {
+        try
+        {
+            reviews = await ReviewService.CustomerGetReviews(merchantUserId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading reviews: {ex.Message}");
+        }
+    }
 }

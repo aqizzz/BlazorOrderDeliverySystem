@@ -17,7 +17,7 @@ using OrderDeliverySystem.Client.Infrastructure;
 using MudBlazor.Services;
 using OrderDeliverySystem.Client.Infrastructure.Services.Orders;
 using OrderDeliverySystem.Hubs;
-
+using OrderDeliverySystem.Client.Infrastructure.Services.Review;
 using OrderDeliverySystem.Client.Infrastructure.Services.Cart;
 using OrderDeliverySystem.Client.Infrastructure.Services.Item;
 var builder = WebApplication.CreateBuilder(args);
@@ -100,6 +100,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStatePr
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ItemService>();
 builder.Services.AddScoped<TokenHelper>();
 builder.Services.AddHttpContextAccessor();
