@@ -33,8 +33,7 @@
                 <MudTextField @bind-Value="newItem.ItemDescription" Label="Description" />
                 <MudNumericField @bind-Value="newItem.ItemPrice" Label="Price" Required="true" />
                 <MudTextField @bind-Value="newItem.ItemPic" Label="Image URL" />
-                <MudSwitch @bind-Value="newItem.ItemIsAvailable" T="bool" Color="Color.Error">@(newItem.ItemIsAvailable ? "Available" : "Not Available")</MudSwitch>
-                <br />
+                <MudSwitch @bind-Value="newItem.ItemIsAvailable" T="bool" Color="Color.Error">@(newItem.ItemIsAvailable ? "Available" : "Not Available")</MudSwitch>             
                 <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Error" OnClick="@(()=>CreateItem())">Submit</MudButton>
                 @* <MudButton Type="button" Variant="Variant.Filled" Color="Color.Secondary" >Reset</MudButton> *@
                 <MudButton Type="button" Variant="Variant.Filled"  OnClick="ResetForm">Reset</MudButton>
