@@ -7,6 +7,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO;
 using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO.OrderDeliverySystem.Share.DTOs.CartDTO;
+using static MudBlazor.CategoryTypes;
 
 
 
@@ -731,7 +732,25 @@ namespace OrderDeliverySystemApi.Controllers
                     ci.Item.ItemName ?? "Unknown Item",
                     ci.Item.ItemPrice,
                     ci.Item.ItemPic ?? "",
-                    ci.Quantity
+                    ci.Quantity,
+                    new MerchantProfileDTO
+                    {
+                        UserId = ci.Item.Merchant.UserId,
+                        FirstName = ci.Item.Merchant.User.FirstName,
+                        LastName = ci.Item.Merchant.User.LastName,
+                        Phone = ci.Item.Merchant.User.Phone,
+                        Email = ci.Item.Merchant.User.Email,
+                        BusinessName = ci.Item.Merchant.BusinessName ?? "New Business",
+                        MerchantPic = ci.Item.Merchant.MerchantPic ?? "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png",
+                        MerchantDescription = ci.Item.Merchant.MerchantDescription ?? "",
+                        PreparingTime = ci.Item.Merchant.PreparingTime ?? 0,
+                        Type = "Main",
+                        Unit = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Unit ?? "",
+                        Address = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Address ?? "",
+                        City = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.City ?? "",
+                        Province = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Province ?? "",
+                        Postcode = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Postcode ?? ""
+                    }
 
                 )).ToList() ?? new List<GetOrderItemResponseDTO>()
             );
@@ -740,117 +759,40 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
 
-        /*[HttpGet("getOrderByCart")]
-
-        public async Task<ActionResult<CreateOrderDTO>> GetCartByUser()
+  
+       /* public async Task<IActionResult> GetMerchantsByItems(List<int> itemId)
         {
+            var item = await context.Items
+                .Include(i => i.Merchant)
+                .ThenInclude(m => m.User)
+                .ThenInclude(u => u.Addresses)
+                .FirstOrDefaultAsync(i => i.ItemId == itemId);
 
-            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-
-            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
-
-
-            if (customer == null)
+            if (item == null)
             {
-                return NotFound("Customer not found.");
+                return NotFound(new { Error = "Merchant not found" });
             }
 
-            int customerId = customer.CustomerId;
-
-            var cart = await _context.Carts
-                .Include(c => c.Customer)
-                .Include(c => c.CartItems)
-                .ThenInclude(ci => ci.Item)
-                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
-
-            if (cart == null)
+            var profile = new MerchantProfileDTO
             {
-
-                cart = new Cart
-                {
-                    CustomerId = customerId,
-                    Customer = customer,
-                    CartItems = new List<CartItem>()
-                };
-                _context.Carts.Add(cart);
-                await _context.SaveChangesAsync();
-            }
-
-
-            var cartDto = new GetCartReponseDTO(
-                cart.CartId,
-                cart.CustomerId,
-                cart.CartItems?.Select(ci => new GetCartItemsResponseDTO(
-                    ci.CartItemId,
-                    ci.ItemId,
-                    ci.Item.ItemName ?? "Unknown Item",
-                    ci.Item.ItemPrice,
-                    ci.Item.ItemPic ?? "",
-                    ci.Quantity
-                )).ToList() ?? new List<GetCartItemsResponseDTO>()
-            );
-            if(cartDto== null)
-            {
-                return NotFound();
-            }
-            var orderItems = cartDto.CartItems.ToList();
-            if (orderItems.Count<=0)
-            {
-                return NotFound();
-            }
-
-            var merchantId = cart.CartItems.Select(item => item.Item.MerchantId).FirstOrDefault();
-            if(cartDto == null ) {
-                return NotFound();
-            }
-            var merchant = await _context.Merchants.FindAsync(merchantId);
-            if(merchant == null ) {
-                return NotFound();
-            }
-            var merchantUser = await _context.Users.FindAsync(merchantId);
-           
-            if ( merchantUser == null) {
-                return NotFound();
-            }
-            var Address = await _context.Addresses.FindAsync(merchantUser.UserId);
-            if (Address == null )
-            {
-                return NotFound();
-            }
-
-
-            var order = new CreateOrderDTO
-            {
-                CartId = cartDto.CartId,
-                TotalAmount = 0,
-                Merchant = new MerchantProfileDTO
-                {
-                    BusinessName = merchant.BusinessName ?? "",
-                    MerchantPic = merchant.MerchantPic,
-                    PreparingTime = merchant.PreparingTime,
-                    MerchantDescription = merchant.MerchantDescription,
-                    UserId = merchant.UserId,
-                    FirstName = merchantUser.FirstName,
-                    LastName = merchantUser.LastName,
-                    Unit = Address.Unit,
-                    Address = Address.Address,
-                    City = Address.City,
-                    Province = Address.Province,
-                    Postcode = Address.Postcode
-
-                },
-                OrderItems = orderItems
-
-
+                UserId = item.Merchant.UserId,
+                FirstName = item.Merchant.User.FirstName,
+                LastName = item.Merchant.User.LastName,
+                Phone = item.Merchant.User.Phone,
+                Email = item.Merchant.User.Email,
+                BusinessName = item.Merchant.BusinessName ?? "New Business",
+                MerchantPic = item.Merchant.MerchantPic ?? "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png",
+                MerchantDescription = item.Merchant.MerchantDescription ?? "",
+                PreparingTime = item.Merchant.PreparingTime ?? 0,
+                Type = "Main",
+                Unit = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Unit ?? "",
+                Address = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Address ?? "",
+                City = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.City ?? "",
+                Province = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Province ?? "",
+                Postcode = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Postcode ?? ""
             };
-           
-            if (order == null)
-            {
-                return NotFound();
-            }
 
-            return Ok(order);
-        }*/
-    }
+            return Ok(profile);
+        }
+*/    }
 }

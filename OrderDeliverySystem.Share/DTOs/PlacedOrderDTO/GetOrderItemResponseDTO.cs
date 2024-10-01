@@ -16,19 +16,20 @@ namespace OrderDeliverySystem.Share.DTOs.PlacedOrderDTO
             public decimal ItemPrice { get; set; }
             public string ItemPic { get; set; }
             public int Quantity { get; set; }
+            public MerchantProfileDTO MerchantProfile { get; set; }
        
 
 
-            public GetOrderItemResponseDTO(int cartItemId,   int merchantId ,int itemId, string itemName, decimal itemPrice, string itemPic, int quantity)
+            public GetOrderItemResponseDTO(int cartItemId,   int merchantId ,int itemId, string itemName, decimal itemPrice, string itemPic, int quantity, MerchantProfileDTO merchantProfile)
         {
                 CartItemId = cartItemId;
-                 MerchantId = merchantId;
+                MerchantId = merchantId;
                 ItemId = itemId;
                 ItemName = itemName;
                 ItemPrice = itemPrice;
                 ItemPic = itemPic;
                 Quantity = quantity;
-          
+                MerchantProfile = merchantProfile;
             }
         }
     
