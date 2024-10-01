@@ -147,15 +147,14 @@ else
 
 
 @code {
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationState { get; set; }
+        [CascadingParameter]
+        private Task<AuthenticationState> authenticationState { get; set; }
     private ClaimsPrincipal user;
 
     [Parameter]
     public int UserId { get; set; }
 
-    [Parameter]
-    public CreateOrderDTO order { get; set; }
+    public CreateOrderDTO order = new CreateOrderDTO();
 
     private const decimal TaxRate = 0.15m;
     private const decimal DeliveryFee = 6.00m;
@@ -315,17 +314,15 @@ else
     }
 
 
-
     private async Task CreateOrder()
     {
-        order = new CreateOrderDTO
-        {
-            CartId = cartId,
-            CustomerId = customerId,
-            MerchantIds = merchantIds,
-            Merchants = merchants,
-            CartItems = cartItems
-        };
+
+        order.CartId = cartId;
+        order.CustomerId = customerId;
+        order.MerchantIds = merchantIds;
+        order.Merchants = merchants;
+        order.CartItems = cartItems;
+
         var result = await OrderService.CreateOrder(order); // Update customer data
 
         if (result.Succeeded)
@@ -344,28 +341,29 @@ else
 
 
 
-    }
-    public async Task ClearCart()
-    {
-        try
-        {
-            var response = await CartService.ClearCartItems();
-
-            if (response.IsSuccessStatusCode)
-            {
-                await LoadCartItems();
-                Console.WriteLine("Cart cleared successfully.");
-            }
-            else
-            {
-                var errorMsg = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Failed to clear cart. Error: {errorMsg}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error clearing cart: {ex.Message}");
-        }
-        
-    }
 }
+public async Task ClearCart()
+{
+    try
+    {
+        var response = await CartService.ClearCartItems();
+
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadCartItems();
+            Console.WriteLine("Cart cleared successfully.");
+        }
+        else
+        {
+            var errorMsg = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Failed to clear cart. Error: {errorMsg}");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error clearing cart: {ex.Message}");
+    }
+
+}
+}
+    
