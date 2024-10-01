@@ -27,13 +27,13 @@ namespace OrderDeliverySystemApi.Controllers
             var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
 
-            if (customer == null || customer.CustomerId != reviewDto.CustomerId)
+            if (customer == null)
                 return BadRequest("Customer not found or mismatched customer ID.");
 
             var review = new Review
             {
                 OrderId = reviewDto.OrderId,
-                CustomerId = reviewDto.CustomerId,
+                CustomerId = customer.CustomerId,
                 Rating = reviewDto.Rating,
                 Comment = reviewDto.Comment,
                 CreatedAt = DateTime.UtcNow,
@@ -61,10 +61,19 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
         // Customer can view reviews based on different merchantId
-        [HttpGet("customerReviews/{merchantId}")]
+        [HttpGet("customerReviews/{userId}")]
         [Authorize(Roles = "Customer")]
-        public async Task<IActionResult> customerGetReviews(int merchantId)
+        public async Task<IActionResult> customerGetReviews(int userId)
         {
+            var merchant = await _context.Merchants.FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (merchant == null)
+            {
+                return NotFound("Merchant not found.");
+            }
+
+            int merchantId = merchant.MerchantId;
+
             var reviews = await _context.Reviews
                 .Include(r => r.Order)
                 .Where(r => r.Order.MerchantId == merchantId)

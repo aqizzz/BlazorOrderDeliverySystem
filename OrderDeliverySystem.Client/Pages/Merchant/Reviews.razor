@@ -49,9 +49,28 @@
 
     protected override async Task OnInitializedAsync()
     {
-        isLoading = true;
-        await LoadReviews();
-        isLoading = false;
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            if (user.IsInRole("Merchant"))
+            {
+                isLoading = true;
+                await LoadReviews();
+                isLoading = false;
+            }
+            else
+            {
+                Console.WriteLine("User is not in the Merchant role.");
+              //  NavigationManager.NavigateTo("/not-authorized");
+            }
+        }
+        else
+        {
+            Console.WriteLine("User is not authenticated");
+            NavigationManager.NavigateTo("/login");
+        }
     }
 
     private async Task LoadReviews()
@@ -66,3 +85,4 @@
         }
     }
 }
+

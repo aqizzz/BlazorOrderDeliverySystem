@@ -48,11 +48,11 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Review
         }
 
         // Get Reviews by Merchant
-        public async Task<List<GetReviewResponseDTO>> CustomerGetReviews(int merchantId)
+        public async Task<List<GetReviewResponseDTO>> CustomerGetReviews(int userId)
         {
             var httpClient = _httpClientFactory.CreateClient("API");
             await _tokenHelper.ConfigureHttpClientAuthorization(httpClient);
-            var response = await httpClient.GetFromJsonAsync<List<GetReviewResponseDTO>>($"{ReviewsByMerchantPath}/{merchantId}");
+            var response = await httpClient.GetFromJsonAsync<List<GetReviewResponseDTO>>($"{ReviewsByMerchantPath}/{userId}");
             return response ?? new List<GetReviewResponseDTO>();
         }
 
