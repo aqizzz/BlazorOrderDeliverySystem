@@ -25,6 +25,7 @@
                 <MudTh>Reply</MudTh>
                 <MudTh>Created At</MudTh>
                 <MudTh>Reply Created At</MudTh>
+                <MudTh>Action</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Order ID">@context.OrderId</MudTd>
@@ -34,6 +35,12 @@
                 <MudTd DataLabel="Reply">@context.Reply</MudTd>
                 <MudTd DataLabel="Created At">@context.CreatedAt.ToString("yyyy-MM-dd")</MudTd>
                 <MudTd DataLabel="Reply Created At">@context.ReplyCreatedAt?.ToString("yyyy-MM-dd")</MudTd>
+                <MudTd>
+                    @if (string.IsNullOrEmpty(@context.Reply))
+                    {
+                        <MudButton OnClick="@(() => OpenReplyDialog(@context.ReviewId))" Color="Color.Primary" Variant="Variant.Text">Reply</MudButton>
+                    }
+                </MudTd>
             </RowTemplate>
         </MudTable>
     }
@@ -43,9 +50,29 @@
     }
 </MudContainer>
 
+@if (showDialog)
+{
+    <div class="custom-dialog-backdrop">
+        <div class="custom-dialog">
+            <MudText Typo="Typo.h6">Reply to Review</MudText>
+            <MudTextField @bind-Value="replyText" Label="Enter your reply" Variant="Variant.Outlined" Required="true" />
+            @if (showReplyError)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Error">Reply text is required.</MudText>
+            }
+            <MudButton OnClick="SubmitReply" Color="Color.Primary" Class="mt-2">Submit</MudButton>
+            <MudButton OnClick="CancelReply" Color="Color.Secondary" Class="mt-2">Cancel</MudButton>
+        </div>
+    </div>
+}
+
 @code {
     private List<GetReviewResponseDTO> reviews = new();
     private bool isLoading = true;
+    private bool showDialog = false;
+    private string replyText = string.Empty;
+    private bool showReplyError = false;
+    private int _selectedReviewId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -63,7 +90,6 @@
             else
             {
                 Console.WriteLine("User is not in the Merchant role.");
-              //  NavigationManager.NavigateTo("/not-authorized");
             }
         }
         else
@@ -84,5 +110,72 @@
             Console.WriteLine($"Error loading reviews: {ex.Message}");
         }
     }
+
+    private void OpenReplyDialog(int reviewId)
+    {
+        _selectedReviewId = reviewId;
+        showDialog = true;
+        replyText = string.Empty;
+        showReplyError = false;
+    }
+
+    private async Task SubmitReply()
+    {
+        if (string.IsNullOrEmpty(replyText))
+        {
+            showReplyError = true;
+            return;
+        }
+
+        try
+        {
+            var updateReplyDto = new UpdateReplyRequestDTO
+            {
+                Reply = replyText,
+                ReplyCreatedAt = DateTime.UtcNow
+            };
+
+            var response = await ReviewService.UpdateReply(_selectedReviewId, updateReplyDto);
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadReviews(); // Reload reviews after submitting the reply
+                CancelReply(); // Close the input after submitting
+            }
+            else
+            {
+                Console.WriteLine("Error submitting reply.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error submitting reply: {ex.Message}");
+        }
+    }
+
+    private void CancelReply()
+    {
+        showDialog = false;
+    }
 }
 
+<style>
+    .custom-dialog-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .custom-dialog {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        max-width: 500px;
+        width: 100%;
+    }
+</style>
