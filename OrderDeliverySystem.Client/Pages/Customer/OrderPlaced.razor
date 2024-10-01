@@ -10,21 +10,21 @@
 @using OrderDeliverySystem.Share.Data.Models
 @using Microsoft.AspNetCore.Components.Authorization
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@using OrderDeliverySystem.Client.Infrastructure.Services.Cart
 @using System.Security.Claims
 @using OrderDeliverySystem.Client.Infrastructure.Services.Orders
-@using OrderDeliverySystem.Client.Infrastructure.Services.Cart
 @using OrderDeliverySystem.Client.Infrastructure.Services.Profile
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
 @inject IProfileService ProfileService
 @inject ICartService CartService
-@inject OrderService Orderservice
+@inject OrderService OrderService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 
-
+ 
 <MudContainer Class="my-10">
 @if (isLoading)
 {
@@ -128,10 +128,10 @@ else
                 <MudItem xs="12" sm="12" md="3" Class="d-flex align-content-end">
                     <div>
                     <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(Before tax): $@subtotal</MudText>
-                    <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Tax (15%): $@tax</MudText>
+                        <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Tax (15%): $@GetTaxAmount().ToString("C")x</MudText>
                     <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(After tax):  $@total</MudText>
-                    <MudText Class="pt-4 ps-6 border-b-2 border-solid mb-2" Typo="Typo.body2" Align="Align.Start" GutterBottom="true" Style="border-color:rgba(112, 0, 0, 1);">Delevery Fee:  $@DeliveryFee ( $3/ km )</MudText>
-                    <MudText Class="pt-4 ps-6" Typo="Typo.subtitle2" Align="Align.Start" GutterBottom="true">Total Amount:  $@totalAmount</MudText>
+                    <MudText Class="pt-4 ps-6 border-b-2 border-solid mb-2" Typo="Typo.body2" Align="Align.Start" GutterBottom="true" Style="border-color:rgba(112, 0, 0, 1);">Delevery Fee:  $ @GetTotalAfterTax().ToString("C")</MudText>
+                        <MudText Class="pt-4 ps-6" Typo="Typo.subtitle2" Align="Align.Start" GutterBottom="true">Total Amount:  $ @GetTotalAmount().ToString("C")</MudText>
                     </div>
                 </MudItem>
                    
@@ -139,7 +139,8 @@ else
               <MudDivider Class="mt-5 border-2" Style="border-color:rgba(112, 0, 0, 1);" />
     </MudContainer>
     <MudCardActions>
-            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" >Register</MudButton>
+           
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="CreateOrder">Register</MudButton>
     </MudCardActions>
     }
 </MudContainer>
@@ -158,7 +159,8 @@ else
 
     private const decimal TaxRate = 0.15m;
     private const decimal DeliveryFee = 6.00m;
-
+    public bool ShowErrors { get; set; } = false;
+    public string Errors { get; set; } = string.Empty;
 
     int itemId;
 
@@ -172,8 +174,8 @@ else
     private int cartId { get; set; }
     private int customerId { get; set; }
     private int merchantId { get; set; }
-  
-  
+
+
     private bool isLoading = true;
     private List<int> merchantIds = new();
     private List<MerchantProfileDTO> merchants = new();
@@ -220,7 +222,7 @@ else
     {
         try
         {
-            var response = await Orderservice.GetOrderByCart();
+            var response = await OrderService.GetOrderByCart();
 
             if (response != null)
             {
@@ -253,9 +255,9 @@ else
                                     totalAmount = GetTotalAmount();
                                     merchants.Add(merchant);
                                 }
-                                }
-                               
-                               
+                            }
+
+
                         }
                         else
                         {
@@ -263,9 +265,9 @@ else
                             Console.WriteLine("Warning: cart item is null.");
                         }
                     }
-                    
+
                 }
-              
+
             }
         }
         catch (Exception ex)
@@ -314,13 +316,56 @@ else
 
 
 
-    private async Task OrderCreationSubmit()
+    private async Task CreateOrder()
     {
-  
-        await Orderservice.CreateOrder(cartItems);
-        StateHasChanged();
-        Navigation.NavigateTo("/my-orders", forceLoad: true);
-       
-    }
+        order = new CreateOrderDTO
+        {
+            CartId = cartId,
+            CustomerId = customerId,
+            MerchantIds = merchantIds,
+            Merchants = merchants,
+            CartItems = cartItems
+        };
+        var result = await OrderService.CreateOrder(order); // Update customer data
 
+        if (result.Succeeded)
+        {
+            ShowErrors = false;
+            await ClearCart();
+            StateHasChanged();
+            NavigationManager.NavigateTo("/my-orders");
+
+        }
+        else
+        {
+            Errors = result.Error;
+            ShowErrors = true;
+        }
+
+
+
+    }
+    public async Task ClearCart()
+    {
+        try
+        {
+            var response = await CartService.ClearCartItems();
+
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadCartItems();
+                Console.WriteLine("Cart cleared successfully.");
+            }
+            else
+            {
+                var errorMsg = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Failed to clear cart. Error: {errorMsg}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error clearing cart: {ex.Message}");
+        }
+        
+    }
 }
