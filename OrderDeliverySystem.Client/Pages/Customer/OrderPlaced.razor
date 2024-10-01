@@ -317,6 +317,25 @@ else
 
     private async Task CreateOrder()
     {
+        order = new CreateOrderDTO
+        {
+            CartId = cartId,
+            CustomerId = customerId,
+            MerchantIds = merchantIds,
+            Merchants = merchants,
+            CartItems = cartItems
+        };
+        var result = await OrderService.CreateOrder(order); // Update customer data
+
+        if (result.Succeeded)
+        {
+            ShowErrors = false;
+            await ClearCart();
+            StateHasChanged();
+            NavigationManager.NavigateTo("/my-orders");
+
+    private async Task CreateOrder()
+    {
 
         order.CartId = cartId;
         order.CustomerId = customerId;
