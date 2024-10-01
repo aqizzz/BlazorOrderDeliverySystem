@@ -10,6 +10,7 @@
         public DateTime CreatedAt { get; set; }
         public required Order Order { get; set; }
         public required Customer Customer { get; set; }
+
     }
 
 }

@@ -15,10 +15,10 @@
 
 <MudContainer Class="my-10">
 
+
     <h3>ItemList</h3>
 
     <!-- 表格显示部分 -->
-    @* <MudTable Items="@Items" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped"  @bind-SelectedItem="selectedItem1"> *@
         <MudTable Items="@Items" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<ViewItemDTO,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
         <ToolBarContent>
             <MudText Typo="Typo.h6">Items</MudText>
@@ -156,6 +156,7 @@
             {
                 Console.WriteLine($"Item {item.ItemName} updated successfully.");
                 // 如果成功，可以显示成功的消息或者做其他处理
+                await LoadMenuItems();
             }
             else
             {

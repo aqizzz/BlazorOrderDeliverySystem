@@ -1,0 +1,160 @@
+﻿@page "/updateMerchantItem/{id:int}"
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using MudBlazor
+@using OrderDeliverySystem.Share.DTOs
+@using System.Security.Claims
+@using OrderDeliverySystem.Client.Infrastructure.Services.Item
+@using System.Text.Json
+
+@inject IHttpClientFactory httpClientFactory
+@inject NavigationManager NavigationManager
+@inject ItemService ItemService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveAuto
+
+<MudContainer Class="my-10 d-flex justify-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
+    @if (isLoading)
+    {
+        <p>Loading profile...</p>
+    }
+    else if (model != null)
+    {
+        <MudPaper Class="pa-16 ma-2" Elevation="3">
+
+            <EditForm Model="@model" OnValidSubmit="HandleUpdateItem" FormName="itemForm">
+               @*  <ErrorsList ShowErrors="@ShowErrors" Errors="@Errors" /> *@
+                <DataAnnotationsValidator />
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h4">Edit Item</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" Class="d-flex justify-content-center">
+                        <MudGrid>
+
+                            <MudItem xs="2">
+                                <MudField Label="ItemName:" AlignLabel="Align.Start" Underline="false" />
+                            </MudItem>
+                            <MudItem xs="8">
+                                <MudField Underline="false">
+                                    <MudTextField id="ItemName" @bind-Value="model.ItemName" For="@(() => model.ItemName)" Variant="Variant.Filled" />
+                                </MudField>
+                            </MudItem>
+
+                            <MudItem xs="2">                              
+                            </MudItem>
+
+                            <MudItem xs="2">
+                                <MudField Label="ItemDescription:" AlignLabel="Align.Start" Underline="false" />
+                            </MudItem>
+                            <MudItem xs="8">
+                                <MudField Underline="false">
+                                    <MudTextField id="ItemDescription" @bind-Value="model.ItemDescription" For="@(() => model.ItemDescription)" Variant="Variant.Filled" />
+                                </MudField>
+                            </MudItem>
+
+                            <MudItem xs="2">
+                            </MudItem>
+
+                            <MudItem xs="2">
+                                <MudField Label="ItemPrice:" AlignLabel="Align.Start" Underline="false" />
+                            </MudItem>
+                            <MudItem xs="8">
+                                <MudField Underline="false">
+                                    <MudTextField id="ItemPrice" @bind-Value="model.ItemPrice" For="@(() => model.ItemPrice)" Variant="Variant.Filled" />
+                                </MudField>
+                            </MudItem>
+                            <MudItem xs="2">
+                            </MudItem>
+
+                            <MudItem xs="2">
+                                <MudField Label="ItemPic URL:" AlignLabel="Align.Start" Underline="false" />
+                            </MudItem>
+                            <MudItem xs="8">
+                                <MudField Underline="false">
+                                    <MudTextField id="ItemPic" @bind-Value="model.ItemPic" For="@(() => model.ItemPic)" Variant="Variant.Filled" />
+                                </MudField>
+                            </MudItem>                        
+
+                            <MudItem xs="12">
+                                <MudSwitch @bind-Checked="model.ItemIsAvailable" T="bool" Label="Is Available" />
+                            </MudItem>        
+                        </MudGrid>
+                    </MudItem>
+                    <MudItem xs="12" Class="d-flex justify-content-start">
+                        <MudButton Class="m-2" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="HandleUpdateItem">Update Item</MudButton>
+                        <MudButton Class="m-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/customer-profile">Cancel</MudButton>
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+        </MudPaper>
+    }
+
+</MudContainer>
+
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+
+    [Parameter]
+    public int UserId { get; set; }
+    [Parameter]
+    public int id { get; set; }
+
+    private UpdateItemDTO model = new(); // Ensure model is initialized
+    private ClaimsPrincipal user;
+
+    public bool ShowErrors { get; set; } = false;
+    public string Errors { get; set; } = string.Empty;
+
+    private bool isLoading = true;
+
+    private string MerchantId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+
+        MerchantId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        await LoadItem();
+    }
+
+    private async Task LoadItem()
+    {
+        try
+        {
+            model = await ItemService.GetMerchantItemById(id);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading item: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleUpdateItem()
+    {
+        var result = await ItemService.UpdateMerchantItem(id, model); // Update item
+        if (result.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo("/merchant-items"); // Redirect after success
+        }
+        else
+        {
+            Console.WriteLine("Failed to update item.");
+        }
+    }
+
+        private void GoBack()
+        {
+            NavigationManager.NavigateTo("/merchant-items");
+        }
+}

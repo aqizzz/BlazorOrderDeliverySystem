@@ -6,6 +6,7 @@ using OrderDeliverySystem.Share.Data.Models;
 using System.Security.Claims;
 using OrderDeliverySystem.Share.DTOs;
 
+
 namespace OrderDeliverySystem.Controllers
 {
     [ApiController]
@@ -194,25 +195,21 @@ namespace OrderDeliverySystem.Controllers
 
 
         // PUT: api/items/{id}
-        [HttpPut("{id}")]
+        [HttpPut ("update") ]
         [Authorize(Roles = "Merchant")]
-        public async Task<ActionResult<Item>> UpdateItem(int id, UpdateItemDTO updatedItemDto)
+        public async Task<ActionResult<UpdateItemDTO>> UpdateItem(UpdateItemDTO updatedItemDto)
         {
             // 获取当前用户的 ID
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
+            
             // 查找数据库中的 Item
-            var existingItem = await _context.Items.FindAsync(id);
+           var existingItem = await _context.Items.FindAsync(updatedItemDto.ItemId);
             if (existingItem == null)
             {
-                return NotFound($"Item with id {id} not found.");
+                return NotFound($"Item not found.");
             }
 
-            // 确保当前商家是该 Item 的所有者
-            if (existingItem.MerchantId.ToString() != userId)
-            {
-                return Forbid("You are not authorized to update this item.");
-            }
+            using var transaction = await _context.Database.BeginTransactionAsync();
 
             // 更新属性
             existingItem.ItemName = updatedItemDto.ItemName;
@@ -223,7 +220,7 @@ namespace OrderDeliverySystem.Controllers
 
             // 保存更改到数据库
             await _context.SaveChangesAsync();
-           
+            await transaction.CommitAsync();
 
             // 返回更新后的 Item 和 200 状态码
             return Ok(existingItem);
