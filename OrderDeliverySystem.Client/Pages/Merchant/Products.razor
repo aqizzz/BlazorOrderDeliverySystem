@@ -56,7 +56,7 @@
 
             @* add to cart button  *@
             <MudTd DataLabel="Action">
-                <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="() => NavigateToEdit(context.MerchantId)">
+                <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="() => NavigateToEdit(context.ItemId)">
                     Modify
                 </MudButton>
                 <MudButton Variant="Variant.Filled" OnClick="() => Remove(context.ItemId)">
@@ -158,10 +158,10 @@
     }
 
 
-    private void NavigateToEdit(int merchantId)
+    private void NavigateToEdit(int itemId)
     {
         // Navigate to the Edit page and pass the MerchantId as a query parameter
-        NavigationManager.NavigateTo($"/updateMerchantItem/{merchantId}");
+        NavigationManager.NavigateTo($"/updateMerchantItem/{itemId}");
     }
 
     private async Task Remove(int itemId)

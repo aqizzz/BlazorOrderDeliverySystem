@@ -145,7 +145,7 @@
         var result = await ItemService.UpdateMerchantItem(id, model); // Update item
         if (result.IsSuccessStatusCode)
         {
-            NavigationManager.NavigateTo("/merchant-items"); // Redirect after success
+            NavigationManager.NavigateTo("/merchant-items", forceLoad: true); // Redirect after success
         }
         else
         {

@@ -226,18 +226,18 @@ namespace OrderDeliverySystem.Controllers
 
 
         // PUT: api/items/{id}
-        [HttpPut("{id}")]
+        [HttpPut("{itemId}")]
         [Authorize(Roles = "Merchant")]
-        public async Task<ActionResult<Item>> UpdateItem(int id, UpdateItemDTO updatedItemDto)
+        public async Task<ActionResult<Item>> UpdateItem(int itemId, UpdateItemDTO updatedItemDto)
         {
             // 获取当前用户的 ID
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             // 查找数据库中的 Item
-            var existingItem = await _context.Items.FindAsync(id);
+            var existingItem = await _context.Items.FindAsync(itemId);
             if (existingItem == null)
             {
-                return NotFound($"Item with id {id} not found.");
+                return NotFound($"Item not found.");
             }
 
             // 更新属性
