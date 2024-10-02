@@ -247,6 +247,7 @@ namespace OrderDeliverySystem.Controllers
             user.Email = dto.Email;
 
             worker.CommissionRate = dto.CommissionRate;
+            worker.WorkerAvailability = dto.WorkerAvailability;
 
             address.Unit = dto.Unit;
             address.Address = dto.Address;
