@@ -22,6 +22,7 @@
             public const int MaxCityLength = 100;
             public const int MaxProvinceLength = 2;
             public const int MaxPostalCodeLength = 7;
+            public const string PostcodeRegularExpression = @"^(?i)([A-Za-z]\d[A-Za-z] \d[A-Za-z]\d)$";
         }
 
         public class Merchant
