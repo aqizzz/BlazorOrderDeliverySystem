@@ -21,6 +21,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Authentication
         private const string ChangePasswordPath = "/api/Auth/me/change-password";
         private const string WorkerRegisterPath = "/api/Auth/register/worker";
         private const string MerchantRegisterPath = "/api/Auth/register/merchant";
+        private const string DeleteUserPath = "/api/Auth/delete";
         public class ErrorResponse
         {
             public string Error { get; set; }
@@ -118,6 +119,16 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 
             var httpClient = this.httpClientFactory.CreateClient("API");
             httpClient.DefaultRequestHeaders.Authorization = null;
+        }
+
+        public async Task<Result> DeleteUser(int userId)
+        {
+            var httpClient = this.httpClientFactory.CreateClient("API");
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+            var path = DeleteUserPath + "/" + userId;
+            return await httpClient
+                .DeleteAsync(path)
+                .ToResult();
         }
     }
 }

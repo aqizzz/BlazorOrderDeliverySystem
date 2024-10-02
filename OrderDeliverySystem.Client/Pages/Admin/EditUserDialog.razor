@@ -1,0 +1,38 @@
+﻿@using MudBlazor
+@using OrderDeliverySystem.Client.Pages.DeliveryWorker
+@using OrderDeliverySystem.Client.Pages.Merchant
+@using OrderDeliverySystem.Share.DTOs
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IAuthorizationService AuthorizationService
+
+<MudDialog>
+    <DialogContent>
+        @if (@Role == "Worker")
+        {
+            <EditWorkerProfile UserId="@UserId" />
+        }
+        else
+        {
+            <EditMerchantProfile UserId="@UserId"/>
+        }
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [Parameter] public int UserId { get; set; }
+    [Parameter] public string Role { get; set; }
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; }
+
+    private ClaimsPrincipal user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+    }
+
+}
