@@ -16,7 +16,7 @@
 @rendermode InteractiveServer
 
 
-    <MudTable Items="@recentOrders" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<OrderDTO,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1" >
+    <MudTable Items="@orders" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<OrderDTO,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1" >
     @*<ToolBarContent>
         <MudText Class="my-2" Typo="Typo.h4">Orders</MudText>
             <MudSpacer />
@@ -107,8 +107,8 @@
     private string searchString1 = "";
     private OrderDTO selectedItem1 = null;
     private HashSet<OrderDTO> selectedOrders = new HashSet<OrderDTO>();
-    private List<OrderDTO> recentOrders = new();
-    private List<OrderDTO> orderHistory = new();
+    private List<OrderDTO> orders = new();
+
 
     // private IEnumerable<ViewItemDTO> Orders = new List<ViewItemDTO>();
 
@@ -120,14 +120,40 @@
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-
-
-        int merchantId = 2;
-        if(role !=null && recent != null){
-            recentOrders = await Orderservice.GetOrdersByRole(role, merchantId, recent);
-        }
        
+        if (user.Identity.IsAuthenticated)
+        {
+            if (user.IsInRole("Customer"))
+            {
+                await LoadOrders();
 
+            }
+            else
+            {
+                Console.WriteLine("User is not in the Customer role.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("User is not authenticated");
+        }
+    }
+    private async Task LoadOrders()
+    {
+        try
+        {
+            orders = await Orderservice.GetOrdersByRole(role, recent);
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading cart: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
     }
 
     private async Task ApproveOrder(OrderDTO order)

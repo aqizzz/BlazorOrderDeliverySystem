@@ -39,22 +39,22 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
         {
             public string Error { get; set; }
         }
-        public async Task<List<OrderDTO>> GetOrdersByRole(string role, int id, bool recent)
+        public async Task<List<OrderDTO>> GetOrdersByRole(string role, bool recent)
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
-            var uri = $"{Base}/{role}/{id}?recent={recent.ToString().ToLower()}";
+            var uri = $"{Base}/get-{role}?recent={recent.ToString().ToLower()}";
 
 			var orders = await httpClient.GetFromJsonAsync<List<OrderDTO>>(uri);
 			return orders ?? new List<OrderDTO>();
 		}
 
-        public async Task<List<OrderDTO>> GetOrdersTableByRole(string role, int id, bool recent )
+        public async Task<List<OrderDTO>> GetOrdersTableByRole(string role,  bool recent )
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
 
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
-            var uri = $"{Base}/table/{role}/{id}?recent={recent.ToString().ToLower()}";
+            var uri = $"{Base}/table/{role}?recent={recent.ToString().ToLower()}";
             var orders = await httpClient.GetFromJsonAsync<List<OrderDTO>>(uri);
             return orders ?? new List<OrderDTO>();
         }

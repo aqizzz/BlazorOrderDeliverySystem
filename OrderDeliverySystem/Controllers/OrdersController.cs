@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO;
 using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO.OrderDeliverySystem.Share.DTOs.CartDTO;
 using static MudBlazor.CategoryTypes;
+using System.Runtime.InteropServices;
 
 
 
@@ -56,7 +57,7 @@ namespace OrderDeliverySystemApi.Controllers
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult> CreateOrder(CreateOrderDTO orderDto)
         {
-            
+
 
             // Fetch required entities from the database (Merchant and Customer)
             var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
@@ -92,7 +93,7 @@ namespace OrderDeliverySystemApi.Controllers
                 return NotFound($"Customer with ID {customer.UserId} not found.");
             }
 
-            
+
             var merchants = orderDto.Merchants;
             if (merchants == null)
             {
@@ -101,12 +102,12 @@ namespace OrderDeliverySystemApi.Controllers
             if (merchants.Count() > 0) {
                 foreach (var thisMerchant in merchants)
                 {
-                    if(thisMerchant == null)
+                    if (thisMerchant == null)
                     {
                         return NotFound($"No merchant was found.");
                     }
 
-                    
+
                     var merchant = await _context.Merchants.FindAsync(thisMerchant.UserId);
                     if (merchant == null)
                     {
@@ -122,7 +123,7 @@ namespace OrderDeliverySystemApi.Controllers
                         return NotFound($"Address with ID {merchant.UserId} not found.");
                     }
 
-                   
+
 
                     var order = new Order
                     {
@@ -176,9 +177,9 @@ namespace OrderDeliverySystemApi.Controllers
                     totalAmount = 0m;
                 }
             }
-            
-         
-           
+
+
+
             // Return created order
             return Ok("MenuItem has been successfully updated");
 
@@ -295,23 +296,41 @@ namespace OrderDeliverySystemApi.Controllers
             return _context.Orders.Any(o => o.OrderId == id);
         }
 
-        [HttpGet("{role}/{id}")]
-        public async Task<IActionResult> GetOrdersByRole(string role, int id, bool recent = false)
+        [HttpGet("get-{role}")]
+ 
+        public async Task<IActionResult> GetOrdersByRole(string role, bool recent = false)
         {
+            // Fetch required entities from the database (Merchant and Customer)
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User is not authenticated.");
+            }
+
+           
+            if (!int.TryParse(userIdClaim, out int userId))
+            {
+                // Return bad request if the user ID is not valid
+                return BadRequest("Invalid user ID.");
+            }
+
             IQueryable<Order> query = _context.Orders
                 .Include(o => o.Customer)
                 .Include(o => o.OrderItems)
                 .Include(o => o.Merchant)
-                .Include(o => o.DeliveryWorker);
+                .Include(o => o.DeliveryWorker) ;
+
+         
 
             switch (role.ToLower())
             {
                 case "customer":
-                    query = query.Where(o => o.CustomerId == id); break;
+                   
+                    query = query.Where(o => o.Customer != null && o.Customer.UserId == userId); break;
                 case "merchant":
-                    query = query.Where(o => o.MerchantId == id); break;
+                    query = query.Where(o => o.Merchant != null && o.Merchant.UserId == userId); break;
                 case "worker":
-                    query = query.Where(o => o.WorkerId == id); break;
+                    query = query.Where(o => o.DeliveryWorker !=null && o.DeliveryWorker.UserId == userId); break;
             }
 
             if (recent)
@@ -428,9 +447,25 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
 
-        [HttpGet("table/{role}/{userId}")]
-        public async Task<IActionResult> GetOrdersTableByRole(string role, int userId, bool recent, int pageNumber = 1, int pageSize = 10)
-        {
+        [HttpGet("table/{role}")]
+        [Authorize(Roles = "Customer,Merchant,Worker")]
+        public async Task<IActionResult> GetOrdersTableByRole(string role, bool recent, int pageNumber = 1, int pageSize = 10)
+       {
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User is not authenticated.");
+            }
+
+
+            if (!int.TryParse(userIdClaim, out int userId))
+            {
+                // Return bad request if the user ID is not valid
+                return BadRequest("Invalid user ID.");
+            }
+
+
             IQueryable<Order> query = _context.Orders
               .Include(o => o.Customer)
               .Include(o => o.OrderItems)
@@ -442,6 +477,7 @@ namespace OrderDeliverySystemApi.Controllers
             switch (role.ToLower())
             {
                 case "customer":
+             
                     query = query.Where(o => o.Customer.UserId == userId); break;
                 case "merchant":
                     query = query.Where(o => o.Merchant.UserId == userId); break;
@@ -532,9 +568,9 @@ namespace OrderDeliverySystemApi.Controllers
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
-
+       
             return Ok(orders);
-        }
+   }
 
 
         // GET: api/cart/getCart/{customerId}
