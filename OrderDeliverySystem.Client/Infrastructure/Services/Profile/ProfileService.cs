@@ -23,6 +23,8 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
         private const string GetMerchantPath = "api/Profile/merchant";
         private const string EditMerchantPath = "api/Profile/edit/merchant";
         private const string GetUsersPath = "api/Profile/users";
+        private const string GetWorkerAvailabilityPath = "api/Profile/worker/availability";
+        private const string UpdateWorkerAvailabilityPath = "api/Profile/worker/availability";
 
         public ProfileService(
             ILocalStorageService localStorage,
@@ -142,6 +144,26 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
 
             return await httpClient.GetFromJsonAsync<List<UserProfileDTO>>(GetUsersPath);
+        }
+
+        public async Task<bool> GetWorkerAvailability()
+        {
+            var httpClient = this.httpClientFactory.CreateClient("API");
+
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+
+            return await httpClient.GetFromJsonAsync<bool>(GetWorkerAvailabilityPath);
+        }
+
+        public async Task<Result> UpdateWorkerAvailability(AvailabilityUpdateDTO availability)
+        {
+            var httpClient = this.httpClientFactory.CreateClient("API");
+
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+
+            return await httpClient
+                .PutAsJsonAsync(UpdateWorkerAvailabilityPath, availability)
+                .ToResult();
         }
     }
 }

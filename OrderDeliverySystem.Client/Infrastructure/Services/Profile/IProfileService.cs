@@ -16,5 +16,8 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
         Task<Result> UpdateWorkerProfile(WorkerProfileDTO model);
         Task<Result> UpdateMerchantProfile(MerchantProfileDTO model);
         Task<List<UserProfileDTO>> GetUsersList();
+
+        Task<bool> GetWorkerAvailability();
+        Task<Result> UpdateWorkerAvailability(AvailabilityUpdateDTO availability);
     }
 }
