@@ -199,6 +199,7 @@
 
     public string FormatCurrency(decimal value)
     {
-        return value.ToString("C2", System.Globalization.CultureInfo.CurrentCulture);
+        var cultureInfo = new System.Globalization.CultureInfo("en-CA");
+        return value.ToString("C2", cultureInfo);
     }
 }

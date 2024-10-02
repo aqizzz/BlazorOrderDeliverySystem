@@ -17,10 +17,9 @@ using OrderDeliverySystem.Client.Infrastructure;
 using MudBlazor.Services;
 using OrderDeliverySystem.Client.Infrastructure.Services.Orders;
 using OrderDeliverySystem.Hubs;
-
 using OrderDeliverySystem.Client.Infrastructure.Services.Cart;
 using OrderDeliverySystem.Client.Infrastructure.Services.Item;
-using Microsoft.Extensions.Options;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
@@ -214,12 +213,12 @@ using (var scope = app.Services.CreateScope())
     try
     {
         context.Database.OpenConnection();
-        Console.WriteLine("数据库连接成功");
+        Console.WriteLine("Database connected successfully");
         context.Database.CloseConnection();
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"数据库连接失败: {ex.Message}");
+        Console.WriteLine($"Database connected failed: {ex.Message}");
     }
 }
 
