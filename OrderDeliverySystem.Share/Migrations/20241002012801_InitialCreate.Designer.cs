@@ -12,7 +12,7 @@ using OrderDeliverySystem.Share.Data;
 namespace OrderDeliverySystem.Share.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240930230503_InitialCreate")]
+    [Migration("20241002012801_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -345,6 +345,12 @@ namespace OrderDeliverySystem.Share.Migrations
 
                     b.Property<int>("Rating")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Reply")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ReplyCreatedAt")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("ReviewId");
 

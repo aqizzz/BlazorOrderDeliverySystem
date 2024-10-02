@@ -343,6 +343,12 @@ namespace OrderDeliverySystem.Share.Migrations
                     b.Property<int>("Rating")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Reply")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ReplyCreatedAt")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("ReviewId");
 
                     b.HasIndex("CustomerId");

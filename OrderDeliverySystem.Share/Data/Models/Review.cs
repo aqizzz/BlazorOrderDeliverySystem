@@ -8,6 +8,8 @@
         public int Rating { get; set; }
         public string? Comment { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string? Reply { get; set; }
+        public DateTime? ReplyCreatedAt { get; set; }
         public required Order Order { get; set; }
         public required Customer Customer { get; set; }
     }
