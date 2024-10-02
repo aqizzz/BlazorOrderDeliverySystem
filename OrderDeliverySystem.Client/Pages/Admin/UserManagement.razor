@@ -28,7 +28,7 @@
         </div>
         <MudDivider Class=" border-4" Style="border-color:rgba(112, 0, 0, 1);" />
 
-        <MudTable Items="@list" FixedHeader=true Height="400px" Loading="@isLoading" LoadingProgressColor="Color.Error">
+        <MudTable Items="@list" FixedHeader=true Hover="true" Height="400px" Loading="@isLoading" LoadingProgressColor="Color.Error" OnRowClick="OnRowClickCallback">
             <HeaderContent>
                 <MudTh>Id</MudTh>
                 <MudTh>Name</MudTh>
@@ -54,7 +54,7 @@
                 <MudTd DataLabel="Actions">
                     @if (@context.Role == "Worker" || @context.Role == "Merchant")
                     {
-                        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="() => OpenDialog(context.UserId, context.Role)">
+                        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="() => EditUser(context.UserId, context.Role)">
                             Edit
                         </MudButton>
 
@@ -82,7 +82,7 @@
 
     private string Role { get; set; }
 
-    private void OpenDialog(int userId, string role)
+    private void EditUser(int userId, string role)
     {
         var parameters = new DialogParameters<EditUserDialog>
         {
@@ -94,6 +94,23 @@
 
         DialogService.ShowAsync<EditUserDialog>($"Edit {role} Profile", parameters, options);
     }
+
+    private void ViewUser(TableRowClickEventArgs<UserProfileDTO> args)
+    {
+        var item = args.Item;
+        var parameters = new DialogParameters<UserProfileDialog>
+    {
+        { x => x.UserId, item.UserId },
+        { x => x.Role, item.Role }
+    };
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraLarge };
+
+        DialogService.Show<UserProfileDialog>($"View {item.Role} Profile", parameters, options);
+    }
+
+    private EventCallback<TableRowClickEventArgs<UserProfileDTO>> OnRowClickCallback =>
+    EventCallback.Factory.Create<TableRowClickEventArgs<UserProfileDTO>>(this, ViewUser);
 
     protected override async Task OnInitializedAsync()
     {
@@ -150,6 +167,8 @@
         await LoadUsersList();
         StateHasChanged();
     }
+
+
 
     private async Task DeleteUser(int userId)
     {
