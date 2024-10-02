@@ -26,7 +26,7 @@ else if (model != null)
 {
         <MudPaper Class="pa-16 ma-2" Elevation="3" >
         <EditForm Model="@model" OnValidSubmit="HandleUpdateProfile" FormName="profileForm">
-            <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
+            <ErrorsList ShowErrors="@ShowErrors" Errors="@Errors" />
             <DataAnnotationsValidator />
 
                 <div Style="display:none;">
@@ -246,7 +246,7 @@ else if (model != null)
 
     private async Task HandleUpdateProfile()
     {
-        var result = await this.ProfileService.UpdateWorkerProfile(model); // Update customer data
+        var result = await this.ProfileService.UpdateWorkerProfile(model); 
 
 
         if (result.Succeeded)
@@ -255,11 +255,11 @@ else if (model != null)
 
             if (user.IsInRole("Admin"))
             {
-                NavigationManager.NavigateTo("/user-management");
+                NavigationManager.NavigateTo("/user-management", forceLoad: true);
             }
             else
             {
-                NavigationManager.NavigateTo("/worker-profile");
+                NavigationManager.NavigateTo("/worker-profile", forceLoad: true);
             }
         }
         else
