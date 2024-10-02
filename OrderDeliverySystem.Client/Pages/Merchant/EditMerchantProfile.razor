@@ -115,7 +115,7 @@ else if (model != null)
                     </MudItem>
                     <MudItem xs="8">
                         <MudField Underline="false">
-                            <MudTextField id="unit" @bind-Value="model.Unit" For="@(() => model.Unit)" Variant="Variant.Filled" />
+                                <MudTextField id="unit" @bind-Value="model.Unit" For="@(() => model.Unit)" Variant="Variant.Filled" Required />
                         </MudField>
                     </MudItem>
                     <MudItem xs="2">
@@ -126,7 +126,7 @@ else if (model != null)
                     </MudItem>
                     <MudItem xs="8">
                         <MudField Underline="false">
-                            <MudTextField id="address" @bind-Value="model.Address" For="@(() => model.Address)" Variant="Variant.Filled" />
+                                <MudTextField id="address" @bind-Value="model.Address" For="@(() => model.Address)" Variant="Variant.Filled" Required />
                         </MudField>
                     </MudItem>
                     <MudItem xs="2">
@@ -137,7 +137,7 @@ else if (model != null)
                     </MudItem>
                     <MudItem xs="8">
                         <MudField Underline="false">
-                            <MudTextField id="city" @bind-Value="model.City" For="@(() => model.City)" Variant="Variant.Filled" />
+                                <MudTextField id="city" @bind-Value="model.City" For="@(() => model.City)" Variant="Variant.Filled" Required />
                         </MudField>
                     </MudItem>
                     <MudItem xs="2">
@@ -148,7 +148,7 @@ else if (model != null)
                     </MudItem>
                     <MudItem xs="8">
                         <MudField Underline="false">
-                            <MudTextField id="province" @bind-Value="model.Province" For="@(() => model.Province)" Variant="Variant.Filled" />
+                                <MudTextField id="province" @bind-Value="model.Province" For="@(() => model.Province)" Variant="Variant.Filled" Required />
                         </MudField>
                     </MudItem>
                     <MudItem xs="2">
@@ -159,7 +159,7 @@ else if (model != null)
                     </MudItem>
                     <MudItem xs="8">
                         <MudField Underline="false">
-                            <MudTextField id="postcode" @bind-Value="model.Postcode" For="@(() => model.Postcode)" Variant="Variant.Filled" />
+                            <MudTextField id="postcode" @bind-Value="model.Postcode" For="@(() => model.Postcode)" Variant="Variant.Filled" Required/>
                         </MudField>
                     </MudItem>
                 </MudGrid>
@@ -239,6 +239,15 @@ else if (model != null)
         if (result.Succeeded)
         {
             ShowErrors = false;
+
+            if (user.IsInRole("Admin"))
+            {
+                NavigationManager.NavigateTo("/user-management", forceLoad: true);
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/merchant-profile", forceLoad: true);
+            }   
         }
         else
         {

@@ -1,18 +1,22 @@
 ﻿@page "/"
 @using MudBlazor
+@using OrderDeliverySystem.Client.Infrastructure.Services.Profile
 @using OrderDeliverySystem.Client.Pages.Admin
 @using OrderDeliverySystem.Client.Pages.Merchant
 @using OrderDeliverySystem.Client.Pages.DeliveryWorker
 @using Microsoft.AspNetCore.Components.Authorization
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@using System.Security.Claims
+@using OrderDeliverySystem.Share.DTOs
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
+@inject IProfileService ProfileService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
-@rendermode InteractiveServer
+@rendermode InteractiveAuto
 
 
-<AuthorizeView Roles="Admin,Merchant,Worker">
+<AuthorizeView Roles="Admin,Merchant">
     <Authorized>
         <MudContainer Class="my-10 d-flex justify-content-center align-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
             <MudPaper Class="pa-16 ma-2 d-flex justify-content-center align-content-center" Elevation="3" Width="100%" >
@@ -28,6 +32,29 @@
     </Authorized>
 
 </AuthorizeView>
+
+<AuthorizeView Roles="Worker">
+    <Authorized>
+        <MudContainer Class="my-10 d-flex justify-content-center align-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
+            <MudPaper Class="pa-16 ma-2 d-flex justify-content-center align-content-center" Elevation="3" Width="100%">
+                <MudPaper Class="pa-16 ma-2" Elevation="0">
+
+                    <MudText Typo="Typo.h3">Welcome to Dashboard</MudText>
+                    <br />
+                    <br />
+                    <MudText Typo="Typo.h5">------------------- You are now @(model.Availability ? "available" : "unavailable") -------------------</MudText>
+                    <br />
+                    <MudButton Size="Size.Large" Class="mx-2" Variant="Variant.Filled" FullWidth="true" Color="Color.Error" OnClick="SetAvailability">@(model.Availability ? "Set Unavailable" : "Set Available")</MudButton>
+
+                </MudPaper>
+
+            </MudPaper>
+
+        </MudContainer>
+    </Authorized>
+
+</AuthorizeView>
+
 <AuthorizeView Roles="Customer">
     <Authorized>
         <MudContainer Class="my-10">
@@ -135,12 +162,15 @@
 
 
 @code {
-    //string _role = "Admin";
-    //string _role = "Merchant";
-    //string _role = "Guest";
-    //string _role = "Customer";
-    // string _role = "Worker";
-    
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+
+    private AvailabilityUpdateDTO model = new AvailabilityUpdateDTO();
+
+    private ClaimsPrincipal user;
+
+    bool workerAvailability;
 
     protected override async Task OnInitializedAsync()
     {
@@ -148,9 +178,28 @@
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        return;
+        if (user.IsInRole("Worker"))
+        {
+            model.Availability = await ProfileService.GetWorkerAvailability();
+        }
     }
-  
 
-   
+    private async Task SetAvailability()
+    {
+        await LogToBrowserConsole($"BeforeUpdate: {model.Availability}");
+        model.Availability = !model.Availability;
+        await LogToBrowserConsole($"New: {model.Availability}");
+
+        var result = await this.ProfileService.UpdateWorkerAvailability(model);
+
+        if (result.Succeeded)
+        {
+            workerAvailability = await ProfileService.GetWorkerAvailability();
+            await LogToBrowserConsole($"AfterUpdate: {workerAvailability}");
+            StateHasChanged();
+        }
+    }
+    private async Task LogToBrowserConsole(string message) => await JSRuntime.InvokeVoidAsync("console.log", message);
+
+
 }

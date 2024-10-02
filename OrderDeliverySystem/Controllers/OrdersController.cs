@@ -445,9 +445,95 @@ namespace OrderDeliverySystemApi.Controllers
             return Ok(orders);
 
         }
+        [HttpGet("order/{id}")]
+        public async Task<IActionResult> GetOrderByID(int id)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Customer)
+                    .ThenInclude(c => c.User)
+                    .ThenInclude(u => u.Addresses)
+                .Include(o => o.OrderItems)
+                .Include(o => o.Merchant)
+                .ThenInclude(m => m.User)
+                .ThenInclude(u => u.Addresses)
+                .Include(o => o.DeliveryWorker)
+                .FirstOrDefaultAsync(o => o.OrderId == id);
 
+            if (order == null)
+            {
+                return Ok(order);
+            }
 
-        [HttpGet("table/{role}")]
+            var orderDTO = new OrderDTO
+            {
+                OrderId = order.OrderId,
+                CustomerId = order.CustomerId,
+                MerchantId = order.MerchantId,
+                WorkerId = order.WorkerId,
+                TotalAmount = order.TotalAmount,
+                CreatedAt = order.CreatedAt,
+                Status = order.Status,
+                PickupAddressId = order.PickupAddressId,
+                DropoffAddressId = order.DropoffAddressId,
+                Customer = new CustomerDTO1
+                {
+                    CustomerId = order.Customer.CustomerId,
+                    User = new UserDTO1
+                    {
+                        UserId = order.Customer.User.UserId,
+                        FirstName = order.Customer.User.FirstName,
+                        LastName = order.Customer.User.LastName,
+                        Email = order.Customer.User.Email,
+                        Phone = order.Customer.User.Phone,
+                        Role = order.Customer.User.Role,
+                        Addresses = order.Customer.User.Addresses?.Select(a => new AddressModelDTO1
+                        {
+                            Type = a.Type,
+                            Unit = a.Unit,
+                            Address = a.Address,
+                            City = a.City,
+                            Province = a.Province,
+                            Postcode = a.Postcode,
+                        }).ToList() ?? new List<AddressModelDTO1>()
+                    }
+                },
+                Merchant = new MerchantDTO1
+                {
+                    MerchantId = order.Merchant.MerchantId,
+                    BusinessName = order.Merchant.BusinessName,
+                    MerchantPic = order.Merchant.MerchantPic,
+                    MerchantDescription = order.Merchant.MerchantDescription,
+                    PreparingTime = order.Merchant.PreparingTime,
+                    User = new UserDTO1
+                    {
+                        UserId = order.Merchant.User.UserId,
+                        FirstName = order.Merchant.User.FirstName,
+                        LastName = order.Merchant.User.LastName,
+                        Email = order.Merchant.User.Email,
+                        Phone = order.Merchant.User.Phone,
+                        Role = order.Merchant.User.Role,
+                        Addresses = order.Merchant.User.Addresses?.Select(a => new AddressModelDTO1
+                        {
+                            Type = a.Type,
+                            Unit = a.Unit,
+                            Address = a.Address,
+                            City = a.City,
+                            Province = a.Province,
+                            Postcode = a.Postcode
+                        }).ToList() ?? new List<AddressModelDTO1>()
+                    }
+                },
+                OrderItems = order.OrderItems?.Select(oi => new AppOrderItem
+                {
+                    OrderItemId = oi.OrderItemId,
+                    ItemId = oi.ItemId,
+                    OrderId = oi.OrderId,
+                    Quantity = oi.Quantity
+                }).ToList() ?? new List<AppOrderItem>()
+            };
+            return Ok(orderDTO);
+        }
+            [HttpGet("table/{role}")]
         [Authorize(Roles = "Customer,Merchant,Worker")]
         public async Task<IActionResult> GetOrdersTableByRole(string role, bool recent, int pageNumber = 1, int pageSize = 10)
        {
