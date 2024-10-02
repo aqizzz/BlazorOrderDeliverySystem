@@ -11,5 +11,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Authentication
         Task<Result> Login(LoginRequestDTO model);
         Task<Result> ChangePassword(ChangePasswordRequestDto model);
         Task Logout();
+
+        Task<Result> DeleteUser(int userId);
     }
 }

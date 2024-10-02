@@ -169,7 +169,14 @@ else if (model != null)
                     <MudItem xs="12" Class="d-flex justify-content-start align-items-center">
                     <MudButton Class="m-2" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Profile</MudButton>
                     <MudButton Class="m-2" ButtonType="ButtonType.Reset" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LockReset" Color="Color.Primary">Reset</MudButton>
-                    <MudButton Class="m-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/merchant-profile">Cancel</MudButton>
+                    <AuthorizeView Roles="Merchant" Context="MerchantOnly">
+                        <Authorized>
+                                <MudButton Class="m-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/merchant-profile">Cancel</MudButton>
+                        </Authorized>
+                        <NotAuthorized>
+                            <MudButton Class="mx-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/user-management">Cancel</MudButton>
+                        </NotAuthorized>
+                    </AuthorizeView>
                        
                 </MudItem>
             </MudGrid>

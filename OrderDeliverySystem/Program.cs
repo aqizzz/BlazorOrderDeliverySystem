@@ -103,6 +103,7 @@ builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ItemService>();
 builder.Services.AddScoped<TokenHelper>();
+builder.Services.AddMudServices();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAuthentication(options =>

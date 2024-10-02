@@ -9,8 +9,8 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 {
     public interface IOrderService
     {
-        Task<List<OrderDTO>> GetOrdersByRole(string role, int id, bool recent);
-        Task<List<OrderDTO>> GetOrdersTableByRole(string role, int id, bool recent);
+        Task<List<OrderDTO>> GetOrdersByRole(string role,  bool recent);
+        Task<List<OrderDTO>> GetOrdersTableByRole(string role,  bool recent);
         Task<Result> CreateOrder(CreateOrderDTO order);
         Task<Result> UpdateOrder(OrderDTO order);
         Task<GetOrderResponseDTO> GetOrderByCart();

@@ -1,21 +1,24 @@
-﻿@page "/order-history"
-@inject OrderService OrderService
+﻿@page "/worker-history-orders"
 
 @using OrderDeliverySystem.Client.Shared
-@inject IJSRuntime JSRuntime
 @using System.ComponentModel.DataAnnotations
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using OrderDeliverySystem.Client.Infrastructure.Services.Orders;
 @using OrderDeliverySystem.Client.Shared.Common
 @using OrderDeliverySystem.Share.DTOs
 @using OrderDeliverySystem.Share.Data
-@inject IAuthService AuthService
+@using System.Security.Claims
+@inject IJSRuntime JSRuntime
+@inject OrderService OrderService
 @inject IHttpClientFactory HttpClientFactory
+@inject IAuthorizationService AuthorizationService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
 
 <MudContainer Class="my-10">
+    <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
     <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My Orders</MudText>
     <MudTabs TabHeaderClass="d-flex justify-content-end " Elevation="1" Rounded="true" PanelClass="pa-6" ActiveTabClass="border-solid border-1 mud-border-primary">
 
@@ -42,10 +45,6 @@
             <ChildContent>
                 @if (orderHistory.Any())
                 {
-                    @foreach (var order in orderHistory)
-                    {
-                        <OrderCard Order="@order" />
-                    }
                 }
                 else
                 {
@@ -58,19 +57,84 @@
             </TabContent>
         </MudTabPanel>
     </MudTabs>
-
+    @if (orderHistory !=null) 
+    @foreach (var order in orderHistory)
+    {
+            if (order != null)
+            {
+                <MudText>@order.OrderId</MudText>
+            }
+           
+    }
 
 </MudContainer>
 @code {
+    [Inject]
+    private IAuthService AuthService { get; set; }
+
+    private ClaimsPrincipal user;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+    [Parameter]
+    public int UserId { get; set; }
+  
     private List<OrderDTO> recentOrders = new();
     private List<OrderDTO> orderHistory = new();
     // private OrderDTO? selectedOrder = new();
+    
+
+    public bool ShowErrors { get; set; } = false;
+    public IEnumerable<string> Errors { get; set; } = new List<string>();
+    private int userId = 4;
+    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        int workerId = 5;
-        recentOrders = await OrderService.GetOrdersByRole("worker", workerId, true);
-        orderHistory = await OrderService.GetOrdersByRole("worker", workerId, false);
+       
+        await base.OnInitializedAsync();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+       
+        if (user.Identity.IsAuthenticated)
+        {
+            if (user.IsInRole("Worker"))
+            {
+                //orderHistory = await OrderService.GetOrdersByRole("worker", false);
+
+            }
+            else
+            {
+                Console.WriteLine("User is not in the Worker role.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("User is not authenticated");
+        }
+
+       
+    }
+
+    private async Task LoadWorkerHistryOrders()
+    {
+        try
+        {
+            if (authenticationState is not null && user is not null)
+            {
+               // orderHistory = await OrderService.GetOrdersByRole("worker", false);
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"Error loading orders: {ex.Message}");
+            // Handle error appropriately, like showing a message to the user
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged(); // Ensure UI is updated after loading
+        }
     }
     private void ShowOrderDetails(OrderDTO order)
     {

@@ -26,7 +26,8 @@ builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStatePr
 builder.Services.AddScoped<TokenHelper>();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IReviewService, ReviewService>(); builder.Services.AddMudServices();
+
 builder.Services.AddScoped<ICartService, CartService>();
 //builder.Services.AddHttpClient("API", client =>
 //{

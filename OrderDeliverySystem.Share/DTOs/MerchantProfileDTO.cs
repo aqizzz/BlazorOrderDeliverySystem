@@ -4,7 +4,7 @@ using static OrderDeliverySystem.Share.Data.Constants.Merchant;
 
 namespace OrderDeliverySystem.Share.DTOs
 {
-    public class MerchantProfileDTO : UserProfileDTO
+    public class MerchantProfileDTO : CustomerProfileDTO
     {
         [Required(ErrorMessage = RequiredAttributeErrorMessage)]
         [StringLength(MaxBusinessNameLength, ErrorMessage = StringMaxLengthErrorMessage)]
