@@ -117,8 +117,8 @@
     {
         try
         {
-            recentOrders = await OrderService.GetOrdersByRole("customer", true);
-            orderHistory = await OrderService.GetOrdersByRole("customer", false);
+            recentOrders = await OrderService.GetOrdersTableByRole("customer", true);
+            orderHistory = await OrderService.GetOrdersTableByRole("customer", false);
 
         }
         catch (Exception ex)
