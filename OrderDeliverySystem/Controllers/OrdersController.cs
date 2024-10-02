@@ -68,12 +68,12 @@ namespace OrderDeliverySystemApi.Controllers
 
             if (customer == null)
             {
-                return NotFound("Customer not found.");
+                return NotFound(new { Error = "Customer not found." });
             }
             var customerId = orderDto.CustomerId;
             if (customerId != customer.CustomerId)
             {
-                return NotFound("Not the user");
+                return NotFound(new { Error = "Not the user" });
             }
 
             var worker = await _context.DeliveryWorkers
@@ -82,7 +82,7 @@ namespace OrderDeliverySystemApi.Controllers
                 .FirstOrDefaultAsync();
             if (worker == null)
             {
-                return NotFound($"No worker was found.");
+                return NotFound(new { Error = "No worker was found." });
             }
             var customerAddress = await _context.Addresses
               .Where(a => a.UserId == customer.UserId)
@@ -90,28 +90,28 @@ namespace OrderDeliverySystemApi.Controllers
 
             if (customerAddress == null)
             {
-                return NotFound($"Customer with ID {customer.UserId} not found.");
+                return NotFound(new { Error = "Customer with ID not found." });
             }
 
 
             var merchants = orderDto.Merchants;
             if (merchants == null)
             {
-                return NotFound($"No merchant was found.");
+                return NotFound(new { Error = "No merchant was found." });
             }
             if (merchants.Count() > 0) {
                 foreach (var thisMerchant in merchants)
                 {
                     if (thisMerchant == null)
                     {
-                        return NotFound($"No merchant was found.");
+                        return NotFound(new { Error = "No merchant was found." });
                     }
 
 
                     var merchant = await _context.Merchants.FindAsync(thisMerchant.UserId);
                     if (merchant == null)
                     {
-                        return NotFound($"Merchant with ID {thisMerchant.UserId} not found.");
+                        return NotFound(new { Error = "Merchant with ID {thisMerchant.UserId} not found." });
                     }
 
                     var merchantAddress = await _context.Addresses
@@ -120,7 +120,7 @@ namespace OrderDeliverySystemApi.Controllers
 
                     if (merchantAddress == null)
                     {
-                        return NotFound($"Address with ID {merchant.UserId} not found.");
+                        return NotFound(new { Error = "Address with ID {merchant.UserId} not found." });
                     }
 
 
@@ -150,7 +150,7 @@ namespace OrderDeliverySystemApi.Controllers
                         var item = await _context.Items.FindAsync(orderItemDto.ItemId);
                         if (item == null)
                         {
-                            return NotFound($"Item with ID {orderItemDto.ItemId} not found.");
+                            return NotFound(new { Error = "Item with ID {orderItemDto.ItemId} not found." });
                         }
                         if (item.MerchantId == merchant.MerchantId)
                         {

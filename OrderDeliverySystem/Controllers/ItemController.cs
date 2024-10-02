@@ -208,11 +208,6 @@ namespace OrderDeliverySystem.Controllers
                 return NotFound($"Item with id {id} not found.");
             }
 
-            // 确保当前商家是该 Item 的所有者
-            if (existingItem.MerchantId.ToString() != userId)
-            {
-                return Forbid("You are not authorized to update this item.");
-            }
 
             // 更新属性
             existingItem.ItemName = updatedItemDto.ItemName;
