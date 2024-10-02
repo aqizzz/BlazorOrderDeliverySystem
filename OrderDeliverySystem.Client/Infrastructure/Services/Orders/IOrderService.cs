@@ -14,7 +14,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
         Task<Result> CreateOrder(CreateOrderDTO order);
         Task<Result> UpdateOrder(UpdateOrderDTO order);
         Task<GetOrderResponseDTO> GetOrderByCart();
-        Task<Result> CancelOrder(int orderId);
+        Task<Result> CancelOrder(UpdateOrderDTO order);
         Task<OrderDTO> GetOrderByIdAsync(int id);
     }
 }
