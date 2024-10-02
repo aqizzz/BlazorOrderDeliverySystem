@@ -370,7 +370,7 @@ namespace OrderDeliverySystemApi.Controllers
             return Ok(orderHistory);
         }
 
-        [HttpDelete("cancel")]
+        [HttpPut("cancel")]
 
         public async Task<IActionResult> CancelOrder(UpdateOrderDTO order)
         {
