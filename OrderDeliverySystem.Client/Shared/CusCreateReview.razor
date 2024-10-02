@@ -32,12 +32,12 @@
                     <EditForm Model="@newReview" OnValidSubmit="CreateReview" Context="CreateReviewForm">
                         <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
                         <MudTextField @bind-Value="newReview.OrderId" Label="OrderId" Required="true" />
-                        <MudTextField @bind-Value="newReview.Rating" Label="Rating" />                    
-                        <MudTextField @bind-Value="newReview.Comment" Label="Comment"/>
+                        <MudTextField @bind-Value="newReview.Rating" Label="Rating" />
+                        <MudTextField @bind-Value="newReview.Comment" Label="Comment" />
                         <br />
                         @* <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Error" OnClick="@(()=>CreateReview())">Submit</MudButton> *@
                         <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Error">Submit</MudButton>
-                        <MudButton Type="button" Variant="Variant.Filled" Color="Color.Secondary" OnClick="ResetForm" >Cancel</MudButton>
+                        <MudButton Type="button" Variant="Variant.Filled" Color="Color.Secondary" OnClick="ResetForm">Cancel</MudButton>
                     </EditForm>
                     <MudSnackbarProvider />
                 </MudPaper>
@@ -65,7 +65,6 @@
     public bool ShowErrors { get; set; } = false;
     public string Errors { get; set; } = string.Empty;
     // public List<string> Errors { get; set; } = new List<string>();
-
     protected override async Task OnInitializedAsync()
     {
         var authState = await authenticationState;
@@ -76,7 +75,6 @@
     private async Task CreateReview()
     {
         var result = await this.ReviewService.AddReview(newReview); // Update customer data
-
         if (result.IsSuccessStatusCode)
         {
             ShowErrors = false;
