@@ -6,6 +6,7 @@ using System.Text.Json;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using OrderDeliverySystem.Share.Data;
+using OrderDeliverySystem.Share.Data.Models;
 using OrderDeliverySystem.Share.DTOs;
 using OrderDeliverySystem.Share.DTOs.CartDTO;
 using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO;
@@ -117,9 +118,22 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
         }
 
 
-        public Task<Result> CancelOrder(int orderId)
+        public async Task<Result> CancelOrder(UpdateOrderDTO order)
         {
-            throw new NotImplementedException();
+            var httpClient = this.httpClientFactory.CreateClient("API");
+
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+
+            var uri = $"{Base}/cancel";
+            var response = await httpClient.PutAsJsonAsync(uri, order);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errors = await response.Content.ReadFromJsonAsync<string>();
+                return errors != null
+                    ? Result.Failure(errors) // Return the errors if present
+                    : Result.Failure("An unknown error occurred.");
+            }
+            return Result.Success;
         }
 
     }

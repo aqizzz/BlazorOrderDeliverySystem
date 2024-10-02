@@ -217,11 +217,6 @@ namespace OrderDeliverySystemApi.Controllers
             {
                 order.Status = "Delivered";
             }
-            else if (status == "Cancelled")
-            {
-                order.Status = "Cancelled";
-              
-            }
             else
             {
                 return NotFound("No order need to be updated here");
@@ -375,20 +370,34 @@ namespace OrderDeliverySystemApi.Controllers
             return Ok(orderHistory);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("cancel")]
 
-        public async Task<IActionResult> DeleteOrder(int id)
+        public async Task<IActionResult> CancelOrder(UpdateOrderDTO order)
         {
-            var order = await _context.Orders.FindAsync(id);
-            if (order == null)
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User is not authenticated.");
+            }
+
+            if (order == null || order.OrderId <= 0)
             {
                 return NotFound();
             }
 
-            _context.Orders.Remove(order);
+            var thisOrder = await _context.Orders.FindAsync(order.OrderId);
+            if (thisOrder == null)
+            {
+                return NotFound("Order not found.");
+            }
+
+            // Update the order status to 'Cancelled'
+            thisOrder.Status = "Cancelled";
+
+            // Entity is being tracked, just save changes
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(new { Message = "Order has been successfully cancelled", Order = thisOrder });
         }
 
         // Helper method to check if an order exists
@@ -644,7 +653,7 @@ namespace OrderDeliverySystemApi.Controllers
             {
                 return Unauthorized("User is not authenticated.");
             }
-
+           
 
             if (!int.TryParse(userIdClaim, out int userId))
             {

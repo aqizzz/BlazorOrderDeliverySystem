@@ -13,6 +13,7 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
 @inject OrderService Orderservice
+@inject NavigationManager Navigation
 @rendermode InteractiveServer
 
 
@@ -65,7 +66,7 @@
             else
             {
 
-                <MudFab Variant="Variant.Outlined" Color="Color.Secondary" Label="Approved" Style="color: rgba(168, 0, 0, 1);" Disabled="true" />
+                <MudFab Variant="Variant.Outlined" Color="Color.Secondary" Label="@context.Status" Style="color: rgba(168, 0, 0, 1);" Disabled="true" />
             }
 
         </MudTd>
@@ -197,16 +198,14 @@
             {
                 order.Status = "Approved"; // Update status
             }
-            else if (thisOrder.Status == "Approved")
-            {
-                order.Status = "Assigned"; // Update status
-            }
+           
         }
 
         // Perform the update
         try
         {
             await Orderservice.UpdateOrder(order);
+            Navigation.NavigateTo("/merchant-orders", forceLoad: true);
         }
         catch (Exception ex)
         {
@@ -219,9 +218,42 @@
 
 
 
-    private void CancelOrder(OrderDTO order)
+    private async Task CancelOrder(OrderDTO thisOrder)
     {
+        if (thisOrder == null)
+        {
+            Console.WriteLine("thisOrder is null");
+            return; // Early return if thisOrder is null
+        }
 
+        // Check if order is initialized
+        if (order == null)
+        {
+            order = new UpdateOrderDTO(); // Initialize if necessary
+        }
+
+        // Accessing properties with checks
+        if (thisOrder.OrderId != null)
+        {
+            order.OrderId = thisOrder.OrderId; // Ensure thisOrder is not null before accessing
+        }
+
+         order.Status = "Cancelled"; // Update status
+           
+
+        // Perform the update
+        try
+        {
+            await Orderservice.CancelOrder(order);
+            Navigation.NavigateTo("/merchant-orders", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating order: {ex.Message}");
+        }
+
+        // Trigger UI update
+        StateHasChanged();
     }
 
     private bool FilterFunc1(OrderDTO order) => FilterFunc(order, searchString1);

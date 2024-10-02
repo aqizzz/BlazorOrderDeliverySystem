@@ -8,52 +8,206 @@
 @using OrderDeliverySystem.Share.DTOs
 @using OrderDeliverySystem.Share.Data
 @using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@inject GeocodingService GeocodingService
+
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
+@inject NavigationManager Navigation
 @rendermode InteractiveServer
 
 
 <MudContainer Class="my-10">
-    <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My Orders</MudText>
-        @if (recentOrders.Any())
+ @if (isLoading)
+{
+    <p>Loading profile...</p>
+}
+else if (orders != null)
+{
+    <MudContainer Class="my-10">
+        <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">Recent Orders</MudText>
+        <MudDivider Class=" border-2" Style="border-color:rgba(112, 0, 0, 1);" />
+        @foreach( var theOrder in orders)
         {
-            @foreach (var order in recentOrders)
-            {
-            <!-- <OrderCard Order="" -->
-            }
+                <OrderCard Order="theOrder"/>
+        
+                        
+                @* <gmp-map center="37.4220656,-122.0840897"
+            zoom="10"
+            map-id="DEMO_MAP_ID"
+            style="height: 600px"></gmp-map>*@
+                @* @if (MerchantLat != 0 && CustomerLat != 0)
+                {
+                    <GoogleMap MerchantLat="@MerchantLat" MerchantLng="@MerchantLng" CustomerLat="@CustomerLat" CustomerLng="@CustomerLng" Id="@orderId" />
+                }
+                else
+                {
+                    <MudText>Loading map...</MudText>
+                } *@
+            
         }
-        else
-        {
-            <MudText>You have no recent orders!</MudText>
-        }
-
+    </MudContainer>
+}
 </MudContainer>
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
 
-    private List<OrderDTO> recentOrders = new();
-    private List<OrderDTO> orderHistory = new();
-    // private OrderDTO? selectedOrder = new();
-    [Inject]
-    private IAuthService AuthService { get; set; }
+    [Parameter]
+    public int UserId { get; set; }
 
+    [Parameter]
+    public string role { get; set; }
+    [Parameter]
+    public UpdateOrderDTO updateOrder { get; set; }
 
+    public bool ShowErrors { get; set; } = false;
+    public string Errors { get; set; } = string.Empty;
+
+    private int userId = 2;
+    private bool isLoading = true;
+    [Parameter]
+    public string Id { get; set; }
+
+    private OrderDTO order;
+
+    private double MerchantLat;
+    private double MerchantLng;
+    private double CustomerLat;
+    private double CustomerLng;
+    private int orderId;
+    public List<OrderDTO> orders = new List<OrderDTO>();
     protected override async Task OnInitializedAsync()
     {
 
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        int workerId = 9;
-        //recentOrders = await OrderService.GetOrdersByRole("worker",  true);
-       
+
+        if (user.Identity.IsAuthenticated)
+        {
+            await LoadOrders();
+            await ShowTheMap();
+        }
+        else
+        {
+            Console.WriteLine("User is not authenticated");
+        }
     }
-    private void ShowOrderDetails(OrderDTO order)
+    private async Task LoadOrders()
     {
-        //selectedOrderItems = order.OrderItems;
+        try
+        {
+            var response = await OrderService.GetOrdersByRole("worker", true);
+            if (response != null)
+            {
+                orders = response;
+                StateHasChanged();
+            }
+            else
+            {
+                Console.WriteLine($"No order was found");
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading orders: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
     }
+    private async Task UpdateOrder(OrderDTO thisOrder)
+    {
+        if (thisOrder == null)
+        {
+            Console.WriteLine("thisOrder is null");
+            return; // Early return if thisOrder is null
+        }
+
+        // Check if order is initialized
+        if (updateOrder == null)
+        {
+            updateOrder = new UpdateOrderDTO(); // Initialize if necessary
+        }
+
+        // Accessing properties with checks
+        if (thisOrder.OrderId != null)
+        {
+            updateOrder.OrderId = thisOrder.OrderId; // Ensure thisOrder is not null before accessing
+        }
+
+        if (thisOrder.Status != null)
+        {
+           
+            updateOrder.Status = thisOrder.Status; // Update status
+    
+        }
+
+        // Perform the update
+        try
+        {
+            await OrderService.UpdateOrder(updateOrder);
+            Navigation.NavigateTo("/merchant-orders", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating order: {ex.Message}");
+        }
+
+        // Trigger UI update
+        StateHasChanged();
+    }
+    protected async Task ShowTheMap()
+    {
+
+        @*await base.OnInitializedAsync();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;*@
+        //orderId = int.Parse(Id);
+        if (!int.TryParse(Id, out orderId))
+        {
+            Console.WriteLine($"Invalid: {Id}");
+            return;
+        }
+        Console.WriteLine($"Fetching order with ID: {Id}");
+        try
+        {
+            order = await OrderService.GetOrderByIdAsync(orderId);
+
+            if (order == null)
+            {
+                Console.WriteLine("Order is null!");
+                return;
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching order: {ex.Message}");
+        }
+
+
+        var merchantAddress = order.Merchant.User.Addresses.FirstOrDefault().FullAddress;
+        var customerAddress = order.Customer.User.Addresses.FirstOrDefault().FullAddress;
+        Console.WriteLine($"MAddress: {merchantAddress}");
+        Console.WriteLine($"CAddress: {customerAddress}");
+
+        if (merchantAddress != null && customerAddress != null)
+        {
+            (MerchantLat, MerchantLng) = await GeocodingService.GetCoordinatesFromAddressAsync(merchantAddress);
+            (CustomerLat, CustomerLng) = await GeocodingService.GetCoordinatesFromAddressAsync(customerAddress);
+        }
+        Console.WriteLine($"MCoordinates: {MerchantLat}, {MerchantLng}");
+        Console.WriteLine($"CCoordinates: {CustomerLat}, {CustomerLng}");
+    }
+
     bool _expanded = true;
 
     private void OnExpandCollapseClick()
