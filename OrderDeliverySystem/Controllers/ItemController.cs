@@ -85,6 +85,38 @@ namespace OrderDeliverySystem.Controllers
             return Ok(viewItems);
         }
 
+        // GET: api/items/merchant/{merchantId}
+        [HttpGet("merchant")]
+        [Authorize(Roles = "Merchant")]
+        public async Task<ActionResult<IEnumerable<ViewItemDTO>>> GetItems()
+        {
+            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            var merchant = await _context.Merchants.FirstOrDefaultAsync(m => m.UserId == userId);
+            if (merchant == null)
+            {
+                return NotFound(new { Error = "Merchant not found." });
+            }
+
+            var items = await _context.Items
+               .Where(i => i.MerchantId == merchant.MerchantId)
+               .ToListAsync();
+
+            // 将 Item 实体转换为 ViewItemDTO
+            var viewItems = items.Select(item => new ViewItemDTO
+            {
+                MerchantId = item.MerchantId,
+                ItemId = item.ItemId,
+                ItemName = item.ItemName,
+                ItemDescription = item.ItemDescription,
+                ItemPrice = item.ItemPrice,
+                ItemPic = item.ItemPic,
+                ItemIsAvailable = item.ItemIsAvailable
+            }).ToList();
+
+            return Ok(viewItems);
+        }
+
         // GET: api/items/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<ViewItemDTO>> GetItem(int id)
@@ -208,12 +240,6 @@ namespace OrderDeliverySystem.Controllers
                 return NotFound($"Item with id {id} not found.");
             }
 
-            // 确保当前商家是该 Item 的所有者
-            if (existingItem.MerchantId.ToString() != userId)
-            {
-                return Forbid("You are not authorized to update this item.");
-            }
-
             // 更新属性
             existingItem.ItemName = updatedItemDto.ItemName;
             existingItem.ItemDescription = updatedItemDto.ItemDescription;
@@ -243,12 +269,7 @@ namespace OrderDeliverySystem.Controllers
                 return NotFound($"Item with id {id} not found.");
             }
 
-            // Ensure the user is the owner of the item 
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Get the current user's ID
-            if (item.MerchantId != int.Parse(userId))
-            {
-                return Forbid(); // User is not authorized to delete this item
-            }
+
 
             // Remove the item from the database
             _context.Items.Remove(item);

@@ -18,9 +18,8 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Item
         private readonly TokenHelper tokenHelper;
 
 
-        private const string UpdateItemPath = "api/items"; // or "api/items/{id}" depending on your routing logic
+        private const string basePath = "api/items"; // or "api/items/{id}" depending on your routing logic
 
-        private const string CreateMenuItmePath = "api/items";
         public ItemService(
             ILocalStorageService localStorage,
             AuthenticationStateProvider authenticationStateProvider,
@@ -37,7 +36,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Item
             var httpClient = this.httpClientFactory.CreateClient("API");
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
             return await httpClient
-                .PostAsJsonAsync(CreateMenuItmePath, newItemDto)
+                .PostAsJsonAsync(basePath, newItemDto)
                 .ToResult();
         }
 
@@ -47,7 +46,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Item
         {
             var httpClient = httpClientFactory.CreateClient("API");
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
-            var response = await httpClient.GetFromJsonAsync<UpdateItemDTO>($"{UpdateItemPath}/{id}");
+            var response = await httpClient.GetFromJsonAsync<UpdateItemDTO>($"{basePath}/{id}");
             return response;
         }
 
@@ -56,8 +55,23 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Item
         {
             var httpClient = httpClientFactory.CreateClient("API");
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
-            var response = await httpClient.PutAsJsonAsync($"{UpdateItemPath}/{id}", updateDto);
+            var response = await httpClient.PutAsJsonAsync($"{basePath}/{id}", updateDto);
             return response;
+        }
+
+        public async Task<List<ViewItemDTO>> GetItems()
+        {
+            var httpClient = httpClientFactory.CreateClient("API");
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+            return await httpClient.GetFromJsonAsync<List<ViewItemDTO>>(basePath);
+        }
+
+        public async Task<Result> RemoveItem(int itemId)
+        {
+            var httpClient = httpClientFactory.CreateClient("API");
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+            var path = basePath + "/" + itemId;
+            return await httpClient.DeleteAsync(path).ToResult();
         }
 
     }
