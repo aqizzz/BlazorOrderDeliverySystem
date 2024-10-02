@@ -219,6 +219,12 @@ namespace OrderDeliverySystemApi.Controllers
             {
                 order.Status = "Delivered";
             }
+            else if( status == "Cancelled")
+            {
+                order.Status = "Cancelled";
+                await _context.SaveChangesAsync();
+                return Ok("Profile has been successfully Cancelled");
+            }
             else
             {
                 return NotFound("No order need to be updated here");
@@ -306,6 +312,7 @@ namespace OrderDeliverySystemApi.Controllers
                 worker.LastTaskAssigned = DateTime.Now;
             }
             else
+     
             {
                 return NotFound("No valid Status");
             }

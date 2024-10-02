@@ -12,7 +12,8 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
-@inject OrderService Orderservice
+@inject IOrderService OrderService
+@inject OrderService Orderserviceon
 @rendermode InteractiveServer
 
 
@@ -54,18 +55,41 @@
             </MudTd>
             <MudTd Class="text-center" DataLabel="TotalAmount">@context.TotalAmount.ToString("C")</MudTd>
             <MudTd DataLabel="Action" Class="d-flex justify-content-center">
-                @if (context.Status.Equals("Pending"))
+              
+                @if (role.Equals("worker"))
                 {
-                  
-                    <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Approve" Style="color: rgba(168, 0, 0, 1);" OnClick="() => UpdateOrder(context)" />
+                    @if (context.Status.Equals("Approved"))
+                    {
 
-                    <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Cancel" Color="Color.Default" OnClick="() => CancelOrder(context)" />
-
+                        <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Assigned Delivery" Style="color: rgba(168, 0, 0, 1);" OnClick="() => UpdateOrder(context)" />
+                    }
+                    else if (context.Status.Equals("In Delivery"))
+                    {
+                         <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="End Delivery" Style="color: rgba(168, 0, 0, 1);" OnClick="() => UpdateOrder(context)" />
+                    }
+                    else
+                    {
+                        <MudFab Variant="Variant.Outlined" Color="Color.Secondary" Label="@context.Status" Style="color: rgba(168, 0, 0, 1);" Disabled="true" />
+                    }
+                
+                    
                 }
-                else
+                else if (role.Equals("merchant"))
                 {
+                    @if (context.Status.Equals("Pending"))
+                    {
 
-                    <MudFab Variant="Variant.Outlined" Color="Color.Secondary" Label="Approved" Style="color: rgba(168, 0, 0, 1);" Disabled="true" />
+                        <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Approve" Style="color: rgba(168, 0, 0, 1);" OnClick="() => UpdateOrder(context)" />
+
+                        <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Cancel" Color="Color.Default" OnClick="() => CancelOrder(context)" />
+
+                    }
+                    else
+                    {
+                         <MudFab Variant="Variant.Outlined" Color="Color.Secondary" Label="@context.Status" Style="color: rgba(168, 0, 0, 1);" Disabled="true" />
+                     }
+
+        
                 }
 
             </MudTd>
@@ -147,7 +171,7 @@
 
             if (role != null)
             {
-                var response = await Orderservice.GetOrdersTableByRole(role, recent);
+                var response = await OrderService.GetOrdersTableByRole(role, recent);
                 if (response != null)
                 {
                     orders = response;
@@ -206,7 +230,7 @@
         // Perform the update
         try
         {
-            await Orderservice.UpdateOrder(order);
+            await OrderService.UpdateOrder(order);
         }
         catch (Exception ex)
         {
@@ -219,9 +243,40 @@
 
   
 
-    private void CancelOrder(OrderDTO order)
+    private async Task CancelOrder(OrderDTO thisOrder)
     {
+        if (thisOrder == null)
+        {
+            Console.WriteLine("thisOrder is null");
+            return; // Early return if thisOrder is null
+        }
 
+        // Check if order is initialized
+        if (order == null)
+        {
+            order = new UpdateOrderDTO(); // Initialize if necessary
+        }
+
+        // Accessing properties with checks
+        if (thisOrder.OrderId != null)
+        {
+            order.OrderId = thisOrder.OrderId; // Ensure thisOrder is not null before accessing
+            order.Status = "Cancelled";
+        }
+       
+
+        // Perform the update
+        try
+        {
+            await OrderService.UpdateOrder(order);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating order: {ex.Message}");
+        }
+
+        // Trigger UI update
+        StateHasChanged();
     }
 
     private bool FilterFunc1(OrderDTO order) => FilterFunc(order, searchString1);

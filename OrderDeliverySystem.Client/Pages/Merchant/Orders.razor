@@ -11,11 +11,10 @@
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using System.Security.Claims
 @inject HttpClient httpClient
-@inject OrderService OrderService
+@inject IOrderService OrderService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
-@inject OrderService Orderservice
 @rendermode InteractiveServer
 
 
