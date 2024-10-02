@@ -14,26 +14,34 @@
 }
 else if (reviews != null && reviews.Count > 0)
 {
-    <MudTable Items="@reviews" Striped="true" Bordered="true">
-        <HeaderContent>
-            <MudTh>Order ID</MudTh>
-            <MudTh>Customer ID</MudTh>
-            <MudTh>Rating</MudTh>
-            <MudTh>Comment</MudTh>
-            <MudTh>Reply</MudTh>
-            <MudTh>Created At</MudTh>
-            <MudTh>Reply Created At</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="Order ID">@context.OrderId</MudTd>
-            <MudTd DataLabel="Customer ID">@context.CustomerId</MudTd>
-            <MudTd DataLabel="Rating">@context.Rating</MudTd>
-            <MudTd DataLabel="Comment">@context.Comment</MudTd>
-            <MudTd DataLabel="Reply">@context.Reply</MudTd>
-            <MudTd DataLabel="Created At">@context.CreatedAt.ToString("yyyy-MM-dd")</MudTd>
-            <MudTd DataLabel="Reply Created At">@context.ReplyCreatedAt?.ToString("yyyy-MM-dd")</MudTd>
-        </RowTemplate>
-    </MudTable>
+    @foreach (var review in reviews)
+    {
+        <div class="review-card">
+            <div class="review-header">
+                @for (var i = 0; i < review.Rating; i++)
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" />
+                }
+            </div>
+            <div class="review-content">
+                <div class="review-date">
+                    @review.CreatedAt.ToString("MMMM dd, yyyy")
+                </div>
+                <strong>Comment:</strong> @review.Comment <br />
+                @if (!string.IsNullOrEmpty(review.Reply))
+                {
+                    <strong>Merchant Reply:</strong> @review.Reply <br />
+                }
+                @if (review.ReplyCreatedAt.HasValue)
+                {
+                    <div class="reply-date">
+                        <strong>Reply Date:</strong> @review.ReplyCreatedAt.Value.ToString("MMMM dd, yyyy")
+                    </div>
+                }
+            </div>
+            <hr />
+        </div>
+    }
 }
 else
 {
@@ -43,7 +51,6 @@ else
 @code {
     private List<GetReviewResponseDTO> reviews = new();
     private bool isLoading = true;
-
 
     [Parameter]
     public int merchantUserId { get; set; }
@@ -64,8 +71,6 @@ else
             else
             {
                 Console.WriteLine("User is not in the Customer role.");
-
-                // NavigationManager.NavigateTo("/not-authorized");
             }
         }
         else
@@ -87,3 +92,36 @@ else
         }
     }
 }
+
+<style>
+    .review-card {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        background-color: white;
+    }
+
+    .review-header {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    .review-content {
+        font-size: 16px;
+        color: #444;
+    }
+
+    .review-date, .reply-date {
+        font-size: 12px;
+        color: #888; /* Lighter gray color */
+        margin-top: 5px;
+        margin-bottom: 10px;
+    }
+
+    hr {
+        margin-top: 20px;
+        border: 0;
+        border-top: 1px solid #ddd;
+    }
+</style>
