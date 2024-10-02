@@ -2,6 +2,7 @@
 using static OrderDeliverySystem.Share.Data.ErrorMessages;
 using static OrderDeliverySystem.Share.Data.Constants.Address;
 using System.Text.Json.Serialization;
+using OrderDeliverySystem.Share.Util;
 
 namespace OrderDeliverySystem.Share.DTOs
 {
@@ -23,6 +24,7 @@ namespace OrderDeliverySystem.Share.DTOs
         public string? Province { get; set; }
 
         [StringLength(MaxPostalCodeLength, ErrorMessage = StringMaxLengthErrorMessage)]
+        [PostcodeFormat]
         public string? Postcode { get; set; }
     }
 }

@@ -12,11 +12,14 @@
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
+@inject IAuthorizationService AuthorizationService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @inject OrderService Orderservice
 @rendermode InteractiveServer
 
 <MudContainer Class="my-10">
+    <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
     <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My Orders</MudText>
 <MudTable Items="@orders" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<OrderDTO,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
     @*<ToolBarContent>

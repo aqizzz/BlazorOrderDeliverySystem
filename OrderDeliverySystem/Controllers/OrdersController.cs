@@ -60,6 +60,7 @@ namespace OrderDeliverySystemApi.Controllers
         {
 
 
+
             // Fetch required entities from the database (Merchant and Customer)
             var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
@@ -87,6 +88,7 @@ namespace OrderDeliverySystemApi.Controllers
             }
 
 
+
             var merchants = orderDto.Merchants;
             if (merchants == null)
             {
@@ -96,9 +98,11 @@ namespace OrderDeliverySystemApi.Controllers
                 foreach (var thisMerchant in merchants)
                 {
                     if (thisMerchant == null)
+                    if (thisMerchant == null)
                     {
                         return NotFound($"No merchant was found.");
                     }
+
 
 
                     var merchant = await _context.Merchants.FindAsync(thisMerchant.UserId);
@@ -169,6 +173,9 @@ namespace OrderDeliverySystemApi.Controllers
                     totalAmount = 0m;
                 }
             }
+
+
+
 
 
 
@@ -422,15 +429,22 @@ namespace OrderDeliverySystemApi.Controllers
                 .Include(o => o.DeliveryWorker) ;
 
          
+                .Include(o => o.DeliveryWorker) ;
+
+         
 
             switch (role.ToLower())
             {
                 case "customer":
                    
                     query = query.Where(o => o.Customer != null && o.Customer.UserId == userId); break;
+                   
+                    query = query.Where(o => o.Customer != null && o.Customer.UserId == userId); break;
                 case "merchant":
                     query = query.Where(o => o.Merchant != null && o.Merchant.UserId == userId); break;
+                    query = query.Where(o => o.Merchant != null && o.Merchant.UserId == userId); break;
                 case "worker":
+                    query = query.Where(o => o.DeliveryWorker !=null && o.DeliveryWorker.UserId == userId); break;
                     query = query.Where(o => o.DeliveryWorker !=null && o.DeliveryWorker.UserId == userId); break;
             }
 
@@ -579,6 +593,7 @@ namespace OrderDeliverySystemApi.Controllers
             {
                 case "customer":
              
+             
                     query = query.Where(o => o.Customer.UserId == userId); break;
                 case "merchant":
                     query = query.Where(o => o.Merchant.UserId == userId); break;
@@ -670,7 +685,9 @@ namespace OrderDeliverySystemApi.Controllers
                 .Take(pageSize)
                 .ToListAsync();
        
+       
             return Ok(orders);
+   }
    }
 
 
