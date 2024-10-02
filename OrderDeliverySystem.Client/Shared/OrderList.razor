@@ -56,14 +56,15 @@
             <MudTd DataLabel="Action" Class="d-flex justify-content-center">
                 @if (context.Status.Equals("Pending"))
                 {
-
-                    <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Approve" Style="color: rgba(168, 0, 0, 1);" OnClick="() => ApproveOrder(context)" />
+                  
+                    <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Approve" Style="color: rgba(168, 0, 0, 1);" OnClick="() => UpdateOrder(context)" />
 
                     <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Cancel" Color="Color.Default" OnClick="() => CancelOrder(context)" />
 
                 }
                 else
                 {
+
                     <MudFab Variant="Variant.Outlined" Color="Color.Secondary" Label="Approved" Style="color: rgba(168, 0, 0, 1);" Disabled="true" />
                 }
 
@@ -90,6 +91,9 @@
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
+    [Inject]
+    private IAuthService AuthService { get; set; }
+
 
     [Parameter]
     public int UserId { get; set; }
@@ -97,7 +101,9 @@
     public bool recent { get; set; }
     [Parameter]
     public string role { get; set; }
-  
+    [Parameter]
+    public UpdateOrderDTO order { get; set; }
+
 
 
     private bool dense = false;
@@ -107,7 +113,8 @@
     private string searchString1 = "";
     private OrderDTO selectedItem1 = null;
     private HashSet<OrderDTO> selectedOrders = new HashSet<OrderDTO>();
-    private List<OrderDTO> orders = new();
+
+    public List<OrderDTO> orders  = new List<OrderDTO>();
 
 
     // private IEnumerable<ViewItemDTO> Orders = new List<ViewItemDTO>();
@@ -120,18 +127,13 @@
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-       
+
         if (user.Identity.IsAuthenticated)
         {
-            if (user.IsInRole("Customer"))
-            {
-                await LoadOrders();
 
-            }
-            else
-            {
-                Console.WriteLine("User is not in the Customer role.");
-            }
+            await LoadOrders();
+
+
         }
         else
         {
@@ -142,12 +144,25 @@
     {
         try
         {
-            orders = await Orderservice.GetOrdersByRole(role, recent);
+
+            if (role != null)
+            {
+                var response = await Orderservice.GetOrdersTableByRole(role, recent);
+                if (response != null)
+                {
+                    orders = response;
+                }
+                else
+                {
+                    Console.WriteLine($"No order was found");
+                }
+
+            }
 
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading cart: {ex.Message}");
+            Console.WriteLine($"Error loading orders: {ex.Message}");
         }
         finally
         {
@@ -156,12 +171,53 @@
         }
     }
 
-    private async Task ApproveOrder(OrderDTO order)
+    private async Task UpdateOrder(OrderDTO thisOrder)
     {
-       
-       await Orderservice.UpdateOrder(order);
+        if (thisOrder == null)
+        {
+            Console.WriteLine("thisOrder is null");
+            return; // Early return if thisOrder is null
+        }
+
+        // Check if order is initialized
+        if (order == null)
+        {
+            order = new UpdateOrderDTO(); // Initialize if necessary
+        }
+
+        // Accessing properties with checks
+        if (thisOrder.OrderId != null)
+        {
+            order.OrderId = thisOrder.OrderId; // Ensure thisOrder is not null before accessing
+        }
+
+        if (thisOrder.Status != null)
+        {
+            if (thisOrder.Status == "Pending")
+            {
+                order.Status = "Approved"; // Update status
+            }
+            else if (thisOrder.Status == "Approved")
+            {
+                order.Status = "Assigned"; // Update status
+            }
+        }
+
+        // Perform the update
+        try
+        {
+            await Orderservice.UpdateOrder(order);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating order: {ex.Message}");
+        }
+
+        // Trigger UI update
         StateHasChanged();
     }
+
+  
 
     private void CancelOrder(OrderDTO order)
     {

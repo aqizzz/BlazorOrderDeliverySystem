@@ -1,7 +1,6 @@
 ﻿@page "/merchant-orders"
 @using System.Net.Http.Json
 @using MudBlazor
-@inject HttpClient httpClient
 @using OrderDeliverySystem.Client.Infrastructure.Services.Orders
 @using OrderDeliverySystem.Client.Shared
 @using OrderDeliverySystem.Share.Data.Models
@@ -10,6 +9,9 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@using System.Security.Claims
+@inject HttpClient httpClient
+@inject OrderService OrderService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
@@ -27,7 +29,7 @@
             <ChildContent>
                 <AuthorizeView Roles="Merchant">
                     <Authorized>
-                        <OrderList role="merchant" recent="true" />
+                        <OrderList role="recentOrders" recent="true" />
                     </Authorized>
                 </AuthorizeView>
             </ChildContent>
@@ -53,16 +55,25 @@
 </MudContainer>
 
 @code {
+
+    private ClaimsPrincipal user;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+    private List<OrderDTO> recentOrders = new();
+    private List<OrderDTO> orderHistory = new();
     [Inject]
     private IAuthService AuthService { get; set; }
-
+    private bool isLoading = true;
     protected override async Task OnInitializedAsync()
     {
 
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-      
+       
+       
+
     }
 
 

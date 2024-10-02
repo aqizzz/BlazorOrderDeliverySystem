@@ -12,7 +12,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
         Task<List<OrderDTO>> GetOrdersByRole(string role,  bool recent);
         Task<List<OrderDTO>> GetOrdersTableByRole(string role,  bool recent);
         Task<Result> CreateOrder(CreateOrderDTO order);
-        Task<Result> UpdateOrder(OrderDTO order);
+        Task<Result> UpdateOrder(int id,UpdateOrderDTO order);
         Task<GetOrderResponseDTO> GetOrderByCart();
         Task<Result> CancelOrder(int orderId);
     }
