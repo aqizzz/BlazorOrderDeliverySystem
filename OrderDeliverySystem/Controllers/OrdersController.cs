@@ -16,7 +16,6 @@ namespace OrderDeliverySystemApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Customer")]
     public class OrdersController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -76,14 +75,6 @@ namespace OrderDeliverySystemApi.Controllers
                 return NotFound("Not the user");
             }
 
-            var worker = await _context.DeliveryWorkers
-                .Where(w => w.WorkerAvailability == true) // Ensure worker is available and has a task history
-                .OrderBy(w => w.LastTaskAssigned) // Get the worker with the oldest LastTaskAssigned date
-                .FirstOrDefaultAsync();
-            if (worker == null)
-            {
-                return NotFound($"No worker was found.");
-            }
             var customerAddress = await _context.Addresses
               .Where(a => a.UserId == customer.UserId)
               .FirstOrDefaultAsync(); // ToListAsync if it's a collection
@@ -99,7 +90,8 @@ namespace OrderDeliverySystemApi.Controllers
             {
                 return NotFound($"No merchant was found.");
             }
-            if (merchants.Count() > 0) {
+            if (merchants.Count() > 0)
+            {
                 foreach (var thisMerchant in merchants)
                 {
                     if (thisMerchant == null)
@@ -124,14 +116,13 @@ namespace OrderDeliverySystemApi.Controllers
                     }
 
 
-
                     var order = new Order
                     {
                         CustomerId = customer.CustomerId,
                         MerchantId = merchant.MerchantId,
                         PickupAddressId = merchantAddress.AddressId,
                         DropoffAddressId = customerAddress.AddressId,
-                        TotalAmount = 0.00m,
+                        TotalAmount = orderDto.TotalAmount,
                         Status = "Pending",
                         CreatedAt = DateTime.Now,
                         UpdatedAt = DateTime.Now,
@@ -187,19 +178,59 @@ namespace OrderDeliverySystemApi.Controllers
 
         [HttpPut("update")]
 
-        public async Task<IActionResult> UpdateOrder(OrderDTO updatedOrder)
+        public async Task<IActionResult> UpdateOrder(UpdateOrderDTO updatedOrder)
         {
+            if (updatedOrder == null)
+            {
+                return NotFound($"No order need to be updated.");
+            }
 
+            var orderId = updatedOrder.OrderId;
 
-            var order = await _context.Orders.FindAsync(updatedOrder.OrderId);
+            if (updatedOrder == null)
+            {
+                return NotFound($"No order need to be updated.");
+            }
+
+            var status = updatedOrder.Status;
+            if (status == null)
+            {
+                return NotFound("No status need to be updated.");
+            }
+            var order = await _context.Orders.FindAsync(orderId);
             if (order == null)
             {
                 return NotFound();
             }
 
+            if (status == "Pending")
+            {
+                order.Status = "Approved";
+
+            }
+            else if (status == "Approved")
+            {
+                order.Status = "In Delivery";
+
+            }
+            else if (status == "In Delivery")
+            {
+                order.Status = "Delivered";
+            }
+            else if (status == "Cancelled")
+            {
+                order.Status = "Cancelled";
+              
+            }
+            else
+            {
+                return NotFound("No order need to be updated here");
+            }
+
+
             // Update order fields
 
-            order.Status = updatedOrder.Status;
+
             order.UpdatedAt = DateTime.Now;
 
             // Update the order in the context
@@ -207,19 +238,89 @@ namespace OrderDeliverySystemApi.Controllers
 
             await _context.SaveChangesAsync();
 
-            var newTracking = new DeliveryTask
+            if (order.Status == "Approved")
             {
-                Order = order,
-                OrderId = order.OrderId,
-                AssignedTime = DateTime.Now,
-                WorkerId = order.DeliveryWorker.WorkerId,
-                DeliveryWorker = order.DeliveryWorker,
-                Status = updatedOrder.Status,
-            };
-            _context.DeliveryTasks.Add(newTracking);
+                var worker = await _context.DeliveryWorkers
+                    .Where(w => w.WorkerAvailability == true) // Ensure worker is available and has a task history
+                    .OrderBy(w => w.LastTaskAssigned) // Get the worker with the oldest LastTaskAssigned date
+                    .FirstOrDefaultAsync();
+
+                if (worker == null)
+                {
+                    return NotFound("No worker can take this Order");
+                }
+
+                var workerId = order.WorkerId;
+                if (workerId == null || workerId <= 0)
+                {
+                    return NotFound("No worker can take this Order");
+                }
+                var exitorder = await _context.Orders.Where(o => o.Status.Equals("Approved") && o.WorkerId == workerId).ToListAsync();
+
+                if (exitorder != null && exitorder.Count > 1)
+                {
+                    return NotFound("No worder can be found");
+
+                }
+                else if (exitorder.Count == 1)
+                {
+                    worker.WorkerAvailability = false;
+                }
+
+                _context.Entry(worker).State = EntityState.Modified;
+
+                await _context.SaveChangesAsync();
+
+                order.WorkerId = worker.WorkerId;
+                order.DeliveryWorker = worker;
+                _context.Entry(order).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+            }
+            else if (order.Status == "In Delivery")
+            {
+                var newTracking = new DeliveryTask
+                {
+                    Order = order,
+                    OrderId = order.OrderId,
+                    AssignedTime = DateTime.Now,
+                    WorkerId = order.WorkerId ?? 0,
+                    DeliveryWorker = order.DeliveryWorker,
+                    Status = updatedOrder.Status,
+                };
+                _context.DeliveryTasks.Add(newTracking);
+                await _context.SaveChangesAsync();
+            }
+            else if (order.Status == "Delivered")
+            {
+                var workerId = order.WorkerId;
+                if (workerId == null || workerId <= 0)
+                {
+                    return NotFound("No worker can take this Order");
+                }
+                var worker = await _context.DeliveryWorkers.FindAsync(workerId);
+
+
+                if (worker == null)
+                {
+                    return NotFound("No worker can take this Order");
+                }
+                worker.WorkerAvailability = true;
+                worker.LastTaskAssigned = DateTime.Now;
+            }
+            else if(order.Status == "Cancelled")
+            {
+
+            }
+            else
+            {
+                return NotFound("No valid Status");
+            }
+
             await _context.SaveChangesAsync();
 
-            return NoContent();
+
+            return Ok("Order has been successfully updated");
         }
 
         [HttpGet("recent-orders/{customerId}")]
@@ -533,7 +634,7 @@ namespace OrderDeliverySystemApi.Controllers
             };
             return Ok(orderDTO);
         }
-            [HttpGet("table/{role}")]
+         [HttpGet("table/{role}")]
         [Authorize(Roles = "Customer,Merchant,Worker")]
         public async Task<IActionResult> GetOrdersTableByRole(string role, bool recent, int pageNumber = 1, int pageSize = 10)
        {

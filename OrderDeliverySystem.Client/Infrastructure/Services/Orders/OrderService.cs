@@ -77,30 +77,20 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
         }
     
 
-        public async Task<Result> UpdateOrder(OrderDTO order)
+        public async Task<Result> UpdateOrder(UpdateOrderDTO order)
         {
-            switch (order.Status)
-            {
-                case "Pending":
-                    order.Status = "Approved"; break;
-                case "Approved":
-                    order.Status = "In Delivery"; break;
-                case "In Delivery":
-                    order.Status = "Delivered"; break;
-            }
-
             var httpClient = this.httpClientFactory.CreateClient("API");
 
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
 
-            var uri = $"{Base}/update/{order.OrderId}";
+            var uri = $"{Base}/update";
             var response = await httpClient.PutAsJsonAsync(uri, order);
             if (!response.IsSuccessStatusCode)
             {
                 var errors = await response.Content.ReadFromJsonAsync<string>();
                 return errors != null
                     ? Result.Failure(errors) // Return the errors if present
-                    : Result.Failure( "An unknown error occurred.");
+                    : Result.Failure("An unknown error occurred.");
             }
             return Result.Success;
         }

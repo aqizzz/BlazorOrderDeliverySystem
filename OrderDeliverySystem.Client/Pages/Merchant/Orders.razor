@@ -1,7 +1,6 @@
 ﻿@page "/merchant-orders"
 @using System.Net.Http.Json
 @using MudBlazor
-@inject HttpClient httpClient
 @using OrderDeliverySystem.Client.Infrastructure.Services.Orders
 @using OrderDeliverySystem.Client.Shared
 @using OrderDeliverySystem.Share.Data.Models
@@ -10,6 +9,9 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@using System.Security.Claims
+@inject HttpClient httpClient
+@inject OrderService OrderService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
@@ -19,15 +21,15 @@
 
 <MudContainer Class="my-10">
     <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My Orders</MudText>
-   
+
     <MudTabs TabHeaderClass="d-flex justify-content-end " Elevation="1" Rounded="true" PanelClass="pa-6" ActiveTabClass="border-solid border-1 mud-border-primary">
 
         <MudTabPanel>
-            
+
             <ChildContent>
                 <AuthorizeView Roles="Merchant">
                     <Authorized>
-                        <OrderList role="merchant" recent="true" />
+                        <OrderList role="recentOrders" recent="true" />
                     </Authorized>
                 </AuthorizeView>
             </ChildContent>
@@ -49,20 +51,28 @@
             </TabContent>
         </MudTabPanel>
     </MudTabs>
-  
+
 </MudContainer>
 
 @code {
+
+    private ClaimsPrincipal user;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+
     [Inject]
     private IAuthService AuthService { get; set; }
-
+    private bool isLoading = true;
     protected override async Task OnInitializedAsync()
     {
 
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-      
+
+
+
     }
 
 

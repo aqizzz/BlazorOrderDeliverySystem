@@ -57,15 +57,7 @@
             </TabContent>
         </MudTabPanel>
     </MudTabs>
-    @if (orderHistory !=null) 
-    @foreach (var order in orderHistory)
-    {
-            if (order != null)
-            {
-                <MudText>@order.OrderId</MudText>
-            }
-           
-    }
+ 
 
 </MudContainer>
 @code {
