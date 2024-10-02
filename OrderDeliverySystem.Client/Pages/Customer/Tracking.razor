@@ -99,6 +99,10 @@
 </MudGrid>
 </MudContainer>
 }
+else
+{
+    <MudText>Loading...</MudText>
+}
 @code {
     [Parameter]
     public string Id { get; set; }
@@ -117,7 +121,12 @@
         @*await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;*@
-         orderId = int.Parse(Id);
+        //orderId = int.Parse(Id);
+        if(!int.TryParse(Id, out orderId))
+        {
+            Console.WriteLine($"Invalid: {Id}");
+            return;
+        }
         Console.WriteLine($"Fetching order with ID: {Id}");
         try
         {
