@@ -44,6 +44,7 @@
             <MudTh>Price</MudTh>
             <MudTh>Item Picture</MudTh>
             <MudTh>Available</MudTh>
+            <MudTh>Action</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="MerchantId">@context.MerchantId</MudTd>
@@ -129,6 +130,7 @@
             if (response != null)
             {
                 Items = response;
+               
             }
         }
         catch (Exception ex)
@@ -175,7 +177,7 @@
 
             if (response.Succeeded)
             {
-                LoadMenuItems();
+                await LoadMenuItems();
                 StateHasChanged();
             }
             else

@@ -1,4 +1,4 @@
-﻿@page "/worker-orders"
+﻿@page "/worker-recent"
 @*attribute [Authorize(Roles = "Customer")]*@
 @using Microsoft.AspNetCore.Authorization;
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
@@ -13,13 +13,13 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
-@rendermode InteractiveServer
 
 
 @inject OrderService OrderService
 @inject GeocodingService GeocodingService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
+@rendermode InteractiveServer
 
 
 
@@ -112,15 +112,17 @@
         </MudCollapse>
         <MudGrid>
              <MudItem xs="12" sm="12" md="6">
-           @* <gmp-map center="37.4220656,-122.0840897"
+
+                        @*  <gmp-map center="45.4717513802915, -73.86366488029152"
                      zoom="10"
                      map-id="DEMO_MAP_ID"
                     style="height: 600px"></gmp-map>*@
-            @if (MerchantLat != 0 && CustomerLat != 0){
+                       
+                        @if (MerchantLat != 0 && CustomerLat != 0){
                 <GoogleMap MerchantLat="@MerchantLat" MerchantLng="@MerchantLng" CustomerLat="@CustomerLat" CustomerLng="@CustomerLng" Id="@orderId"/>
-            }
-            else
-            {
+                    }
+                    else
+                    {
                 <MudText>Loading map...</MudText>
                     }
             </MudItem>          

@@ -55,20 +55,27 @@
         </MudTd>
         <MudTd Class="text-center" DataLabel="TotalAmount">@context.TotalAmount.ToString("C")</MudTd>
         <MudTd DataLabel="Action" Class="d-flex justify-content-center">
+           
             @if (context.Status.Equals("Pending"))
             {
-
                 <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Approve" Style="color: rgba(168, 0, 0, 1);" OnClick="() => UpdateOrder(context)" />
 
                 <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Cancel" Color="Color.Default" OnClick="() => CancelOrder(context)" />
-
+            }
+            else if (context.Status.Equals("Approved"))
+            {
+                <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="In Deliveryy" Style="color: rgba(168, 0, 0, 1);" OnClick="() => UpdateOrder(context)" />
+            }
+            else if (context.Status.Equals("In Delivery"))
+            {
+                <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Finish Delivery" Style="color: rgba(168, 0, 0, 1);" OnClick="() => UpdateOrder(context)" />
             }
             else
             {
-
-                <MudFab Variant="Variant.Outlined" Color="Color.Secondary" Label="@context.Status" Style="color: rgba(168, 0, 0, 1);" Disabled="true" />
+                <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="@context.Status" Style="color: rgba(168, 0, 0, 1);" Disabled="true" />
             }
 
+            
         </MudTd>
 
     </RowTemplate>
@@ -194,17 +201,25 @@
 
         if (thisOrder.Status != null)
         {
-            
+
             order.Status = thisOrder.Status; // Update status
-            
-           
+
+
         }
 
         // Perform the update
         try
         {
             await Orderservice.UpdateOrder(order);
-            Navigation.NavigateTo("/merchant-orders", forceLoad: true);
+            if (UserId<=6)
+            {
+                Navigation.NavigateTo("/merchant-worker", forceLoad: true);
+            }
+            else
+            {
+                Navigation.NavigateTo("/merchant-worker", forceLoad: true);
+            }
+
         }
         catch (Exception ex)
         {
