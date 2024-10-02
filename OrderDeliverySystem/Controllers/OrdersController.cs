@@ -177,9 +177,10 @@ namespace OrderDeliverySystemApi.Controllers
 
         }
 
-        [HttpPut("update/{id}")]
+        [HttpPut("update")]
         [Authorize(Roles = "Customer, Merchant, Worker")]
-        public async Task<IActionResult> UpdateOrder(int id ,UpdateOrderDTO updatedOrder)
+        public async Task<IActionResult> UpdateOrder(UpdateOrderDTO updatedOrder)
+
         {
             if(updatedOrder == null)
             {

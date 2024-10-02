@@ -79,12 +79,13 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 
         public async Task<Result> UpdateOrder(UpdateOrderDTO order)
         {
+
           
             var httpClient = this.httpClientFactory.CreateClient("API");
 
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
 
-            var uri = $"{Base}/update/{order.OrderId.ToString()}";
+            var uri = $"{Base}/update";
             var response = await httpClient.PutAsJsonAsync(uri, order);
             if (!response.IsSuccessStatusCode)
             {

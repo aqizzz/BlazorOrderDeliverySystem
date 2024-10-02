@@ -60,8 +60,7 @@
 
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
-    private List<OrderDTO> recentOrders = new();
-    private List<OrderDTO> orderHistory = new();
+
     [Inject]
     private IAuthService AuthService { get; set; }
     private bool isLoading = true;

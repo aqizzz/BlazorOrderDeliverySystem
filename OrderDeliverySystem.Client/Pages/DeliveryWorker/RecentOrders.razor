@@ -17,24 +17,14 @@
 
 
 <MudContainer Class="my-10">
-    <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My Orders</MudText>
-        @if (recentOrders.Any())
-        {
-            @foreach (var order in recentOrders)
-            {
-            <!-- <OrderCard Order="@order" -->
-            }
-        }
-        else
-        {
-            <MudText>You have no recent orders!</MudText>
-        }
+    <OrderList role="worker" recent="true"/>
+        
 
 </MudContainer>
 @code {
-
-    private List<OrderDTO> recentOrders = new();
-    private List<OrderDTO> orderHistory = new();
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+ 
     // private OrderDTO? selectedOrder = new();
     [Inject]
     private IAuthService AuthService { get; set; }
@@ -46,8 +36,7 @@
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        int workerId = 9;
-        //recentOrders = await OrderService.GetOrdersByRole("worker",  true);
+       
        
     }
     private void ShowOrderDetails(OrderDTO order)
