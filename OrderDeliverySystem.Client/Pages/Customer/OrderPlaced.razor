@@ -39,8 +39,6 @@ else
         <MudDivider Class=" border-2" Style="border-color:rgba(112, 0, 0, 1);" />
            
           <AddressCreate/>
-          
-          <div>@totalAmount</div>
     </MudContainer>
     <MudContainer Class="my-3">
         <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Start" GutterBottom="true" Style="color:rgba(112, 0, 0, 1);">Place Order</MudText>
@@ -147,8 +145,8 @@ else
 
 
 @code {
-        [CascadingParameter]
-        private Task<AuthenticationState> authenticationState { get; set; }
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
     private ClaimsPrincipal user;
 
     [Parameter]
@@ -338,32 +336,29 @@ else
             Errors = result.Error;
             ShowErrors = true;
         }
-
-
-
-}
-public async Task ClearCart()
-{
-    try
-    {
-        var response = await CartService.ClearCartItems();
-
-        if (response.IsSuccessStatusCode)
-        {
-            await LoadCartItems();
-            Console.WriteLine("Cart cleared successfully.");
-        }
-        else
-        {
-            var errorMsg = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Failed to clear cart. Error: {errorMsg}");
-        }
     }
-    catch (Exception ex)
+    public async Task ClearCart()
     {
-        Console.WriteLine($"Error clearing cart: {ex.Message}");
-    }
+        try
+        {
+            var response = await CartService.ClearCartItems();
 
-}
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadCartItems();
+                Console.WriteLine("Cart cleared successfully.");
+            }
+            else
+            {
+                var errorMsg = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Failed to clear cart. Error: {errorMsg}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error clearing cart: {ex.Message}");
+        }
+
+    }
 }
     

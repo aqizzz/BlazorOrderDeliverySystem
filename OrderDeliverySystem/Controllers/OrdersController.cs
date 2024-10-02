@@ -195,7 +195,7 @@ namespace OrderDeliverySystemApi.Controllers
             }
 
             var status = updatedOrder.Status;
-             if (status == null)
+            if (status == null)
             {
                 return NotFound("No status need to be updated.");
             }
@@ -207,10 +207,10 @@ namespace OrderDeliverySystemApi.Controllers
 
             if (status == "Pending")
             {
-                order.Status ="Approved";
-             
+                order.Status = "Approved";
+
             }
-            else if(status == "Approved")
+            else if (status == "Approved")
             {
                 order.Status = "In Delivery";
 
@@ -219,7 +219,7 @@ namespace OrderDeliverySystemApi.Controllers
             {
                 order.Status = "Delivered";
             }
-            else if( status == "Cancelled")
+            else if (status == "Cancelled")
             {
                 order.Status = "Cancelled";
                 await _context.SaveChangesAsync();
@@ -287,7 +287,7 @@ namespace OrderDeliverySystemApi.Controllers
                     Order = order,
                     OrderId = order.OrderId,
                     AssignedTime = DateTime.Now,
-                    WorkerId = order.WorkerId??0,
+                    WorkerId = order.WorkerId ?? 0,
                     DeliveryWorker = order.DeliveryWorker,
                     Status = updatedOrder.Status,
                 };
@@ -302,7 +302,7 @@ namespace OrderDeliverySystemApi.Controllers
                     return NotFound("No worker can take this Order");
                 }
                 var worker = await _context.DeliveryWorkers.FindAsync(workerId);
-                   
+
 
                 if (worker == null)
                 {
@@ -312,13 +312,13 @@ namespace OrderDeliverySystemApi.Controllers
                 worker.LastTaskAssigned = DateTime.Now;
             }
             else
-     
+
             {
                 return NotFound("No valid Status");
             }
 
             await _context.SaveChangesAsync();
-        
+
 
             return Ok("Profile has been successfully updated");
         }
@@ -408,7 +408,7 @@ namespace OrderDeliverySystemApi.Controllers
                 return Unauthorized("User is not authenticated.");
             }
 
-           
+
             if (!int.TryParse(userIdClaim, out int userId))
             {
                 // Return bad request if the user ID is not valid
@@ -419,19 +419,21 @@ namespace OrderDeliverySystemApi.Controllers
                 .Include(o => o.Customer)
                 .Include(o => o.OrderItems)
                 .Include(o => o.Merchant)
-                .Include(o => o.DeliveryWorker) ;
+                .Include(o => o.DeliveryWorker);
 
-         
+
+
+
 
             switch (role.ToLower())
             {
                 case "customer":
-                   
+
                     query = query.Where(o => o.Customer != null && o.Customer.UserId == userId); break;
                 case "merchant":
                     query = query.Where(o => o.Merchant != null && o.Merchant.UserId == userId); break;
                 case "worker":
-                    query = query.Where(o => o.DeliveryWorker !=null && o.DeliveryWorker.UserId == userId); break;
+                    query = query.Where(o => o.DeliveryWorker != null && o.DeliveryWorker.UserId == userId); break;
             }
 
             if (recent)
@@ -548,10 +550,101 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
 
+        [HttpGet("order/{id}")]
+        public async Task<IActionResult> GetOrderByID(int id)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Customer)
+                    .ThenInclude(c => c.User)
+                    .ThenInclude(u => u.Addresses)
+                .Include(o => o.OrderItems)
+                .Include(o => o.Merchant)
+                .ThenInclude(m => m.User)
+                .ThenInclude(u => u.Addresses)
+                .Include(o => o.DeliveryWorker)
+                .FirstOrDefaultAsync(o => o.OrderId == id);
+
+            if (order == null)
+            {
+                return Ok(order);
+            }
+
+            var orderDTO = new OrderDTO
+            {
+                OrderId = order.OrderId,
+                CustomerId = order.CustomerId,
+                MerchantId = order.MerchantId,
+                WorkerId = order.WorkerId,
+                TotalAmount = order.TotalAmount,
+                CreatedAt = order.CreatedAt,
+                Status = order.Status,
+                PickupAddressId = order.PickupAddressId,
+                DropoffAddressId = order.DropoffAddressId,
+                Customer = new CustomerDTO1
+                {
+                    CustomerId = order.Customer.CustomerId,
+                    User = new UserDTO1
+                    {
+                        UserId = order.Customer.User.UserId,
+                        FirstName = order.Customer.User.FirstName,
+                        LastName = order.Customer.User.LastName,
+                        Email = order.Customer.User.Email,
+                        Phone = order.Customer.User.Phone,
+                        Role = order.Customer.User.Role,
+                        Addresses = order.Customer.User.Addresses?.Select(a => new AddressModelDTO1
+                        {
+                            Type = a.Type,
+                            Unit = a.Unit,
+                            Address = a.Address,
+                            City = a.City,
+                            Province = a.Province,
+                            Postcode = a.Postcode,
+                        }).ToList() ?? new List<AddressModelDTO1>()
+                    }
+                },
+                Merchant = new MerchantDTO1
+                {
+                    MerchantId = order.Merchant.MerchantId,
+                    BusinessName = order.Merchant.BusinessName,
+                    MerchantPic = order.Merchant.MerchantPic,
+                    MerchantDescription = order.Merchant.MerchantDescription,
+                    PreparingTime = order.Merchant.PreparingTime,
+                    User = new UserDTO1
+                    {
+                        UserId = order.Merchant.User.UserId,
+                        FirstName = order.Merchant.User.FirstName,
+                        LastName = order.Merchant.User.LastName,
+                        Email = order.Merchant.User.Email,
+                        Phone = order.Merchant.User.Phone,
+                        Role = order.Merchant.User.Role,
+                        Addresses = order.Merchant.User.Addresses?.Select(a => new AddressModelDTO1
+                        {
+                            Type = a.Type,
+                            Unit = a.Unit,
+                            Address = a.Address,
+                            City = a.City,
+                            Province = a.Province,
+                            Postcode = a.Postcode
+                        }).ToList() ?? new List<AddressModelDTO1>()
+                    }
+                },
+                OrderItems = order.OrderItems?.Select(oi => new AppOrderItem
+                {
+                    OrderItemId = oi.OrderItemId,
+                    ItemId = oi.ItemId,
+                    OrderId = oi.OrderId,
+                    Quantity = oi.Quantity
+                }).ToList() ?? new List<AppOrderItem>()
+            };
+            return Ok(orderDTO);
+        }
+
+        
+    
         [HttpGet("table/{role}")]
         [Authorize(Roles = "Customer, Merchant, Worker")]
         public async Task<IActionResult> GetOrdersTableByRole(string role, bool recent, int pageNumber = 1, int pageSize = 10)
-       {
+        {
 
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userIdClaim == null)
@@ -568,17 +661,17 @@ namespace OrderDeliverySystemApi.Controllers
 
 
             IQueryable<Order> query = _context.Orders
-              .Include(o => o.Customer)
-              .Include(o => o.OrderItems)
-                  .ThenInclude(oi => oi.Item)
-              .Include(o => o.Merchant)
-              .Include(o => o.DeliveryWorker);
+                .Include(o => o.Customer)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Item)
+                .Include(o => o.Merchant)
+                .Include(o => o.DeliveryWorker);
 
 
             switch (role.ToLower())
             {
                 case "customer":
-             
+
                     query = query.Where(o => o.Customer.UserId == userId); break;
                 case "merchant":
                     query = query.Where(o => o.Merchant.UserId == userId); break;
@@ -669,126 +762,124 @@ namespace OrderDeliverySystemApi.Controllers
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
-       
+
             return Ok(orders);
-   }
+        }
 
 
-        // GET: api/cart/getCart/{customerId}
-        [HttpGet("getCart")]
-        public async Task<IActionResult> GetCartItems()
-        {
-
-            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-
-            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
-
-
-            if (customer == null)
-            {
-                return NotFound("Customer not found.");
-            }
-
-            int customerId = customer.CustomerId;
-
-            var cart = await _context.Carts
-                .Include(c => c.Customer)
-                .Include(c => c.CartItems)
-                .ThenInclude(ci => ci.Item)
-                .ThenInclude(i => i.Merchant)
-                .ThenInclude(m => m.User)
-                .ThenInclude(u => u.Addresses)
-                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
-
-            if (cart == null)
+            // GET: api/cart/getCart/{customerId}
+            [HttpGet("getCart")]
+            public async Task<IActionResult> GetCartItems()
             {
 
-                cart = new Cart
+                var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+
+                var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
+
+
+                if (customer == null)
                 {
-                    CustomerId = customerId,
-                    Customer = customer,
-                    CartItems = new List<CartItem>()
-                };
-                _context.Carts.Add(cart);
-                await _context.SaveChangesAsync();
-            }
+                    return NotFound("Customer not found.");
+                }
 
+                int customerId = customer.CustomerId;
 
-            var cartDto = new GetOrderResponseDTO(
-                cart.CartId,
-                cart.CustomerId,
-                cart.CartItems?.Select(ci => new GetOrderItemResponseDTO(
-                    ci.CartItemId,
-                    ci.Item.MerchantId,
-                    ci.ItemId,
-                    ci.Item.ItemName ?? "Unknown Item",
-                    ci.Item.ItemPrice,
-                    ci.Item.ItemPic ?? "",
-                    ci.Quantity,
-                    new MerchantProfileDTO
+                var cart = await _context.Carts
+                    .Include(c => c.Customer)
+                    .Include(c => c.CartItems)
+                    .ThenInclude(ci => ci.Item)
+                    .ThenInclude(i => i.Merchant)
+                    .ThenInclude(m => m.User)
+                    .ThenInclude(u => u.Addresses)
+                    .FirstOrDefaultAsync(c => c.CustomerId == customerId);
+
+                if (cart == null)
+                {
+
+                    cart = new Cart
                     {
-                        UserId = ci.Item.Merchant.UserId,
-                        FirstName = ci.Item.Merchant.User.FirstName,
-                        LastName = ci.Item.Merchant.User.LastName,
-                        Phone = ci.Item.Merchant.User.Phone,
-                        Email = ci.Item.Merchant.User.Email,
-                        BusinessName = ci.Item.Merchant.BusinessName ?? "New Business",
-                        MerchantPic = ci.Item.Merchant.MerchantPic ?? "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png",
-                        MerchantDescription = ci.Item.Merchant.MerchantDescription ?? "",
-                        PreparingTime = ci.Item.Merchant.PreparingTime ?? 0,
-                        Type = "Main",
-                        Unit = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Unit ?? "",
-                        Address = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Address ?? "",
-                        City = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.City ?? "",
-                        Province = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Province ?? "",
-                        Postcode = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Postcode ?? ""
-                    }
+                        CustomerId = customerId,
+                        Customer = customer,
+                        CartItems = new List<CartItem>()
+                    };
+                    _context.Carts.Add(cart);
+                    await _context.SaveChangesAsync();
+                }
 
-                )).ToList() ?? new List<GetOrderItemResponseDTO>()
-            );
 
-            return Ok(cartDto);
-        }
+                var cartDto = new GetOrderResponseDTO(
+                    cart.CartId,
+                    cart.CustomerId,
+                    cart.CartItems?.Select(ci => new GetOrderItemResponseDTO(
+                        ci.CartItemId,
+                        ci.Item.MerchantId,
+                        ci.ItemId,
+                        ci.Item.ItemName ?? "Unknown Item",
+                        ci.Item.ItemPrice,
+                        ci.Item.ItemPic ?? "",
+                        ci.Quantity,
+                        new MerchantProfileDTO
+                        {
+                            UserId = ci.Item.Merchant.UserId,
+                            FirstName = ci.Item.Merchant.User.FirstName,
+                            LastName = ci.Item.Merchant.User.LastName,
+                            Phone = ci.Item.Merchant.User.Phone,
+                            Email = ci.Item.Merchant.User.Email,
+                            BusinessName = ci.Item.Merchant.BusinessName ?? "New Business",
+                            MerchantPic = ci.Item.Merchant.MerchantPic ?? "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png",
+                            MerchantDescription = ci.Item.Merchant.MerchantDescription ?? "",
+                            PreparingTime = ci.Item.Merchant.PreparingTime ?? 0,
+                            Type = "Main",
+                            Unit = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Unit ?? "",
+                            Address = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Address ?? "",
+                            City = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.City ?? "",
+                            Province = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Province ?? "",
+                            Postcode = ci.Item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Postcode ?? ""
+                        }
 
-        public async Task ApproveOrder(Order order)
-        {
-           
-        }
-  
-       /* public async Task<IActionResult> GetMerchantsByItems(List<int> itemId)
-        {
-            var item = await context.Items
-                .Include(i => i.Merchant)
-                .ThenInclude(m => m.User)
-                .ThenInclude(u => u.Addresses)
-                .FirstOrDefaultAsync(i => i.ItemId == itemId);
+                    )).ToList() ?? new List<GetOrderItemResponseDTO>()
+                );
 
-            if (item == null)
-            {
-                return NotFound(new { Error = "Merchant not found" });
+                return Ok(cartDto);
             }
 
-            var profile = new MerchantProfileDTO
-            {
-                UserId = item.Merchant.UserId,
-                FirstName = item.Merchant.User.FirstName,
-                LastName = item.Merchant.User.LastName,
-                Phone = item.Merchant.User.Phone,
-                Email = item.Merchant.User.Email,
-                BusinessName = item.Merchant.BusinessName ?? "New Business",
-                MerchantPic = item.Merchant.MerchantPic ?? "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png",
-                MerchantDescription = item.Merchant.MerchantDescription ?? "",
-                PreparingTime = item.Merchant.PreparingTime ?? 0,
-                Type = "Main",
-                Unit = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Unit ?? "",
-                Address = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Address ?? "",
-                City = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.City ?? "",
-                Province = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Province ?? "",
-                Postcode = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Postcode ?? ""
-            };
 
-            return Ok(profile);
-        }
-*/    }
-}
+
+            /* public async Task<IActionResult> GetMerchantsByItems(List<int> itemId)
+             {
+                 var item = await context.Items
+                     .Include(i => i.Merchant)
+                     .ThenInclude(m => m.User)
+                     .ThenInclude(u => u.Addresses)
+                     .FirstOrDefaultAsync(i => i.ItemId == itemId);
+
+                 if (item == null)
+                 {
+                     return NotFound(new { Error = "Merchant not found" });
+                 }
+
+                 var profile = new MerchantProfileDTO
+                 {
+                     UserId = item.Merchant.UserId,
+                     FirstName = item.Merchant.User.FirstName,
+                     LastName = item.Merchant.User.LastName,
+                     Phone = item.Merchant.User.Phone,
+                     Email = item.Merchant.User.Email,
+                     BusinessName = item.Merchant.BusinessName ?? "New Business",
+                     MerchantPic = item.Merchant.MerchantPic ?? "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png",
+                     MerchantDescription = item.Merchant.MerchantDescription ?? "",
+                     PreparingTime = item.Merchant.PreparingTime ?? 0,
+                     Type = "Main",
+                     Unit = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Unit ?? "",
+                     Address = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Address ?? "",
+                     City = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.City ?? "",
+                     Province = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Province ?? "",
+                     Postcode = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Postcode ?? ""
+                 };
+
+                 return Ok(profile);
+             }
+     */
+        
+    } }

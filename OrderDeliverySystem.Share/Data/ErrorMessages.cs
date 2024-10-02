@@ -29,7 +29,7 @@ namespace OrderDeliverySystem.Share.Data
         public const string InvalidPasswordFormatErrorMessage
             = "Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character";
 
-        public const string InvalidBitFormatErrorMessage
-            = "Input must be a bit(0 or 1).";
+        public const string InvalidPostcodeFormatErrorMessage
+            = "Postcode must be in the format A1A 1A1";
     }
 }
