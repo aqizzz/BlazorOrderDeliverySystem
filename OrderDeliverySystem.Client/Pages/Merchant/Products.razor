@@ -6,8 +6,11 @@
 @* @using OrderDeliverySystem.Share.Data.Models *@
 @using OrderDeliverySystem.Share.DTOs
 @using OrderDeliverySystem.Client.Shared.Common
+@using Microsoft.AspNetCore.Components.Authorization
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @rendermode InteractiveServer
 
 
@@ -120,7 +123,7 @@
         try
         {
             var httpClient = HttpClientFactory.CreateClient("API");
-            var response = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>($"api/items/merchant/{merchantId}");
+            var response = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>($"api/items/merchant");
 
             if (response != null)
             {
