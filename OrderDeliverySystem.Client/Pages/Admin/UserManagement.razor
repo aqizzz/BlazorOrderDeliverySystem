@@ -1,19 +1,197 @@
 ﻿@page "/user-management"
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@using OrderDeliverySystem.Client.Infrastructure.Services.Profile
+@using OrderDeliverySystem.Client.Shared.Common
+@using OrderDeliverySystem.Share.DTOs
+@inject IProfileService ProfileService
+@inject IAuthService AuthService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IAuthorizationService AuthorizationService
+@inject IDialogService DialogService
+@rendermode InteractiveAuto
+
+
 <h3>Users</h3>
 <MudContainer Class=" d-flex justify-content-center"  MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
         <MudPaper Class="px-16 pt-10 ma-2 " Elevation="3" Width="100%">
         <div class=" mt-2 d-flex justify-content-between ">
-            <MudText Class="pt-4" Typo="Typo.h4" GutterBottom="false">My Orders</MudText>
-            <MudFab Href="/admin/create" Style="color:rgba(112, 0, 0, 1);" Label="Create New Merchant" />
+            <MudText Class="pt-4" Typo="Typo.h4" GutterBottom="false">Users</MudText>
+            <MudButton Variant="Variant.Text" OnClick="@(()=>SetAllUsers())">All Users</MudButton>
+            <MudButton Variant="Variant.Text" OnClick="@(()=>SetMerchant())" >Merchant</MudButton>
+            <MudButton Variant="Variant.Text" OnClick="@(()=>SetWorker())" >Worker</MudButton>
+            <MudButton Variant="Variant.Text" OnClick="@(()=>SetCustomer())" >Customer</MudButton>
+            <MudFab Href="/admin/create" Style="color:rgba(112, 0, 0, 1);" Label="Create New Merchant/Worker" />
         </div>
         <MudDivider Class=" border-4" Style="border-color:rgba(112, 0, 0, 1);" />
-       
-@for(var i=0;i<10;i++){
-    
-    <MudText>This is test lint @(i+1)</MudText>
-}
+
+        <MudTable Items="@list" FixedHeader=true Hover="true" Height="400px" Loading="@isLoading" LoadingProgressColor="Color.Error" OnRowClick="OnRowClickCallback">
+            <HeaderContent>
+                <MudTh>Id</MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>Role</MudTh>
+                <MudTh>Email Address</MudTh>
+                <MudTh>Phone Number</MudTh>
+                <MudTh>Address</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Id">@context.UserId</MudTd>
+                <MudTd DataLabel="Name">@((@context.FirstName ?? "") + " " + (@context.LastName ?? ""))</MudTd>
+                <MudTd DataLabel="Role">@context.Role</MudTd>
+                <MudTd DataLabel="Email Address">@context.Email</MudTd>
+                <MudTd DataLabel="Phone Number">@context.Phone</MudTd>
+                <MudTd DataLabel="Address">
+                    @((@context.Unit ?? "") + ", " +
+                        (@context.Address ?? "") + ", " +
+                        (@context.City ?? "") + ", " +
+                        (@context.Province ?? "") + ", " +
+                        (@context.Postcode ?? ""))
+                </MudTd>
+                <MudTd DataLabel="Actions">
+                    @if (@context.Role == "Worker" || @context.Role == "Merchant")
+                    {
+                        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="() => EditUser(context.UserId, context.Role)">
+                            Edit
+                        </MudButton>
+
+                        <MudButton Variant="Variant.Filled" OnClick="() => DeleteUser(context.UserId)">
+                            Delete
+                        </MudButton>
+                    }
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[]{20, 50, 100}" />
+            </PagerContent>
+        </MudTable>
     </MudPaper>
 </MudContainer>
 @code {
+
+    private ClaimsPrincipal user;
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+
+    private IEnumerable<UserProfileDTO> list = new List<UserProfileDTO>();
+
+    private bool isLoading = true;
+
+    private string Role { get; set; }
+
+    private void EditUser(int userId, string role)
+    {
+        var parameters = new DialogParameters<EditUserDialog>
+        {
+            { x => x.UserId, userId },
+            { x => x.Role, role }
+        };
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraLarge };
+
+        DialogService.ShowAsync<EditUserDialog>($"Edit {role} Profile", parameters, options);
+    }
+
+    private void ViewUser(TableRowClickEventArgs<UserProfileDTO> args)
+    {
+        var item = args.Item;
+        var parameters = new DialogParameters<UserProfileDialog>
+    {
+        { x => x.UserId, item.UserId },
+        { x => x.Role, item.Role }
+    };
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraLarge };
+
+        DialogService.Show<UserProfileDialog>($"View {item.Role} Profile", parameters, options);
+    }
+
+    private EventCallback<TableRowClickEventArgs<UserProfileDTO>> OnRowClickCallback =>
+    EventCallback.Factory.Create<TableRowClickEventArgs<UserProfileDTO>>(this, ViewUser);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+        await LoadUsersList();
+    }
+
+    private async Task LoadUsersList()
+    {
+        if (authenticationState is not null)
+        {
+            if (user is not null)
+            {
+                var allUsers = await ProfileService.GetUsersList();
+                if (Role != null)
+                {
+                    list = allUsers.Where(u => u.Role == Role);
+                }
+                else
+                {
+                    list = allUsers;
+                }
+                isLoading = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task SetMerchant()
+    {
+        Role = "Merchant";
+        await LoadUsersList();
+        StateHasChanged();
+    }
+
+    private async Task SetWorker()
+    {
+        Role = "Worker";
+        await LoadUsersList();
+        StateHasChanged();
+    }
+
+    private async Task SetCustomer()
+    {
+        Role = "Customer";
+        await LoadUsersList();
+        StateHasChanged();
+    }
+
+    private async Task SetAllUsers()
+    {
+        Role = null;
+        await LoadUsersList();
+        StateHasChanged();
+    }
+
+
+
+    private async Task DeleteUser(int userId)
+    {
+        var parameters = new DialogParameters<Dialog>
+        {
+            { x => x.ContentText, "Do you really want to delete this user? This process cannot be undone." },
+            { x => x.ButtonText, "Delete" },
+            { x => x.Color, Color.Error }
+        };
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+
+        var dialog = DialogService.Show<Dialog>("Delete", parameters, options);
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await AuthService.DeleteUser(userId);
+            await LoadUsersList();
+            StateHasChanged();
+        }
+
+    }
 
 }

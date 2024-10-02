@@ -2,7 +2,7 @@
 
 namespace OrderDeliverySystem.Share.DTOs
 {
-    public class WorkerProfileDTO : UserProfileDTO
+    public class WorkerProfileDTO : CustomerProfileDTO
     {
         public required bool WorkerAvailability { get; set; }
 

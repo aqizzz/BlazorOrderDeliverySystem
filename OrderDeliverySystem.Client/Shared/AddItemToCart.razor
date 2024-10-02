@@ -1,18 +1,24 @@
 ﻿
+@using OrderDeliverySystem.Client.Infrastructure
+@using OrderDeliverySystem.Client.Infrastructure.Services.Cart
 @using OrderDeliverySystem.Share.DTOs.CartDTO
-@inject IHttpClientFactory HttpClientFactory
+@using OrderDeliverySystem.Client.Infrastructure.Extensions;
 @using MudBlazor
 @using System.Net.Http.Json
-@inject HttpClient httpClient
 @using OrderDeliverySystem.Share.DTOs
 @using OrderDeliverySystem.Client.Shared.Common
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@using OrderDeliverySystem.Client.Shared
+@inject HttpClient httpClient
+@inject TokenHelper tokenHelper
+@inject ICartService CartService
+@inject IHttpClientFactory HttpClientFactory
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
-@using OrderDeliverySystem.Client.Shared
 @inject IJSRuntime JSRuntime
+
 @rendermode InteractiveServer
 
 
@@ -58,6 +64,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        CartService.OnCartChanged += UpdateCartQuantity;
         await LoadMenuItems();
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -77,6 +84,28 @@
     private List<ViewItemDTO> Items = new List<ViewItemDTO>();
     private List<string> types = new List<string>();
     private bool isLoading = true;
+
+    private async Task LoadCartQuantity()
+    {
+        try
+        {
+            var response = await CartService.GetTotalCartQuantity();
+            if (response.IsSuccessStatusCode)
+            {
+                await response.Content.ReadFromJsonAsync<int>();
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error loading cart quantity: " + ex.Message);
+        }
+    }
+
+    private void UpdateCartQuantity()
+    {
+        _ = LoadCartQuantity(); // Refresh cart quantity when cart changes
+    }
 
     private async Task LoadMenuItems()
     {
@@ -139,13 +168,15 @@
 
             Console.WriteLine($"Adding item {itemId} with quantity {quantity} for customer {customerId}");
 
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
 
-            var response = await httpClient.PostAsJsonAsync($"api/cart/addCart/{customerId}", cartItemDto);
+            var response = await httpClient.PostAsJsonAsync($"api/cart/addCart", cartItemDto);
 
 
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine($"Item {itemId} added to cart successfully.");
+                CartService.NotifyCartChanged();
             }
             else
             {
@@ -158,6 +189,11 @@
 
             Console.WriteLine($"Error adding item to cart: {ex.Message}");
         }
+
+    }
+    public void Dispose()
+    {
+        CartService.OnCartChanged -= UpdateCartQuantity; 
     }
 
 }

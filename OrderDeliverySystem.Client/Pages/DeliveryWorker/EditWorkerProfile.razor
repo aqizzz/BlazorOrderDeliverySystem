@@ -1,7 +1,7 @@
 ﻿@page "/worker-profile/edit"
 
 @using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Authorization
 @using MudBlazor
 @using Newtonsoft.Json
 @using OrderDeliverySystem.Share.DTOs
@@ -181,7 +181,14 @@ else if (model != null)
                 <MudItem xs="12" Class="object-center">
                         <MudButton Class="mx-2" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Profile</MudButton>
                         <MudButton Class="mx-2" ButtonType="ButtonType.Reset" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LockReset" Color="Color.Primary">Reset</MudButton>
-                        <MudButton Class="mx-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/worker-profile">Cancel</MudButton>
+                        <AuthorizeView Roles="Worker" Context="WorkerOnly">
+                            <Authorized>
+                                <MudButton Class="mx-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/worker-profile">Cancel</MudButton>
+                            </Authorized>
+                            <NotAuthorized>
+                                <MudButton Class="mx-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/user-management">Cancel</MudButton>
+                            </NotAuthorized>
+                        </AuthorizeView>
                 </MudItem>
             </MudGrid>
         </EditForm>
@@ -196,7 +203,6 @@ else if (model != null)
 
     [Parameter]
     public int UserId { get; set; }
-
 
     private WorkerProfileDTO model = new WorkerProfileDTO { WorkerAvailability = false };
     private ClaimsPrincipal user;

@@ -51,14 +51,14 @@
         }
         else if (SelectedOption == "Radio 2")
         {
-<MudContainer Class="my-10 d-flex justify-content-center align-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
+
     @if (isLoading)
     {
         <p>Loading profile...</p>
     }
     else if (model != null)
     {
-        <MudPaper Class="px-16 py-10 ma-2" Elevation="3">
+     
 
             <EditForm Model="@model" OnValidSubmit="HandleUpdateProfile" FormName="profileForm">
                     @if (ShowErrors)
@@ -74,7 +74,7 @@
                 <DataAnnotationsValidator />
                 <MudGrid>
                     <MudItem xs="12">
-                        <MudText Class="py-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">Enter your Address</MudText>
+                        <MudText Class="py-4" Typo="Typo.h6" Align="Align.Start" GutterBottom="false">Enter your Address</MudText>
                         <div Style="display:none;">
                             <MudTextField id="userId" @bind-Value="model.UserId" ReadOnly="true" />
                         </div>
@@ -89,7 +89,7 @@
                                         </MudItem>
                                         <MudItem xs="8">
                                             <MudField Underline="false">
-                                                <MudTextField id="firstName" @bind-Value="model.FirstName" For="@(() => model.FirstName)" Variant="Variant.Filled" />
+                                                <MudTextField id="firstName" @bind-Value="model.FirstName" For="@(() => model.FirstName)" Variant="Variant.Filled"/>
                                             </MudField>
                                         </MudItem>
 
@@ -178,15 +178,13 @@
                     </MudItem>
 
                     <MudItem xs="12" Class="d-flex justify-content-start">
-                        <MudButton Class="m-2" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Profile</MudButton>
+                        <MudButton Class="m-2" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Address</MudButton>
                         <MudButton Class="m-2" ButtonType="ButtonType.Reset" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LockReset" Color="Color.Primary">Reset</MudButton>
                         <MudButton Class="m-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/customer-profile">Cancel</MudButton>
                     </MudItem>
                 </MudGrid>
             </EditForm>
-        </MudPaper>
-        }          
-</MudContainer>
+        }         
 }
 
 @code {
@@ -198,7 +196,7 @@
     public int UserId { get; set; }
 
     public string SelectedOption { get; set; } = "Radio 1";
-    private UserProfileDTO model = new(); // Ensure model is initialized
+    private CustomerProfileDTO model = new(); // Ensure model is initialized
 
 
 

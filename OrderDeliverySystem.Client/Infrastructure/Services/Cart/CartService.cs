@@ -23,7 +23,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Cart
 
         public event Action OnCartChanged;
 
-        private void NotifyCartChanged()
+        public void NotifyCartChanged()
         {
             OnCartChanged?.Invoke();  
         }

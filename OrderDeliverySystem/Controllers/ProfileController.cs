@@ -144,7 +144,7 @@ namespace OrderDeliverySystem.Controllers
 
         [HttpPut("edit")]
         [Authorize(Roles = "Admin, Customer")]
-        public async Task<IActionResult> Edit([FromBody] UserProfileDTO dto)
+        public async Task<IActionResult> Edit([FromBody] CustomerProfileDTO dto)
         {
             var loggedInUserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
@@ -309,6 +309,51 @@ namespace OrderDeliverySystem.Controllers
             return Ok("Profile has been successfully updated");
         }
 
+        [HttpGet("users")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<IEnumerable<UserProfileDTO>>> GetUsers()
+        {
+            var users = await context.Users
+                .Where(u => u.Role != "Admin")
+                .ToListAsync();
+
+            if (users == null || !users.Any()) // Check if the list is null or empty
+            {
+                return NotFound(new { Error = "User not found" });
+            }
+
+
+            var results = new List<UserProfileDTO>();
+            var userIds = users.Select(m => m.UserId).ToList();
+            var addresses = await context.Addresses
+                .Where(a => userIds.Contains(a.UserId) && a.Type == "Main")
+                .ToListAsync();
+
+            foreach (var user in users)
+            {
+                var address = addresses.FirstOrDefault(a => a.UserId == user.UserId);
+
+                var profile = new UserProfileDTO
+                {
+                    UserId = user.UserId,
+                    FirstName = user.FirstName ?? "",
+                    LastName = user.LastName ?? "",
+                    Email = user.Email ?? "",
+                    Phone = user.Phone ?? "",
+                    Role = user.Role,
+                    Type = "Main",
+                    Unit = address?.Unit ?? "",
+                    Address = address?.Address ?? "",
+                    City = address?.City ?? "",
+                    Province = address?.Province ?? "",
+                    Postcode = address?.Postcode ?? ""
+                };
+
+                results.Add(profile);
+            }
+            return Ok(results);
+        }
+
         [HttpGet("merchants")]
         //[Authorize(Roles = "Admin, Merchant")]
         public async Task<ActionResult<IEnumerable<MerchantProfileDTO>>> GetMerchants()
@@ -336,36 +381,20 @@ namespace OrderDeliverySystem.Controllers
                 var user = users.FirstOrDefault(a => a.UserId == merchant.UserId);
                 var address = addresses.FirstOrDefault(a => a.UserId == merchant.UserId);
 
-                var profile = new MerchantProfileDTO
-                {
-                    UserId = merchant.UserId,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Phone = user.Phone,
-                    Email = user.Email,
-                    BusinessName = merchant.BusinessName ?? "New Business",
-                    MerchantPic = merchant.MerchantPic ?? DefaultPic,
-                    MerchantDescription = merchant.MerchantDescription ?? "",
-                    PreparingTime = merchant.PreparingTime ?? 0,
-                    Unit = address?.Unit ?? "",
-                    Address = address?.Address ?? "",
-                    City = address?.City ?? "",
-                    Province = address?.Province ?? "",
-                    Postcode = address?.Postcode ?? ""
-                };
+                var profile = await GetMerchantProfileAsync(merchant.UserId);
 
                 results.Add(profile);
             }
             return Ok(results);
         }
-        private async Task<UserProfileDTO?> GetUserProfile(int userId)
+        private async Task<CustomerProfileDTO?> GetUserProfile(int userId)
         {
             var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             if (user == null) return null;
 
             var address = await context.Addresses.FirstOrDefaultAsync(a => a.UserId == userId && a.Type == "Main");
 
-            return new UserProfileDTO
+            return new CustomerProfileDTO
             {
                 UserId = user.UserId,
                 FirstName = user.FirstName ?? "",

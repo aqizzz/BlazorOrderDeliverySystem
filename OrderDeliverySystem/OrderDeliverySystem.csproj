@@ -12,6 +12,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+    <None Include="..\OrderDeliverySystem.Client\Pages\Admin\UserProfileDialog.razor" Link="UserProfileDialog.razor" />
     <None Include="..\OrderDeliverySystem.Client\Pages\ErrorsList.razor" Link="ErrorsList.razor" />
   </ItemGroup>
 
