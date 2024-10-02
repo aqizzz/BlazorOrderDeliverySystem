@@ -252,6 +252,15 @@ else if (model != null)
         if (result.Succeeded)
         {
             ShowErrors = false;
+
+            if (user.IsInRole("Admin"))
+            {
+                NavigationManager.NavigateTo("/user-management");
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/worker-profile");
+            }
         }
         else
         {
