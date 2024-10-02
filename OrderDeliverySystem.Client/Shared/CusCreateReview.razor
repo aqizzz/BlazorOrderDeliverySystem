@@ -1,0 +1,101 @@
+﻿@page "/create-review"
+
+@inject ISnackbar Snackbar
+@inject IHttpClientFactory HttpClientFactory
+@inject IAuthService AuthService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ReviewService ReviewService
+@inject NavigationManager NavigationManager
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using MudBlazor
+@using System.Net.Http.Json
+@using OrderDeliverySystem.Share.DTOs
+@using OrderDeliverySystem.Share.Data.Models
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@* @using OrderDeliverySystem.Share.Data *@
+@using System.Net.Http.Headers
+@using Microsoft.AspNetCore.Authorization
+@using OrderDeliverySystem.Client.Infrastructure.Extensions
+@using OrderDeliverySystem.Client.Infrastructure.Services.Review
+@using OrderDeliverySystem.Client.Shared.Common
+@using OrderDeliverySystem.Share.DTOs.ReviewDTO
+@rendermode InteractiveServer
+
+<MudContainer Class="my-10 d-flex justify-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
+    <MudPaper Class="px-16 pt-10 ma-2 " Elevation="3" Width="100%">
+        <AuthorizeView Roles="Customer">
+            <Authorized>
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.h5">customer create reviews</MudText>
+                    <EditForm Model="@newReview" OnValidSubmit="CreateReview" Context="CreateReviewForm">
+                        <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
+                        <MudTextField @bind-Value="newReview.OrderId" Label="OrderId" Required="true" />
+                        <MudTextField @bind-Value="newReview.Rating" Label="Rating" />                    
+                        <MudTextField @bind-Value="newReview.Comment" Label="Comment"/>
+                        <br />
+                        @* <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Error" OnClick="@(()=>CreateReview())">Submit</MudButton> *@
+                        <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Error">Submit</MudButton>
+                        <MudButton Type="button" Variant="Variant.Filled" Color="Color.Secondary" OnClick="ResetForm" >Cancel</MudButton>
+                    </EditForm>
+                    <MudSnackbarProvider />
+                </MudPaper>
+            </Authorized>
+            <NotAuthorized>
+                <MudText Typo="Typo.h5" Color="Color.Error">Unauthorized: You do not have permission to create reviews.</MudText>
+            </NotAuthorized>
+        </AuthorizeView>
+    </MudPaper>
+</MudContainer>
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+    private CreateReviewRequestDTO newReview = new CreateReviewRequestDTO
+        {
+            OrderId = 0,
+            Rating = 5,
+            Comment = "",
+        };
+
+    private bool isAuthorized = false;
+    private string token;
+    private ClaimsPrincipal user;
+
+    public bool ShowErrors { get; set; } = false;
+    public string Errors { get; set; } = string.Empty;
+    // public List<string> Errors { get; set; } = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationState;
+        user = authState.User;
+
+    }
+
+    private async Task CreateReview()
+    {
+        var result = await this.ReviewService.AddReview(newReview); // Update customer data
+
+        if (result.IsSuccessStatusCode)
+        {
+            ShowErrors = false;
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            Errors = await result.Content.ReadAsStringAsync();  // Convert error to string
+            ShowErrors = true;
+        }
+    }
+
+    private void ResetForm()
+    {
+        newReview = new CreateReviewRequestDTO
+            {
+                OrderId = 0,
+                Rating = 5,
+                Comment = "",
+            };
+    }
+}
