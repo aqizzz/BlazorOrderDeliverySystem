@@ -45,10 +45,10 @@
                 <MudTd DataLabel="Email Address">@context.Email</MudTd>
                 <MudTd DataLabel="Phone Number">@context.Phone</MudTd>
                 <MudTd DataLabel="Address">
-                    @((@context.Unit ?? "") + ", " +
-                        (@context.Address ?? "") + ", " +
-                        (@context.City ?? "") + ", " +
-                        (@context.Province ?? "") + ", " +
+                    @((@context.Unit != "" ? @context.Unit + ", " : "") +
+                        (@context.Address != "" ? @context.Address + ", " : "") +
+                        (@context.City != "" ? @context.City + ", " : "") +
+                        (@context.Province != "" ? @context.Province + ", " : "") +
                         (@context.Postcode ?? ""))
                 </MudTd>
                 <MudTd DataLabel="Actions">
@@ -82,17 +82,20 @@
 
     private string Role { get; set; }
 
-    private void EditUser(int userId, string role)
+    private async Task EditUser(int userId, string role)
     {
         var parameters = new DialogParameters<EditUserDialog>
-        {
-            { x => x.UserId, userId },
-            { x => x.Role, role }
-        };
+    {
+        { x => x.UserId, userId },
+        { x => x.Role, role }
+    };
 
         var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraLarge };
 
-        DialogService.ShowAsync<EditUserDialog>($"Edit {role} Profile", parameters, options);
+        var dialogReference = DialogService.Show<EditUserDialog>($"Edit {role} Profile", parameters, options);
+
+            await LoadUsersList();
+            StateHasChanged();
     }
 
     private void ViewUser(TableRowClickEventArgs<UserProfileDTO> args)
