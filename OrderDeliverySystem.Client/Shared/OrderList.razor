@@ -194,10 +194,9 @@
 
         if (thisOrder.Status != null)
         {
-            if (thisOrder.Status == "Pending")
-            {
-                order.Status = "Approved"; // Update status
-            }
+            
+            order.Status = thisOrder.Status; // Update status
+            
            
         }
 

@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Infrastructure\Services\Orders\PendingOrders.razor" />
     <Content Remove="Pages\ItemList.razor" />
   </ItemGroup>
 
@@ -38,10 +39,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <_ContentIncludedByDefault Remove="Infrastructure\Services\Orders\PendingOrders.razor" />
 	  <_ContentIncludedByDefault Remove="Pages\ItemList.razor" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Include="Infrastructure\Services\Orders\PendingOrders.razor" />
 	  <None Include="Pages\ItemList.razor" />
 	</ItemGroup>
 
@@ -49,6 +52,10 @@
 	  <Content Update="Shared\OrderList.razor">
 	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <UpToDateCheckInput Remove="Infrastructure\Services\Orders\PendingOrders.razor" />
 	</ItemGroup>
 
 </Project>
