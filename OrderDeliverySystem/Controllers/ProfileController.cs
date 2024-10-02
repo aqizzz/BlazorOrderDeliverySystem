@@ -3,11 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
 using OrderDeliverySystem.Share.Data.Models;
-using static OrderDeliverySystem.Share.Data.Constants.Merchant;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using static OrderDeliverySystem.Share.Data.Constants;
-using static MudBlazor.CategoryTypes;
 
 namespace OrderDeliverySystem.Controllers
 {
@@ -58,6 +55,18 @@ namespace OrderDeliverySystem.Controllers
             }
 
             return Ok(profile);
+        }
+
+        [HttpGet("worker/availability")]
+        [Authorize(Roles = "Worker")]
+        public async Task<IActionResult> GetWorkerAvailability()
+        {
+            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            var worker = await context.DeliveryWorkers.FirstOrDefaultAsync(d => d.UserId == userId);
+            if (worker == null) return NotFound(new { Error = "Worker not found" });
+
+            return Ok(worker.WorkerAvailability);
         }
 
         [HttpGet("worker/{userId}")]
@@ -248,6 +257,21 @@ namespace OrderDeliverySystem.Controllers
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
             return Ok("Profile has been successfully updated");
+        }
+
+        [HttpPut("worker/availability")]
+        [Authorize(Roles = "Worker")]
+        public async Task<IActionResult> EditWorkerAvailability([FromBody] AvailabilityUpdateDTO model)
+        {
+            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            var worker = await context.DeliveryWorkers.FirstOrDefaultAsync(d => d.UserId == userId);
+            if (worker == null) return NotFound(new { Error = "Worker not found" });
+
+            worker.WorkerAvailability = model.Availability;
+            await context.SaveChangesAsync();  
+
+            return Ok(new { Success = true });
         }
 
         [HttpPut("edit/merchant")]
