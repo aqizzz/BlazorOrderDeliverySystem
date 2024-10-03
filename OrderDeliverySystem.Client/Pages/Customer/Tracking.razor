@@ -156,6 +156,8 @@ else
         }
         Console.WriteLine($"MCoordinates: {MerchantLat}, { MerchantLng}");
         Console.WriteLine($"CCoordinates: {CustomerLat}, {CustomerLng}");
+
+        await JSRuntime.InvokeVoidAsync("setUpSignalR", orderId, MerchantLat, MerchantLng, CustomerLat, CustomerLng);
     }
 
     protected override void OnInitialized()
