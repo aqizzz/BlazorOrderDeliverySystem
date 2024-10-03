@@ -43,7 +43,7 @@
 			<MudTd>@context.Merchant.BusinessName</MudTd>
 			<MudTd>@context.Customer.User.Addresses?.FirstOrDefault()?.FullAddress</MudTd>
 			<MudTd>@context.OrderItems.Count()</MudTd>
-			<MudTd>@context.DeliveryWorker?.CommissionRate</MudTd>
+			<MudTd>@context.DeliveryWorker?.CommissionRate.ToString("C2", System.Globalization.CultureInfo.CreateSpecificCulture("en-CA"))</MudTd>
 			<MudTd></MudTd>
 			</RowTemplate>
 	</MudTable>
@@ -99,7 +99,7 @@
 	{
 		try
 		{
-			orderHistory = await Orderservice.GetOrdersTableByRole("worker", true);
+			orderHistory = await Orderservice.GetOrdersTableByRole("worker", false);
 			Console.WriteLine($"Order History Count: {orderHistory.Count}");
 			if (orderHistory != null)
 			{

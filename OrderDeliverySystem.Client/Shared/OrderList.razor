@@ -58,14 +58,6 @@
 
                 <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Cancel" Color="Color.Default" OnClick="() => CancelOrder(context)" />
             }
-            else if (context.Status.Equals("Approved"))
-            {
-                <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="In Deliveryy" Style="color: rgba(168, 0, 0, 1);" OnClick="() => UpdateOrder(context)" />
-            }
-            else if (context.Status.Equals("In Delivery"))
-            {
-                <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Finish Delivery" Style="color: rgba(168, 0, 0, 1);" OnClick="() => UpdateOrder(context)" />
-            }
             else
             {
                 <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="@context.Status" Style="color: rgba(168, 0, 0, 1);" Disabled="true" />
@@ -97,6 +89,8 @@
     [Parameter]
     public UpdateOrderDTO order { get; set; }
 
+    public bool ShowErrors { get; set; } = false;
+    public string Errors { get; set; } = string.Empty;
 
 
     private bool dense = false;
@@ -195,14 +189,20 @@
         // Perform the update
         try
         {
-            await Orderservice.UpdateOrder(order);
-            if (UserId<=6)
+            var result=await Orderservice.ApproveOrder(order);
+            
+            Navigation.NavigateTo("/merchant-orders", forceLoad: true);
+            if (result.Succeeded)
             {
-                Navigation.NavigateTo("/merchant-orders", forceLoad: true);
+                ShowErrors = false;
+                StateHasChanged();
+                NavigationManager.NavigateTo("/my-orders");
+
             }
             else
             {
-                Navigation.NavigateTo("/merchant-orders", forceLoad: true);
+                Errors = result.Error;
+                ShowErrors = true;
             }
 
         }

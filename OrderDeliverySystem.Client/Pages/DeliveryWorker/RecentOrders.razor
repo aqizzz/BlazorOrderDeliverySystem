@@ -149,7 +149,7 @@ else
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-       
+
         if (user.Identity.IsAuthenticated)
         {
             if (user.IsInRole("Worker"))
@@ -165,11 +165,11 @@ else
         {
             Console.WriteLine("User is not authenticated");
         }
-       
+
     }
 
-    
-  
+
+
     private async Task LoadOrders()
     {
         try
@@ -240,12 +240,20 @@ else
 
 
         }
-
+        var status = updateOrder.Status;
         // Perform the update
         try
         {
-            await OrderService.UpdateOrder(updateOrder);
-            Navigation.NavigateTo("/merchant-orders", forceLoad: true);
+            if (status.Equals("Approved"))
+            {
+                await OrderService.AssignOrder(updateOrder);
+            }
+            else if (status.Equals("In Delivery"))
+            {
+                await OrderService.FinishOrder(updateOrder);
+            }
+
+            Navigation.NavigateTo("/worker-recent", forceLoad: true);
         }
         catch (Exception ex)
         {

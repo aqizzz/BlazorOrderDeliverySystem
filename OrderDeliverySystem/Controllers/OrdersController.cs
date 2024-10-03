@@ -50,7 +50,7 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("create")]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult> CreateOrder(CreateOrderDTO orderDto)
         {
@@ -136,7 +136,7 @@ namespace OrderDeliverySystemApi.Controllers
                     PriceAtOrder = C.Item.ItemPrice,
                     OrderId = newOrderId,
                     Discount = 0.00m,
-                    Tax = 0.15m,
+                    Tax = orderDto.Tax,
                     Order = order, // Set the Order property
                     Item = C.Item,  // Set the Item property (required)
                 }).ToList();
@@ -910,7 +910,7 @@ namespace OrderDeliverySystemApi.Controllers
 
             // update the date of worker
             worker.WorkerAvailability = false;
-            worker.LastTaskAssigned = DateTime.Now;
+         
 
             _context.Entry(worker).State = EntityState.Modified;
             await _context.SaveChangesAsync();

@@ -66,7 +66,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             var httpClient = this.httpClientFactory.CreateClient("API");
 
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
-            var uri = $"{Base}";
+            var uri = $"{Base}/create";
             return await httpClient.PostAsJsonAsync(uri, order).ToResult() ;
         }
     
