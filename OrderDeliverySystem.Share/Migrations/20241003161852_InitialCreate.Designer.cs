@@ -12,11 +12,7 @@ using OrderDeliverySystem.Share.Data;
 namespace OrderDeliverySystem.Share.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-<<<<<<<< HEAD:OrderDeliverySystem.Share/Migrations/20241002012801_InitialCreate.Designer.cs
-    [Migration("20241002012801_InitialCreate")]
-========
-    [Migration("20241003062809_InitialCreate")]
->>>>>>>> b7652cdbe6581dc3ef7fdf714043a019aa33b454:OrderDeliverySystem.Share/Migrations/20241003062809_InitialCreate.Designer.cs
+    [Migration("20241003161852_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -360,7 +356,8 @@ namespace OrderDeliverySystem.Share.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.HasIndex("OrderId");
+                    b.HasIndex("OrderId")
+                        .IsUnique();
 
                     b.ToTable("Reviews", t =>
                         {
@@ -609,8 +606,8 @@ namespace OrderDeliverySystem.Share.Migrations
                         .IsRequired();
 
                     b.HasOne("OrderDeliverySystem.Share.Data.Models.Order", "Order")
-                        .WithMany("Reviews")
-                        .HasForeignKey("OrderId")
+                        .WithOne("Reviews")
+                        .HasForeignKey("OrderDeliverySystem.Share.Data.Models.Review", "OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 

@@ -353,7 +353,8 @@ namespace OrderDeliverySystem.Share.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.HasIndex("OrderId");
+                    b.HasIndex("OrderId")
+                        .IsUnique();
 
                     b.ToTable("Reviews", t =>
                         {
@@ -602,8 +603,8 @@ namespace OrderDeliverySystem.Share.Migrations
                         .IsRequired();
 
                     b.HasOne("OrderDeliverySystem.Share.Data.Models.Order", "Order")
-                        .WithMany("Reviews")
-                        .HasForeignKey("OrderId")
+                        .WithOne("Reviews")
+                        .HasForeignKey("OrderDeliverySystem.Share.Data.Models.Review", "OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 

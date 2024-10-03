@@ -296,7 +296,6 @@ namespace OrderDeliverySystem.Share.Migrations
                 name: "OrderItems",
                 columns: table => new
                 {
-<<<<<<<< HEAD:OrderDeliverySystem.Share/Migrations/20241002012801_InitialCreate.cs
                     OrderItemId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     ItemId = table.Column<int>(type: "INTEGER", nullable: false),
@@ -305,16 +304,6 @@ namespace OrderDeliverySystem.Share.Migrations
                     OrderId = table.Column<int>(type: "INTEGER", nullable: false),
                     Discount = table.Column<decimal>(type: "decimal(5, 2)", nullable: false),
                     Tax = table.Column<decimal>(type: "decimal(5, 2)", nullable: false)
-========
-                    OrderItemId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ItemId = table.Column<int>(type: "int", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    PriceAtOrder = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    OrderId = table.Column<int>(type: "int", nullable: false),
-                    Discount = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
-                    Tax = table.Column<decimal>(type: "decimal(5,2)", nullable: false)
->>>>>>>> b7652cdbe6581dc3ef7fdf714043a019aa33b454:OrderDeliverySystem.Share/Migrations/20241003062809_InitialCreate.cs
                 },
                 constraints: table =>
                 {
@@ -462,7 +451,8 @@ namespace OrderDeliverySystem.Share.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Reviews_OrderId",
                 table: "Reviews",
-                column: "OrderId");
+                column: "OrderId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",
