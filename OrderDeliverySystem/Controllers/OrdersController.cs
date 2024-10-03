@@ -50,7 +50,7 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
 
-        [HttpPost("create")]
+        [HttpPost]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult> CreateOrder(CreateOrderDTO orderDto)
         {
@@ -69,6 +69,10 @@ namespace OrderDeliverySystemApi.Controllers
                 return NotFound(new { Error = "Cart not found." });
             }
 
+                return NotFound($"No worker was found.");
+            }
+                return NotFound($"No worker was found.");
+            }
             var customerAddress = await _context.Addresses
               .Where(a => a.UserId == customer.UserId)
               .FirstOrDefaultAsync(); // ToListAsync if it's a collection
@@ -81,13 +85,13 @@ namespace OrderDeliverySystemApi.Controllers
             var orders = orderDto.Orders;
             if (orders == null)
             {
-                return NotFound(new { Error = "No order found." });
-            }
 
             foreach (var thisOrder in orders.Where(o => o != null))
             {
                 if (thisOrder.Merchant == null)
                 {
+                    return NotFound(new { Error = "No merchant in this Order." });
+                }
                     return NotFound(new { Error = "No merchant in this Order." });
                 }
 
@@ -104,8 +108,6 @@ namespace OrderDeliverySystemApi.Controllers
                 if (merchantAddress == null)
                 {
                     return NotFound(new { Error = $"Address with ID {merchant.UserId} not found." });
-                }
-
                 var totalAmount = thisOrder.CartItems.Sum(ci => ci.Quantity * ci.ItemPrice) * (1 + orderDto.Tax) + orderDto.DeliveryFee;
 
                 var order = new Order
@@ -120,6 +122,8 @@ namespace OrderDeliverySystemApi.Controllers
                     UpdatedAt = DateTime.Now,
                     Merchant = merchant,
                     Customer = customer,
+                    OrderItems = new List<OrderItem>(),
+                };
                     OrderItems = new List<OrderItem>(),
                 };
 
@@ -151,8 +155,6 @@ namespace OrderDeliverySystemApi.Controllers
 
         }
 
-        [HttpPut("update")]
-
         public async Task<IActionResult> UpdateOrder(UpdateOrderDTO updatedOrder)
         {
             if (updatedOrder == null)
@@ -166,11 +168,13 @@ namespace OrderDeliverySystemApi.Controllers
             {
                 return NotFound(new { Error = $"No order need to be updated." });
             }
-
+                return NotFound(new { Error = $"No order need to be updated." });
             var status = updatedOrder.Status;
             if (status == null)
             {
                 return NotFound(new { Error = "No status need to be updated." });
+            }
+            var order = await _context.Orders.FindAsync(orderId);
             }
             var order = await _context.Orders.FindAsync(orderId);
             if (order == null)
@@ -185,8 +189,6 @@ namespace OrderDeliverySystemApi.Controllers
             }
             else if (status == "Approved")
             {
-                order.Status = "In Delivery";
-
             }
             else if (status == "In Delivery")
             {
@@ -198,6 +200,8 @@ namespace OrderDeliverySystemApi.Controllers
             }
 
 
+
+
             // Update order fields
 
 
@@ -207,6 +211,37 @@ namespace OrderDeliverySystemApi.Controllers
             _context.Entry(order).State = EntityState.Modified;
 
             await _context.SaveChangesAsync();
+
+            if (order.Status == "Approved")
+            {
+                var worker = await _context.DeliveryWorkers
+                    .Where(w => w.WorkerAvailability == true) // Ensure worker is available and has a task history
+                    .OrderBy(w => w.LastTaskAssigned) // Get the worker with the oldest LastTaskAssigned date
+                    .FirstOrDefaultAsync();
+
+                if (worker == null)
+                {
+                    return NotFound("No worker can take this Order");
+                }
+
+                var workerId = order.WorkerId;
+                if (workerId == null || workerId <= 0)
+                {
+                    return NotFound("No worker can take this Order");
+                }
+                var exitorder = await _context.Orders.Where(o => o.Status.Equals("Approved") && o.WorkerId == workerId).ToListAsync();
+
+                if (exitorder != null && exitorder.Count > 1)
+                {
+                    return NotFound("No worder can be found");
+
+                }
+                else if (exitorder.Count == 1)
+                {
+                    worker.WorkerAvailability = false;
+                }
+
+                _context.Entry(worker).State = EntityState.Modified;
 
             if (order.Status == "Approved")
             {
@@ -289,6 +324,8 @@ namespace OrderDeliverySystemApi.Controllers
 
             await _context.SaveChangesAsync();
 
+            await _context.SaveChangesAsync();
+
 
             return Ok("Order has been successfully updated");
         }
@@ -347,10 +384,10 @@ namespace OrderDeliverySystemApi.Controllers
             return Ok(orderHistory);
         }
 
-        [HttpPut("cancel")]
-
         public async Task<IActionResult> CancelOrder(UpdateOrderDTO order)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null)
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userIdClaim == null)
             {
@@ -371,10 +408,16 @@ namespace OrderDeliverySystemApi.Controllers
             if (thisOrder == null)
             {
                 return NotFound("Order not found.");
+            var thisOrder = await _context.Orders.FindAsync(order.OrderId);
+            if (thisOrder == null)
+            {
+                return NotFound("Order not found.");
             }
 
             // Update the order status to 'Cancelled'
             thisOrder.Status = "Cancelled";
+
+            // Entity is being tracked, just save changes
 
             // Entity is being tracked, just save changes
             await _context.SaveChangesAsync();
@@ -861,8 +904,6 @@ namespace OrderDeliverySystemApi.Controllers
                  City = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.City ?? "",
                  Province = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Province ?? "",
                  Postcode = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Postcode ?? ""
-             };
-
              return Ok(profile);
          }
 
@@ -1017,6 +1058,8 @@ namespace OrderDeliverySystemApi.Controllers
             return Ok("Order has been successfully updated");
         }
 
+
+    }
 
     }
 }
