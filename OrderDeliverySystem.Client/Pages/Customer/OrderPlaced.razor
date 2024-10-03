@@ -155,7 +155,7 @@
     {
         Tax = TaxRate,
         DeliveryFee = DeliveryFee,
-        Orders = new List<OrderByMerchanDTO>()
+        Orders = new List<OrderByMerchantDTO>()
     };
 
     private const decimal TaxRate = 0.15m;
@@ -179,7 +179,7 @@
     private List<int> merchantIds = new();
     private List<MerchantProfileDTO> merchants = new();
     private List<GetOrderItemResponseDTO> cartItems = new();
-    public List<OrderByMerchanDTO> Orders = new List<OrderByMerchanDTO>();
+    public List<OrderByMerchantDTO> Orders = new List<OrderByMerchantDTO>();
 
     bool success;
 
@@ -244,7 +244,7 @@
                         if (!merchantIds.Contains(merchanId))
                         {
                             merchantIds.Add(merchanId);
-                            var order = new OrderByMerchanDTO();
+                            var order = new OrderByMerchantDTO();
                             order.Merchant = merchant;
                             order.CartItems.Add(theItem);
                             Orders.Add(order);

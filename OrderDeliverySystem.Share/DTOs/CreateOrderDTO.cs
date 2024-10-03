@@ -10,7 +10,7 @@ namespace OrderDeliverySystem.Share.DTOs
     {
         public decimal Tax { get; set; }
         public decimal DeliveryFee { get; set; }
-        public List<OrderByMerchanDTO>? Orders { get; set; }
+        public List<OrderByMerchantDTO>? Orders { get; set; }
 
     }
 }

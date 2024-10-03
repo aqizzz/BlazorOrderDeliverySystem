@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace OrderDeliverySystem.Share.DTOs
 {
-    public class OrderByMerchanDTO
+    public class OrderByMerchantDTO
     {
         public MerchantProfileDTO? Merchant { get; set; }
 
