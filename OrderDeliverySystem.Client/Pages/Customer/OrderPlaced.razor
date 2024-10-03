@@ -14,6 +14,7 @@
 @using System.Security.Claims
 @using OrderDeliverySystem.Client.Infrastructure.Services.Orders
 @using OrderDeliverySystem.Client.Infrastructure.Services.Profile
+@using System.Globalization
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
@@ -37,9 +38,7 @@
         <MudContainer Class="my-3">
             <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Start" GutterBottom="true" Style="color:rgba(112, 0, 0, 1);">Customer Info</MudText>
             <MudDivider Class=" border-2" Style="border-color:rgba(112, 0, 0, 1);" />
-
             <AddressCreate />
-
         </MudContainer>
         <MudContainer Class="my-3">
             <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Start" GutterBottom="true" Style="color:rgba(112, 0, 0, 1);">Place Order</MudText>
@@ -52,12 +51,11 @@
                     }
                     else
                     {
-                        @foreach (var merchant in merchants)
+                        @foreach (var order in Orders)
                         {
 
-                            @if (merchant != null)
+                            @if (order != null)
                             {
-
                                 <MudGrid Class="ps-10 ">
                                     <MudItem xs="12" sm="12" md="6">
                                         <MudGrid Class="ps-10 ">
@@ -66,50 +64,49 @@
                                             </MudItem>
 
                                             <MudItem xs="8">
-                                                <MudText Typo="Typo.h6">@merchant.BusinessName</MudText>
-                                                <MudText Typo="Typo.body2">@merchant.MerchantDescription</MudText>
+                                                <MudText Typo="Typo.h6">@order?.Merchant?.BusinessName</MudText>
+                                                <MudText Typo="Typo.body2">@order?.Merchant?.MerchantDescription</MudText>
                                             </MudItem>
                                             <MudItem xs="12">
 
                                                 <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.AccessTime"></MudIcon>
                                                 <MudText Class="d-inline-block" Typo="Typo.body2">
-                                                    Time:
-                                                    @(merchant.PreparingTime.HasValue ? merchant.PreparingTime.Value + 15 : 30) ~ @(merchant.PreparingTime.HasValue ? merchant.PreparingTime.Value + 30 : 45) mins
+                                                    Estimated Time:
+                                                    @(order.Merchant.PreparingTime.HasValue ? order?.Merchant?.PreparingTime.Value + 15 : 30) ~ @(order.Merchant.PreparingTime.HasValue ? order?.Merchant?.PreparingTime.Value + 30 : 45) mins
                                                 </MudText>
                                             </MudItem>
                                             <MudItem xs="12">
                                                 <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.LocationOn"></MudIcon>
 
-                                                @if (merchant.Address == null && merchant.City == null)
+                                                @if (order?.Merchant?.Address == null && order?.Merchant?.City == null)
                                                 {
                                                     <MudText Class="inline-block" Typo="Typo.body2">Address: No Addres Information.</MudText>
                                                 }
                                                 else
                                                 {
-                                                    @if (merchant.Unit == "")
+                                                    @if (order?.Merchant ?.Unit == "")
                                                     {
-                                                        <MudText Class="d-inline-block" Typo="Typo.body2">Address:  @merchant.Address , @merchant.City , @merchant.Postcode</MudText>
+                                                        <MudText Class="d-inline-block" Typo="Typo.body2">Address:  @order?.Merchant?.Address, @order?.Merchant?.City, @order?.Merchant?.Postcode</MudText>
                                                     }
                                                     else
                                                     {
-                                                        <MudText Typo="Typo.body2">Address: @merchant.Unit, @merchant.Address, @merchant.City, @merchant.Postcode</MudText>
+                                                        <MudText Typo="Typo.body2">Address: @order?.Merchant?.Unit, @order?.Merchant?.Address, @order?.Merchant?.City, @order?.Merchant?.Postcode</MudText>
                                                     }
                                                 }
-
                                             </MudItem>
                                         </MudGrid>
                                     </MudItem>
                                     <MudItem xs="12" sm="9" md="6">
 
-                                        @if (cartItems != null)
+                                        @if (order.CartItems != null)
                                         {
-                                            foreach (var theitem in cartItems)
+                                            foreach (var theitem in order.CartItems)
                                             {
                                                 <div class="d-flex justify-content-around align-items-center">
                                                     @*<MudImage Src="@theitem.ItemPic" Width="60" Height="35" Alt="@merchant.FirstName" Class="rounded-lg mt-4" />*@
                                                     <MudText>@theitem.ItemName</MudText>
-                                                    <MudText> @theitem.ItemPrice</MudText>
-                                                    <MudText>@theitem.Quantity</MudText>
+                                                    <MudText> @theitem.ItemPrice.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
+                                                    <MudText>X @theitem.Quantity</MudText>
                                                 </div>
                                             }
                                         }
@@ -127,11 +124,11 @@
 
                 <MudItem xs="12" sm="12" md="3" Class="d-flex align-content-end">
                     <div>
-                        <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(Before tax): $@subtotal</MudText>
-                        <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Tax (15%): @GetTaxAmount().ToString("C")</MudText>
-                        <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(After tax):  $@total</MudText>
-                        <MudText Class="pt-4 ps-6 border-b-2 border-solid mb-2" Typo="Typo.body2" Align="Align.Start" GutterBottom="true" Style="border-color:rgba(112, 0, 0, 1);">Delevery Fee:  @GetTotalAfterTax().ToString("C")</MudText>
-                        <MudText Class="pt-4 ps-6" Typo="Typo.subtitle2" Align="Align.Start" GutterBottom="true">Total Amount:  @GetTotalAmount().ToString("C")</MudText>
+                        <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(Before tax): @subtotal.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
+                        <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Tax (15%): @tax.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
+                        <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(After tax):  @total.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
+                        <MudText Class="pt-4 ps-6 border-b-2 border-solid mb-2" Typo="Typo.body2" Align="Align.Start" GutterBottom="true" Style="border-color:rgba(112, 0, 0, 1);">Delevery Fee:  @totalDeliveryFee.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
+                        <MudText Class="pt-4 ps-6" Typo="Typo.subtitle2" Align="Align.Start" GutterBottom="true">Total Amount:  @totalAmount.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
                     </div>
                 </MudItem>
 
@@ -154,7 +151,12 @@
     [Parameter]
     public int UserId { get; set; }
 
-    public CreateOrderDTO order = new CreateOrderDTO();
+    public CreateOrderDTO order = new CreateOrderDTO
+    {
+        Tax = TaxRate,
+        DeliveryFee = DeliveryFee,
+        Orders = new List<OrderByMerchantDTO>()
+    };
 
     private const decimal TaxRate = 0.15m;
     private const decimal DeliveryFee = 6.00m;
@@ -163,13 +165,11 @@
 
     int itemId;
 
-
     private decimal subtotal;
     private decimal total;
-    private decimal fee;
     private decimal totalAmount;
     private decimal tax;
-    private decimal deliveryFee;
+    private decimal totalDeliveryFee;
     private int cartId { get; set; }
     private int customerId { get; set; }
     private int merchantId { get; set; }
@@ -178,8 +178,8 @@
     private bool isLoading = true;
     private List<int> merchantIds = new();
     private List<MerchantProfileDTO> merchants = new();
-
     private List<GetOrderItemResponseDTO> cartItems = new();
+    public List<OrderByMerchantDTO> Orders = new List<OrderByMerchantDTO>();
 
     bool success;
 
@@ -228,44 +228,39 @@
                 cartItems = response.CartItems;
 
                 subtotal = cartItems.Sum(ci => ci.Quantity * ci.ItemPrice);
-                tax = GetTaxAmount();
-                total = GetTotalAfterTax();
-
+                tax = subtotal*TaxRate;
+                total = subtotal + tax;
 
                 cartId = response.CartId;
                 customerId = response.CustomerId;
 
                 if (cartItems?.Any() == true)
                 {
-
-
                     foreach (var theItem in cartItems)
                     {
+                        var merchanId = theItem.MerchantId;
+                        var merchant = theItem.MerchantProfile;
 
-                        if (theItem != null)
+                        if (!merchantIds.Contains(merchanId))
                         {
-                            var merchanId = theItem.MerchantId;
-                            var merchant = theItem.MerchantProfile;
-                            if (merchant != null)
-                            {
-                                if (!merchantIds.Contains(merchanId))
-                                {
-                                    merchantIds.Add(merchanId);
-                                    totalAmount = GetTotalAmount();
-                                    merchants.Add(merchant);
-                                }
-                            }
-
-
+                            merchantIds.Add(merchanId);
+                            var order = new OrderByMerchantDTO();
+                            order.Merchant = merchant;
+                            order.CartItems.Add(theItem);
+                            Orders.Add(order);
                         }
                         else
                         {
-                            // Handle case where theItem is null (optional)
-                            Console.WriteLine("Warning: cart item is null.");
+                            var existingOrder = Orders.FirstOrDefault(o => o.Merchant.Email == merchant.Email);
+                            existingOrder?.CartItems.Add(theItem);
                         }
                     }
 
                 }
+
+                totalDeliveryFee = Orders.Count() * DeliveryFee;
+                totalAmount = total + totalDeliveryFee;
+                await LogToBrowserConsole($"orderdata: {System.Text.Json.JsonSerializer.Serialize(order)}");
 
             }
         }
@@ -280,14 +275,6 @@
         }
     }
 
-    private decimal GetTaxAmount()
-    {
-        return subtotal * TaxRate;
-    }
-    private decimal GetTotalAfterTax()
-    {
-        return subtotal + GetTaxAmount();
-    }
 
     private decimal GetDeliveryFee()
     {
@@ -301,28 +288,16 @@
 
             }
         }
-        if (merchantAddresses.Count > 0)
-        {
-            return GetTotalAfterTax() + DeliveryFee * merchantAddresses.Count();
-        }
 
-        return GetTotalAfterTax() + DeliveryFee;
-    }
-
-    private decimal GetTotalAmount()
-    {
-        return GetTotalAfterTax() + DeliveryFee;
+        return DeliveryFee * merchantAddresses.Count();
     }
 
 
     private async Task CreateOrder()
     {
 
-        order.CartId = cartId;
-        order.CustomerId = customerId;
-        order.MerchantIds = merchantIds;
-        order.Merchants = merchants;
-        order.CartItems = cartItems;
+        order.Orders = Orders;
+        await LogToBrowserConsole($"Request: {System.Text.Json.JsonSerializer.Serialize(order)}");
 
         var result = await OrderService.CreateOrder(order); // Update customer data
 
@@ -366,4 +341,6 @@
         }
 
     }
+
+    private async Task LogToBrowserConsole(string message) => await JSRuntime.InvokeVoidAsync("console.log", message);
 }
