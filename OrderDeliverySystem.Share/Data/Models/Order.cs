@@ -21,7 +21,7 @@ namespace OrderDeliverySystem.Share.Data.Models
         public AddressModel? DropoffAddress { get; set; }
 
         public ICollection<OrderItem> OrderItems { get; set; }
-        public ICollection<Review>? Reviews { get; set; }
+        public Review? Reviews { get; set; }
     }
 
 }
