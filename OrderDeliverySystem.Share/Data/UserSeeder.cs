@@ -20,7 +20,7 @@ namespace OrderDeliverySystem.Share.Data
                     Email = Email,
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
                     Role = Role,
-                    IsActive = true,
+                    IsActived = 1,
                     CreatedAt = DateTime.Now,
                 };
 

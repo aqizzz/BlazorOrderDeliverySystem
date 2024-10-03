@@ -12,7 +12,7 @@ using OrderDeliverySystem.Share.Data;
 namespace OrderDeliverySystem.Share.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20241003201257_InitialCreate")]
+    [Migration("20241003215634_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -384,13 +384,10 @@ namespace OrderDeliverySystem.Share.Migrations
                     b.Property<string>("FirstName")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsActive")
+                    b.Property<int>("IsActived")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
-
-                    b.Property<int>("IsActived")
-                        .HasColumnType("INTEGER");
+                        .HasDefaultValue(1);
 
                     b.Property<string>("LastName")
                         .HasColumnType("TEXT");

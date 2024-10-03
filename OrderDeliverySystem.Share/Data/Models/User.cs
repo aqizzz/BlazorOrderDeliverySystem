@@ -12,15 +12,7 @@ namespace OrderDeliverySystem.Share.Data.Models
         public string? Phone { get; set; }
         public required string Role { get; set; }
         public int IsActived { get; set; }
-
-        [NotMapped]
-        public bool IsActive
-        {
-            get => IsActived == 1;
-            set => IsActived = value ? 1 : 0;
-        }
         public DateTime CreatedAt { get; set; }
-
         public Customer? Customer { get; set; }
         public DeliveryWorker? DeliveryWorker { get; set; }
         public Merchant? Merchant { get; set; }

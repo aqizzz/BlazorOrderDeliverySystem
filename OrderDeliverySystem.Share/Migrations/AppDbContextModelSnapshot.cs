@@ -381,13 +381,10 @@ namespace OrderDeliverySystem.Share.Migrations
                     b.Property<string>("FirstName")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsActive")
+                    b.Property<int>("IsActived")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
-
-                    b.Property<int>("IsActived")
-                        .HasColumnType("INTEGER");
+                        .HasDefaultValue(1);
 
                     b.Property<string>("LastName")
                         .HasColumnType("TEXT");

@@ -23,8 +23,7 @@ namespace OrderDeliverySystem.Share.Migrations
                     LastName = table.Column<string>(type: "TEXT", nullable: true),
                     Phone = table.Column<string>(type: "TEXT", nullable: true),
                     Role = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    IsActived = table.Column<int>(type: "INTEGER", nullable: false),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true),
+                    IsActived = table.Column<int>(type: "INTEGER", nullable: false, defaultValue: 1),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
