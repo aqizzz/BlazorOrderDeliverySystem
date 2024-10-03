@@ -5,6 +5,7 @@ using System.Runtime.Intrinsics.Arm;
 using System.Text.Json;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
+using Newtonsoft.Json;
 using OrderDeliverySystem.Client.Infrastructure.Extensions;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.Data.Models;
@@ -67,7 +68,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
             var uri = $"{Base}/create";
-            return await httpClient.PostAsJsonAsync(uri, order).ToResult() ;
+            return await httpClient.PostAsJsonAsync(uri, order).ToResult();
         }
     
 

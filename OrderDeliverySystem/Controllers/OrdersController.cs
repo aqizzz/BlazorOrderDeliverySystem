@@ -50,7 +50,7 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("create")]
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult> CreateOrder(CreateOrderDTO orderDto)
         {
@@ -60,7 +60,7 @@ namespace OrderDeliverySystemApi.Controllers
 
             if (customer == null)
             {
-                return NotFound(new { Error = "Customer not found."});
+                return NotFound(new { Error = "Customer not found." });
             }
 
             var cart = await _context.Carts.FirstOrDefaultAsync(c => c.CustomerId == customer.CustomerId);
@@ -69,10 +69,6 @@ namespace OrderDeliverySystemApi.Controllers
                 return NotFound(new { Error = "Cart not found." });
             }
 
-                return NotFound($"No worker was found.");
-            }
-                return NotFound($"No worker was found.");
-            }
             var customerAddress = await _context.Addresses
               .Where(a => a.UserId == customer.UserId)
               .FirstOrDefaultAsync(); // ToListAsync if it's a collection
@@ -85,13 +81,13 @@ namespace OrderDeliverySystemApi.Controllers
             var orders = orderDto.Orders;
             if (orders == null)
             {
+                return NotFound(new { Error = "No order found." });
+            }
 
             foreach (var thisOrder in orders.Where(o => o != null))
             {
                 if (thisOrder.Merchant == null)
                 {
-                    return NotFound(new { Error = "No merchant in this Order." });
-                }
                     return NotFound(new { Error = "No merchant in this Order." });
                 }
 
@@ -108,6 +104,8 @@ namespace OrderDeliverySystemApi.Controllers
                 if (merchantAddress == null)
                 {
                     return NotFound(new { Error = $"Address with ID {merchant.UserId} not found." });
+                }
+
                 var totalAmount = thisOrder.CartItems.Sum(ci => ci.Quantity * ci.ItemPrice) * (1 + orderDto.Tax) + orderDto.DeliveryFee;
 
                 var order = new Order
@@ -124,8 +122,6 @@ namespace OrderDeliverySystemApi.Controllers
                     Customer = customer,
                     OrderItems = new List<OrderItem>(),
                 };
-                    OrderItems = new List<OrderItem>(),
-                };
 
                 _context.Orders.Add(order);
                 await _context.SaveChangesAsync();
@@ -133,7 +129,7 @@ namespace OrderDeliverySystemApi.Controllers
 
                 var cartItems = await _context.CartItems.Where(ci => ci.CartId == cart.CartId).Include(c => c.Item).Where(c => c.Item.MerchantId == merchant.MerchantId).ToListAsync();
 
-                var orderItems = cartItems.Select( C => new OrderItem
+                var orderItems = cartItems.Select(C => new OrderItem
                 {
                     ItemId = C.ItemId,
                     Quantity = C.Quantity,
@@ -149,11 +145,13 @@ namespace OrderDeliverySystemApi.Controllers
 
                 await _context.SaveChangesAsync();
             }
-            
+
             // Return created order
             return Ok("MenuItem has been successfully updated");
 
         }
+
+        [HttpPut("update")]
 
         public async Task<IActionResult> UpdateOrder(UpdateOrderDTO updatedOrder)
         {
@@ -168,13 +166,11 @@ namespace OrderDeliverySystemApi.Controllers
             {
                 return NotFound(new { Error = $"No order need to be updated." });
             }
-                return NotFound(new { Error = $"No order need to be updated." });
+
             var status = updatedOrder.Status;
             if (status == null)
             {
                 return NotFound(new { Error = "No status need to be updated." });
-            }
-            var order = await _context.Orders.FindAsync(orderId);
             }
             var order = await _context.Orders.FindAsync(orderId);
             if (order == null)
@@ -189,6 +185,8 @@ namespace OrderDeliverySystemApi.Controllers
             }
             else if (status == "Approved")
             {
+                order.Status = "In Delivery";
+
             }
             else if (status == "In Delivery")
             {
@@ -200,8 +198,6 @@ namespace OrderDeliverySystemApi.Controllers
             }
 
 
-
-
             // Update order fields
 
 
@@ -211,37 +207,6 @@ namespace OrderDeliverySystemApi.Controllers
             _context.Entry(order).State = EntityState.Modified;
 
             await _context.SaveChangesAsync();
-
-            if (order.Status == "Approved")
-            {
-                var worker = await _context.DeliveryWorkers
-                    .Where(w => w.WorkerAvailability == true) // Ensure worker is available and has a task history
-                    .OrderBy(w => w.LastTaskAssigned) // Get the worker with the oldest LastTaskAssigned date
-                    .FirstOrDefaultAsync();
-
-                if (worker == null)
-                {
-                    return NotFound("No worker can take this Order");
-                }
-
-                var workerId = order.WorkerId;
-                if (workerId == null || workerId <= 0)
-                {
-                    return NotFound("No worker can take this Order");
-                }
-                var exitorder = await _context.Orders.Where(o => o.Status.Equals("Approved") && o.WorkerId == workerId).ToListAsync();
-
-                if (exitorder != null && exitorder.Count > 1)
-                {
-                    return NotFound("No worder can be found");
-
-                }
-                else if (exitorder.Count == 1)
-                {
-                    worker.WorkerAvailability = false;
-                }
-
-                _context.Entry(worker).State = EntityState.Modified;
 
             if (order.Status == "Approved")
             {
@@ -313,16 +278,14 @@ namespace OrderDeliverySystemApi.Controllers
                 worker.WorkerAvailability = true;
                 worker.LastTaskAssigned = DateTime.Now;
             }
-            else if(order.Status == "Cancelled")
+            else if (order.Status == "Cancelled")
             {
-
+                NoContent();
             }
             else
             {
                 return NotFound(new { Error = "No valid Status" });
             }
-
-            await _context.SaveChangesAsync();
 
             await _context.SaveChangesAsync();
 
@@ -384,10 +347,10 @@ namespace OrderDeliverySystemApi.Controllers
             return Ok(orderHistory);
         }
 
+        [HttpPut("cancel")]
+
         public async Task<IActionResult> CancelOrder(UpdateOrderDTO order)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null)
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userIdClaim == null)
             {
@@ -408,16 +371,10 @@ namespace OrderDeliverySystemApi.Controllers
             if (thisOrder == null)
             {
                 return NotFound("Order not found.");
-            var thisOrder = await _context.Orders.FindAsync(order.OrderId);
-            if (thisOrder == null)
-            {
-                return NotFound("Order not found.");
             }
 
             // Update the order status to 'Cancelled'
             thisOrder.Status = "Cancelled";
-
-            // Entity is being tracked, just save changes
 
             // Entity is being tracked, just save changes
             await _context.SaveChangesAsync();
@@ -432,7 +389,7 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
         [HttpGet("get-{role}")]
- 
+
         public async Task<IActionResult> GetOrdersByRole(string role, bool recent = false)
         {
             // Fetch required entities from the database (Merchant and Customer)
@@ -442,7 +399,7 @@ namespace OrderDeliverySystemApi.Controllers
                 return Unauthorized("User is not authenticated.");
             }
 
-           
+
             if (!int.TryParse(userIdClaim, out int userId))
             {
                 // Return bad request if the user ID is not valid
@@ -453,19 +410,19 @@ namespace OrderDeliverySystemApi.Controllers
                 .Include(o => o.Customer)
                 .Include(o => o.OrderItems)
                 .Include(o => o.Merchant)
-                .Include(o => o.DeliveryWorker) ;
+                .Include(o => o.DeliveryWorker);
 
-         
+
 
             switch (role.ToLower())
             {
                 case "customer":
-                   
+
                     query = query.Where(o => o.Customer != null && o.Customer.UserId == userId); break;
                 case "merchant":
                     query = query.Where(o => o.Merchant != null && o.Merchant.UserId == userId); break;
                 case "worker":
-                    query = query.Where(o => o.DeliveryWorker !=null && o.DeliveryWorker.UserId == userId); break;
+                    query = query.Where(o => o.DeliveryWorker != null && o.DeliveryWorker.UserId == userId); break;
             }
 
             if (recent)
@@ -672,14 +629,14 @@ namespace OrderDeliverySystemApi.Controllers
         [HttpGet("table/{role}")]
         [Authorize(Roles = "Customer,Merchant,Worker")]
         public async Task<IActionResult> GetOrdersTableByRole(string role, bool recent, int pageNumber = 1, int pageSize = 10)
-       {
+        {
 
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userIdClaim == null)
             {
                 return Unauthorized("User is not authenticated.");
             }
-           
+
 
             if (!int.TryParse(userIdClaim, out int userId))
             {
@@ -699,7 +656,7 @@ namespace OrderDeliverySystemApi.Controllers
             switch (role.ToLower())
             {
                 case "customer":
-             
+
                     query = query.Where(o => o.Customer.UserId == userId); break;
                 case "merchant":
                     query = query.Where(o => o.Merchant.UserId == userId); break;
@@ -790,9 +747,9 @@ namespace OrderDeliverySystemApi.Controllers
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
-       
+
             return Ok(orders);
-   }
+        }
 
 
         // GET: api/cart/getCart/{customerId}
@@ -904,6 +861,8 @@ namespace OrderDeliverySystemApi.Controllers
                  City = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.City ?? "",
                  Province = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Province ?? "",
                  Postcode = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Postcode ?? ""
+             };
+
              return Ok(profile);
          }
 
@@ -915,14 +874,14 @@ namespace OrderDeliverySystemApi.Controllers
         {
 
             var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-          
+
             if (updatedOrder == null)
             {
                 return NotFound(new { Error = "No order need to be updated." });
             }
 
             var order = await _context.Orders
-                    .Include(o => o.Merchant.User)  
+                    .Include(o => o.Merchant.User)
                     .FirstOrDefaultAsync(o => o.OrderId == updatedOrder.OrderId);
 
             if (order == null)
@@ -931,8 +890,8 @@ namespace OrderDeliverySystemApi.Controllers
             }
 
             var worker = await _context.DeliveryWorkers
-                   .Where(w => w.WorkerAvailability == true) 
-                   .OrderBy(w => w.LastTaskAssigned) 
+                   .Where(w => w.WorkerAvailability == true)
+                   .OrderBy(w => w.LastTaskAssigned)
                    .FirstOrDefaultAsync();
 
             if (worker == null)
@@ -951,7 +910,7 @@ namespace OrderDeliverySystemApi.Controllers
 
             // update the date of worker
             worker.WorkerAvailability = false;
-         
+
 
             _context.Entry(worker).State = EntityState.Modified;
             await _context.SaveChangesAsync();
@@ -976,7 +935,8 @@ namespace OrderDeliverySystemApi.Controllers
                 return NotFound(new { Error = "No order was found." });
             }
 
-            if(order.Status == null || !order.Status.ToLower().Equals("approved")){
+            if (order.Status == null || !order.Status.ToLower().Equals("approved"))
+            {
                 return NotFound(new { Error = "Not creact user" });
 
             }
@@ -1049,7 +1009,7 @@ namespace OrderDeliverySystemApi.Controllers
             {
                 return NotFound("No worker can take this Order");
             }
-          
+
             worker.WorkerAvailability = true;
             worker.LastTaskAssigned = DateTime.Now;
             _context.Entry(worker).State = EntityState.Modified;
@@ -1058,8 +1018,6 @@ namespace OrderDeliverySystemApi.Controllers
             return Ok("Order has been successfully updated");
         }
 
-
-    }
 
     }
 }
