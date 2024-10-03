@@ -69,12 +69,12 @@ namespace OrderDeliverySystemApi.Controllers
 
             if (customer == null)
             {
-                return NotFound(new { Eoor = "Customer not found."});
+                return NotFound(new { Error = "Customer not found."});
             }
             var customerId = orderDto.CustomerId;
             if (customerId != customer.CustomerId)
             {
-                return NotFound(new { Eoor = "Not the user" });
+                return NotFound(new { Error = "Not the user" });
             }
 
             var customerAddress = await _context.Addresses
@@ -83,28 +83,28 @@ namespace OrderDeliverySystemApi.Controllers
 
             if (customerAddress == null)
             {
-                return NotFound(new { Eoor = $"Customer with ID {customer.UserId} not found." });
+                return NotFound(new { Error = $"Customer with ID {customer.UserId} not found." });
             }
 
 
             var merchants = orderDto.Merchants;
             if (merchants == null || merchants.Count() <= 0)
             {
-                return NotFound(new { Eoor = $"No merchant was found." });
+                return NotFound(new { Error = $"No merchant was found." });
             }
            
             foreach (var thisMerchant in merchants)
             {
                 if (thisMerchant == null)
                 {
-                    return NotFound(new { Eoor = $"No merchant was found." });
+                    return NotFound(new { Error = $"No merchant was found." });
                 }
 
 
                 var merchant = await _context.Merchants.FindAsync(thisMerchant.UserId);
                 if (merchant == null)
                 {
-                    return NotFound(new { Eoor = $"Merchant with ID {thisMerchant.UserId} not found." });
+                    return NotFound(new { Error = $"Merchant with ID {thisMerchant.UserId} not found." });
                 }
 
                 var merchantAddress = await _context.Addresses
@@ -113,7 +113,7 @@ namespace OrderDeliverySystemApi.Controllers
 
                 if (merchantAddress == null)
                 {
-                    return NotFound(new { Eoor = $"Address with ID {merchant.UserId} not found." });
+                    return NotFound(new { Error = $"Address with ID {merchant.UserId} not found." });
                 }
 
                 var order = new Order
@@ -167,20 +167,20 @@ namespace OrderDeliverySystemApi.Controllers
         {
             if (updatedOrder == null)
             {
-                return NotFound($"No order need to be updated.");
+                return NotFound(new { Error = $"No order need to be updated." });
             }
 
             var orderId = updatedOrder.OrderId;
 
             if (updatedOrder == null)
             {
-                return NotFound($"No order need to be updated.");
+                return NotFound(new { Error = $"No order need to be updated."]);
             }
 
             var status = updatedOrder.Status;
             if (status == null)
             {
-                return NotFound("No status need to be updated.");
+                return NotFound(new { Error = "No status need to be updated."]);
             }
             var order = await _context.Orders.FindAsync(orderId);
             if (order == null)
@@ -204,7 +204,7 @@ namespace OrderDeliverySystemApi.Controllers
             }
             else
             {
-                return NotFound(new { Eoor = "No order need to be updated here" });
+                return NotFound(new { Error = "No order need to be updated here" });
             }
 
 
@@ -227,19 +227,19 @@ namespace OrderDeliverySystemApi.Controllers
 
                 if (worker == null)
                 {
-                    return NotFound(new { Eoor = "No worker can take this Order" });
+                    return NotFound(new { Error = "No worker can take this Order" });
                 }
 
                 var workerId = order.WorkerId;
                 if (workerId == null || workerId <= 0)
                 {
-                    return NotFound(new { Eoor = "No worker can take this Order" });
+                    return NotFound(new { Error = "No worker can take this Order" });
                 }
                 var exitorder = await _context.Orders.Where(o => o.Status.Equals("Approved") && o.WorkerId == workerId).ToListAsync();
 
                 if (exitorder != null && exitorder.Count > 1)
                 {
-                    return NotFound(new { Eoor = "No worder can be found" });
+                    return NotFound(new { Error = "No worder can be found" });
 
                 }
                 else if (exitorder.Count == 1)
@@ -276,14 +276,14 @@ namespace OrderDeliverySystemApi.Controllers
                 var workerId = order.WorkerId;
                 if (workerId == null || workerId <= 0)
                 {
-                    return NotFound(new { Eoor = "No worker can take this Order" });
+                    return NotFound(new { Error = "No worker can take this Order" });
                 }
                 var worker = await _context.DeliveryWorkers.FindAsync(workerId);
 
 
                 if (worker == null)
                 {
-                    return NotFound(new { Eoor = "No worker can take this Order" });
+                    return NotFound(new { Error = "No worker can take this Order" });
                 }
                 worker.WorkerAvailability = true;
                 worker.LastTaskAssigned = DateTime.Now;
@@ -294,7 +294,7 @@ namespace OrderDeliverySystemApi.Controllers
             }
             else
             {
-                return NotFound(new { Eoor = "No valid Status" });
+                return NotFound(new { Error = "No valid Status" });
             }
 
             await _context.SaveChangesAsync();
@@ -311,7 +311,7 @@ namespace OrderDeliverySystemApi.Controllers
             var customer = await _context.Customers.FindAsync(customerId);
             if (customer == null)
             {
-                return NotFound(new { Eoor = "Customer not found." });
+                return NotFound(new { Error = "Customer not found." });
             }
             var recentOrders = await _context.Orders
                 .Where(o => o.CustomerId == customerId && o.Status != "Delivered")
@@ -326,7 +326,7 @@ namespace OrderDeliverySystemApi.Controllers
 
             if (!recentOrders.Any())
             {
-                return NotFound(new { Eoor = "No recent orders found for this customer." });
+                return NotFound(new { Error = "No recent orders found for this customer." });
             }
             return Ok(recentOrders);
         }
@@ -352,7 +352,7 @@ namespace OrderDeliverySystemApi.Controllers
 
             if (!orderHistory.Any())
             {
-                return NotFound(new { Eoor = "No order history found for this customer." });
+                return NotFound(new { Error = "No order history found for this customer." });
             }
             return Ok(orderHistory);
         }
@@ -364,12 +364,12 @@ namespace OrderDeliverySystemApi.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userIdClaim == null)
             {
-                return Unauthorized(new { Eoor = "User is not authenticated." });
+                return Unauthorized(new { Error = "User is not authenticated." });
             }
             if (!int.TryParse(userIdClaim, out int userId))
             {
                 // Return bad request if the user ID is not valid
-                return BadRequest(new { Eoor = "Invalid user ID." });
+                return BadRequest(new { Error = "Invalid user ID." });
             }
 
             if (order == null || order.OrderId <= 0)
