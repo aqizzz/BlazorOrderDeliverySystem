@@ -8,9 +8,16 @@ namespace OrderDeliverySystem.Share.DTOs
 {
     public class CreateOrderDTO
     {
-        public decimal Tax { get; set; }
-        public decimal DeliveryFee { get; set; }
-        public List<OrderByMerchantDTO>? Orders { get; set; }
+       
+            public int CartId { get; set; }
+        public int CustomerId { get; set; }
+        public List<int>MerchantIds  { get; set; }
+            public decimal TotalAmount { get; set; }
+      
+            public List<MerchantProfileDTO> Merchants { get; set; }
+             public List<GetOrderItemResponseDTO> CartItems { get; set; }
+
+
 
     }
 }

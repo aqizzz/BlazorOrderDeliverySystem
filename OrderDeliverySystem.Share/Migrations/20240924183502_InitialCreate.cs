@@ -302,8 +302,8 @@ namespace OrderDeliverySystem.Share.Migrations
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     PriceAtOrder = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     OrderId = table.Column<int>(type: "int", nullable: false),
-                    Discount = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
-                    Tax = table.Column<decimal>(type: "decimal(5,2)", nullable: false)
+                    Discount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Tax = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
