@@ -198,11 +198,11 @@
             await Orderservice.UpdateOrder(order);
             if (UserId<=6)
             {
-                Navigation.NavigateTo("/merchant-worker", forceLoad: true);
+                Navigation.NavigateTo("/merchant-orders", forceLoad: true);
             }
             else
             {
-                Navigation.NavigateTo("/merchant-worker", forceLoad: true);
+                Navigation.NavigateTo("/merchant-orders", forceLoad: true);
             }
 
         }

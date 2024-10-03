@@ -7,10 +7,6 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO;
 using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO.OrderDeliverySystem.Share.DTOs.CartDTO;
-using static MudBlazor.CategoryTypes;
-using System.Runtime.InteropServices;
-using OrderDeliverySystem.Components.Pages;
-using OrderDeliverySystem.Client.Pages.Merchant;
 
 
 
@@ -58,23 +54,19 @@ namespace OrderDeliverySystemApi.Controllers
         [Authorize(Roles = "Customer")]
         public async Task<ActionResult> CreateOrder(CreateOrderDTO orderDto)
         {
-
-
             // Fetch required entities from the database (Merchant and Customer)
             var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-           
             var customer = await _context.Customers.Include(c => c.User).FirstOrDefaultAsync(c => c.UserId == userId);
-
 
             if (customer == null)
             {
                 return NotFound(new { Error = "Customer not found."});
             }
-            var customerId = orderDto.CustomerId;
-            if (customerId != customer.CustomerId)
+
+            var cart = await _context.Carts.FirstOrDefaultAsync(c => c.CustomerId == customer.CustomerId);
+            if (cart == null)
             {
-                return NotFound(new { Error = "Not the user" });
+                return NotFound(new { Error = "Cart not found." });
             }
 
             var customerAddress = await _context.Addresses
@@ -83,28 +75,26 @@ namespace OrderDeliverySystemApi.Controllers
 
             if (customerAddress == null)
             {
-                return NotFound(new { Error = $"Customer with ID {customer.UserId} not found." });
+                return NotFound(new { Error = "Customer address not found." });
             }
 
-
-            var merchants = orderDto.Merchants;
-            if (merchants == null || merchants.Count() <= 0)
+            var orders = orderDto.Orders;
+            if (orders == null)
             {
-                return NotFound(new { Error = $"No merchant was found." });
+                return NotFound(new { Error = "No order found." });
             }
-           
-            foreach (var thisMerchant in merchants)
+
+            foreach (var thisOrder in orders.Where(o => o != null))
             {
-                if (thisMerchant == null)
+                if (thisOrder.Merchant == null)
                 {
-                    return NotFound(new { Error = $"No merchant was found." });
+                    return NotFound(new { Error = "No merchant in this Order." });
                 }
 
-
-                var merchant = await _context.Merchants.FindAsync(thisMerchant.UserId);
+                var merchant = await _context.Merchants.FirstOrDefaultAsync(m => m.UserId == thisOrder.Merchant.UserId);
                 if (merchant == null)
                 {
-                    return NotFound(new { Error = $"Merchant with ID {thisMerchant.UserId} not found." });
+                    return NotFound(new { Error = "Merchant not found." });
                 }
 
                 var merchantAddress = await _context.Addresses
@@ -116,13 +106,15 @@ namespace OrderDeliverySystemApi.Controllers
                     return NotFound(new { Error = $"Address with ID {merchant.UserId} not found." });
                 }
 
+                var totalAmount = thisOrder.CartItems.Sum(ci => ci.Quantity * ci.ItemPrice) * (1 + orderDto.Tax) + orderDto.DeliveryFee;
+
                 var order = new Order
                 {
                     CustomerId = customer.CustomerId,
                     MerchantId = merchant.MerchantId,
                     PickupAddressId = merchantAddress.AddressId,
                     DropoffAddressId = customerAddress.AddressId,
-                    TotalAmount = orderDto.TotalAmount,
+                    TotalAmount = totalAmount,
                     Status = "Pending",
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now,
@@ -134,12 +126,10 @@ namespace OrderDeliverySystemApi.Controllers
                 _context.Orders.Add(order);
                 await _context.SaveChangesAsync();
                 var newOrderId = order.OrderId;
-              
-                var cartItems  = await _context.CartItems
-                    .Include(c => c.Item)
-                    .ToListAsync();
 
-                var orderItem = cartItems.Select( C => new OrderItem
+                var cartItems = await _context.CartItems.Where(ci => ci.CartId == cart.CartId).Include(c => c.Item).Where(c => c.Item.MerchantId == merchant.MerchantId).ToListAsync();
+
+                var orderItems = cartItems.Select( C => new OrderItem
                 {
                     ItemId = C.ItemId,
                     Quantity = C.Quantity,
@@ -151,7 +141,7 @@ namespace OrderDeliverySystemApi.Controllers
                     Item = C.Item,  // Set the Item property (required)
                 }).ToList();
 
-                order.OrderItems = orderItem;
+                _context.OrderItems.AddRange(orderItems);
 
                 await _context.SaveChangesAsync();
             }
