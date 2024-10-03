@@ -174,13 +174,13 @@ namespace OrderDeliverySystemApi.Controllers
 
             if (updatedOrder == null)
             {
-                return NotFound(new { Error = $"No order need to be updated."]);
+                return NotFound(new { Error = $"No order need to be updated." });
             }
 
             var status = updatedOrder.Status;
             if (status == null)
             {
-                return NotFound(new { Error = "No status need to be updated."]);
+                return NotFound(new { Error = "No status need to be updated." });
             }
             var order = await _context.Orders.FindAsync(orderId);
             if (order == null)
