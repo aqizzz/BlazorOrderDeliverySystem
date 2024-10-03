@@ -9,6 +9,8 @@ using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO;
 using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO.OrderDeliverySystem.Share.DTOs.CartDTO;
 using static MudBlazor.CategoryTypes;
 using System.Runtime.InteropServices;
+using OrderDeliverySystem.Components.Pages;
+using OrderDeliverySystem.Client.Pages.Merchant;
 
 
 
@@ -318,6 +320,8 @@ namespace OrderDeliverySystemApi.Controllers
             return Ok("Order has been successfully updated");
         }
 
+
+
         [HttpGet("recent-orders/{customerId}")]
         public async Task<IActionResult> GetRecentOrdersByCustomer(int customerId)
         {
@@ -378,6 +382,11 @@ namespace OrderDeliverySystemApi.Controllers
             if (userIdClaim == null)
             {
                 return Unauthorized("User is not authenticated.");
+            }
+            if (!int.TryParse(userIdClaim, out int userId))
+            {
+                // Return bad request if the user ID is not valid
+                return BadRequest("Invalid user ID.");
             }
 
             if (order == null || order.OrderId <= 0)
@@ -643,7 +652,8 @@ namespace OrderDeliverySystemApi.Controllers
             };
             return Ok(orderDTO);
         }
-         [HttpGet("table/{role}")]
+
+        [HttpGet("table/{role}")]
         [Authorize(Roles = "Customer,Merchant,Worker")]
         public async Task<IActionResult> GetOrdersTableByRole(string role, bool recent, int pageNumber = 1, int pageSize = 10)
        {
@@ -847,40 +857,192 @@ namespace OrderDeliverySystemApi.Controllers
         }
 
 
-  
-       /* public async Task<IActionResult> GetMerchantsByItems(List<int> itemId)
-        {
-            var item = await context.Items
-                .Include(i => i.Merchant)
-                .ThenInclude(m => m.User)
-                .ThenInclude(u => u.Addresses)
-                .FirstOrDefaultAsync(i => i.ItemId == itemId);
 
-            if (item == null)
+        /* public async Task<IActionResult> GetMerchantsByItems(List<int> itemId)
+         {
+             var item = await context.Items
+                 .Include(i => i.Merchant)
+                 .ThenInclude(m => m.User)
+                 .ThenInclude(u => u.Addresses)
+                 .FirstOrDefaultAsync(i => i.ItemId == itemId);
+
+             if (item == null)
+             {
+                 return NotFound(new { Error = "Merchant not found" });
+             }
+
+             var profile = new MerchantProfileDTO
+             {
+                 UserId = item.Merchant.UserId,
+                 FirstName = item.Merchant.User.FirstName,
+                 LastName = item.Merchant.User.LastName,
+                 Phone = item.Merchant.User.Phone,
+                 Email = item.Merchant.User.Email,
+                 BusinessName = item.Merchant.BusinessName ?? "New Business",
+                 MerchantPic = item.Merchant.MerchantPic ?? "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png",
+                 MerchantDescription = item.Merchant.MerchantDescription ?? "",
+                 PreparingTime = item.Merchant.PreparingTime ?? 0,
+                 Type = "Main",
+                 Unit = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Unit ?? "",
+                 Address = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Address ?? "",
+                 City = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.City ?? "",
+                 Province = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Province ?? "",
+                 Postcode = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Postcode ?? ""
+             };
+
+             return Ok(profile);
+         }
+
+
+ */
+        [HttpPut("approve")]
+        [Authorize(Roles = "Merchant")]
+        public async Task<IActionResult> ApproveOrder(UpdateOrderDTO updatedOrder)
+        {
+
+            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+          
+            if (updatedOrder == null)
             {
-                return NotFound(new { Error = "Merchant not found" });
+                return NotFound(new { Error = "No order need to be updated." });
             }
 
-            var profile = new MerchantProfileDTO
-            {
-                UserId = item.Merchant.UserId,
-                FirstName = item.Merchant.User.FirstName,
-                LastName = item.Merchant.User.LastName,
-                Phone = item.Merchant.User.Phone,
-                Email = item.Merchant.User.Email,
-                BusinessName = item.Merchant.BusinessName ?? "New Business",
-                MerchantPic = item.Merchant.MerchantPic ?? "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png",
-                MerchantDescription = item.Merchant.MerchantDescription ?? "",
-                PreparingTime = item.Merchant.PreparingTime ?? 0,
-                Type = "Main",
-                Unit = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Unit ?? "",
-                Address = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Address ?? "",
-                City = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.City ?? "",
-                Province = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Province ?? "",
-                Postcode = item.Merchant.User.Addresses?.FirstOrDefault(a => a.Type == "Main")?.Postcode ?? ""
-            };
+            var order = await _context.Orders
+                    .Include(o => o.Merchant.User)  
+                    .FirstOrDefaultAsync(o => o.OrderId == updatedOrder.OrderId);
 
-            return Ok(profile);
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            var worker = await _context.DeliveryWorkers
+                   .Where(w => w.WorkerAvailability == true) 
+                   .OrderBy(w => w.LastTaskAssigned) 
+                   .FirstOrDefaultAsync();
+
+            if (worker == null)
+            {
+                return NotFound(new { Error = "No worker can take this Order" });
+            }
+
+            // update the date of order
+            order.WorkerId = worker.WorkerId;
+            order.DeliveryWorker = worker;
+            order.Status = "Approved";
+            order.UpdatedAt = DateTime.Now;
+
+            _context.Entry(order).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            // update the date of worker
+            worker.WorkerAvailability = false;
+            worker.LastTaskAssigned = DateTime.Now;
+
+            _context.Entry(worker).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+
+            return Ok("Order has been successfully approved");
         }
-*/    }
+
+
+        [HttpPut("assign")]
+        [Authorize(Roles = "Worker")]
+        public async Task<IActionResult> AssignOrder(UpdateOrderDTO updatedOrder)
+        {
+
+            if (updatedOrder == null)
+            {
+                return NotFound(new { Error = "No order need to be updated." });
+            }
+            var order = await _context.Orders.FindAsync(updatedOrder.OrderId);
+            if (order == null)
+            {
+                return NotFound(new { Error = "No order was found." });
+            }
+
+            if(order.Status == null || !order.Status.ToLower().Equals("approved")){
+                return NotFound(new { Error = "Not creact user" });
+
+            }
+
+            order.Status = "In Delivery";
+            order.UpdatedAt = DateTime.Now;
+            _context.Entry(order).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+
+            var newTracking = new DeliveryTask
+            {
+                Order = order,
+                OrderId = order.OrderId,
+                AssignedTime = DateTime.Now,
+                WorkerId = order.WorkerId ?? 0,
+                DeliveryWorker = order.DeliveryWorker,
+                Status = "Assigned",
+            };
+            _context.DeliveryTasks.Add(newTracking);
+            await _context.SaveChangesAsync();
+
+            return Ok("Order has been successfully assigned");
+
+        }
+
+
+        [HttpPut("finish")]
+        [Authorize(Roles = "Worker")]
+        public async Task<IActionResult> FinishOrder(UpdateOrderDTO updatedOrder)
+        {
+
+            if (updatedOrder == null)
+            {
+                return NotFound(new { Error = "No order need to be updated." });
+            }
+
+            var order = await _context.Orders.FindAsync(updatedOrder.OrderId);
+            if (order == null)
+            {
+                return NotFound(new { Error = "No order was found." });
+            }
+
+
+            order.Status = "Delivered";
+            order.UpdatedAt = DateTime.Now;
+            _context.Entry(order).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+
+            var deliveryTask = await _context.DeliveryTasks.FindAsync(updatedOrder.OrderId);
+            if (order == null)
+            {
+                return NotFound(new { Error = "No order was found." });
+            }
+
+            deliveryTask.Status = "Completed";
+            _context.Entry(deliveryTask).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+
+            var workerId = order.WorkerId;
+            if (workerId == null || workerId <= 0)
+            {
+                return NotFound("No worker can take this Order");
+            }
+            var worker = await _context.DeliveryWorkers.FindAsync(workerId);
+
+            if (worker == null)
+            {
+                return NotFound("No worker can take this Order");
+            }
+          
+            worker.WorkerAvailability = true;
+            worker.LastTaskAssigned = DateTime.Now;
+            _context.Entry(worker).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            return Ok("Order has been successfully updated");
+        }
+
+    }
 }

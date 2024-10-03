@@ -136,6 +136,59 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             return Result.Success;
         }
 
+        public async Task<Result> ApproveOrder(UpdateOrderDTO order)
+        {
+            var httpClient = this.httpClientFactory.CreateClient("API");
+
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+
+            var uri = $"{Base}/approve";
+            var response = await httpClient.PutAsJsonAsync(uri, order);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errors = await response.Content.ReadFromJsonAsync<string>();
+                return errors != null
+                    ? Result.Failure(errors) // Return the errors if present
+                    : Result.Failure("An unknown error occurred.");
+            }
+            return Result.Success;
+        }
+
+        public async Task<Result> AssignOrder(UpdateOrderDTO order)
+        {
+            var httpClient = this.httpClientFactory.CreateClient("API");
+
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+
+            var uri = $"{Base}/assign";
+            var response = await httpClient.PutAsJsonAsync(uri, order);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errors = await response.Content.ReadFromJsonAsync<string>();
+                return errors != null
+                    ? Result.Failure(errors) // Return the errors if present
+                    : Result.Failure("An unknown error occurred.");
+            }
+            return Result.Success;
+        }
+
+        public async Task<Result> FinishOrder(UpdateOrderDTO order)
+        {
+            var httpClient = this.httpClientFactory.CreateClient("API");
+
+            await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+
+            var uri = $"{Base}/finish";
+            var response = await httpClient.PutAsJsonAsync(uri, order);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errors = await response.Content.ReadFromJsonAsync<string>();
+                return errors != null
+                    ? Result.Failure(errors) // Return the errors if present
+                    : Result.Failure("An unknown error occurred.");
+            }
+            return Result.Success;
+        }
     }
 }
 
