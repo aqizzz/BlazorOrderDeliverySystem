@@ -24,21 +24,22 @@
 
 
 
-@if(order != null)
+@if (recent != null)
 {
     
-
-<MudContainer Class="my-10">
+    <MudContainer Class="my-10">
+       
     <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My Orders</MudText>
     <MudDivider Class=" border-2" Style="border-color:rgba(112, 0, 0, 1);" />
     <MudGrid>
-    <MudItem xs="12" sm="12" md="12" Class="d-flex justify-content-between align-items-center border-b-4 border-solid" Style="border-color:rgba(112, 0, 0, 1);">
-        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">OrderId: @Id</MudText>
-        <MudButton OnClick="OnExpandCollapseClick" >@(_expanded ? "Details" : "Details")</MudButton>
-    </MudItem>
+    @foreach(var order in recent)
+    {
+       <MudItem xs="12" sm="12" md="12" Class="d-flex justify-content-between align-items-center border-b-4 border-solid" Style="border-color:rgba(112, 0, 0, 1);">
+        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">OrderId: @order.OrderId</MudText>
+     </MudItem>
 
     <MudItem xs="12" sm="12" md="2">
-        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Picture</MudText>
+        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">@order.Merchant.MerchantPic</MudText>
     </MudItem>
     <MudItem xs="12" sm="12" md="2">
         <MudGrid>
@@ -83,33 +84,7 @@
             
     
         <MudItem xs="12" sm="12" md="12" Class=" border-t-4 border-solid mt-4" Style="border-color:rgba(112, 0, 0, 1);">
-        <MudCollapse Expanded="_expanded">
-          
-            <MudGrid>
-                <MudItem xs="12" sm="12" md="9">
-                            @if (order.OrderItems != null)
-                            {
-                                foreach (var theitem in order.OrderItems)
-                                {
-                                    <div class="d-flex justify-content-around align-items-center">
-                                        @*<MudImage Src="@theitem.ItemPic" Width="60" Height="35" Alt="@merchant.FirstName" Class="rounded-lg mt-4" />*@
-                                        <MudText>@theitem.ItemName</MudText>
-                                        <MudText> @theitem.ItemPrice</MudText>
-                                        <MudText>@theitem.Quantity</MudText>
-                                    </div>
-                                }
-                            }
-                </MudItem>
-                <MudItem xs="12" sm="12" md="3">
-                    <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(Before tax):  $19.98</MudText>
-                    <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Tax (15%):  $2.99</MudText>
-                    <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(After tax):  $22.98</MudText>
-                    <MudText Class="pt-4 ps-6 border-b-2 border-solid mb-2" Typo="Typo.body2" Align="Align.Start" GutterBottom="true" Style="border-color:rgba(112, 0, 0, 1);">Delevery Fee:  $6 ( $3/ km )</MudText>
-                    <MudText Class="pt-4 ps-6" Typo="Typo.subtitle2" Align="Align.Start" GutterBottom="true">Total Amount:  $28.98</MudText>
-                </MudItem>
-            </MudGrid>
-                <MudDivider Class="border-b-2 border-solid mt-4" Style="border-color:rgba(112, 0, 0, 1);"></MudDivider>
-        </MudCollapse>
+       
         <MudGrid>
              <MudItem xs="12" sm="12" md="6">
 
@@ -117,20 +92,23 @@
                      zoom="10"
                      map-id="DEMO_MAP_ID"
                     style="height: 600px"></gmp-map>*@
+                            @if (MerchantLat != 0 && CustomerLat != 0)
+                            {
+                                <GoogleMap MerchantLat="@MerchantLat" MerchantLng="@MerchantLng" CustomerLat="@CustomerLat" CustomerLng="@CustomerLng" Id="@order.OrderId" />
+                            }
+                            else
+                            {
+                                <MudText>Loading map...</MudText>
+                            }
                        
-                        @if (MerchantLat != 0 && CustomerLat != 0){
-                <GoogleMap MerchantLat="@MerchantLat" MerchantLng="@MerchantLng" CustomerLat="@CustomerLat" CustomerLng="@CustomerLng" Id="@orderId"/>
-                    }
-                    else
-                    {
-                <MudText>Loading map...</MudText>
-                    }
             </MudItem>          
          
              <MudItem xs="12" sm="12" md="6">
             </MudItem>
         </MudGrid>
         </MudItem>
+
+    }
 </MudGrid>
 </MudContainer>
 }
@@ -143,17 +121,24 @@ else
 
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
-    public string Id { get; set; } = "26";
-
+    [Inject]
+    private IAuthService AuthService { get; set; }
+    [Parameter]
+    public int UserId { get; set; }
+  
     private OrderDTO order;
+
     [Parameter]
     public UpdateOrderDTO updateOrder { get; set; }
+
+    private List<OrderDTO> recent = new List<OrderDTO>();
+
     private double MerchantLat;
     private double MerchantLng;
     private double CustomerLat;
     private double CustomerLng;
     private int orderId;
-
+    private bool isLoading = true;
     protected override async Task OnInitializedAsync()
     {
 
@@ -165,35 +150,57 @@ else
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
        
-        await loadMap();
+        if (user.Identity.IsAuthenticated)
+        {
+            if (user.IsInRole("Worker"))
+            {
+                await LoadOrders();
+            }
+            else
+            {
+                Console.WriteLine("User is not in the Worker role.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("User is not authenticated");
+        }
+       
     }
 
-
-    private async Task loadMap()
+    
+  
+    private async Task LoadOrders()
     {
-        if (!int.TryParse(Id, out orderId))
-        {
-            Console.WriteLine($"Invalid: {Id}");
-            return;
-        }
-        Console.WriteLine($"Fetching order with ID: {Id}");
         try
         {
-            order = await OrderService.GetOrderByIdAsync(orderId);
-
-            if (order == null)
+            recent = await OrderService.GetOrdersTableByRole("worker", true);
+            Console.WriteLine($"Order History Count: {recent.Count}");
+            if (recent != null)
             {
-                Console.WriteLine("Order is null!");
-                return;
+                foreach (var order in recent)
+                {
+                    await loadMap(order);
+                    Console.WriteLine($"Order Id: {order.OrderId}, Created At: {order.CreatedAt}, Merchant: {order.Merchant.BusinessName}");
+                }
             }
+
 
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error fetching order: {ex.Message}");
+            Console.WriteLine($"Error loading orders: {ex.Message}");
         }
-        var merchantAddress = order.Merchant.User.Addresses.FirstOrDefault().FullAddress;
-        var customerAddress = order.Customer.User.Addresses.FirstOrDefault().FullAddress;
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+    private async Task loadMap(OrderDTO thisOrder)
+    {
+        var merchantAddress = thisOrder.Merchant.User.Addresses?.FirstOrDefault()?.FullAddress;
+        var customerAddress = thisOrder.Customer.User.Addresses?.FirstOrDefault()?.FullAddress;
         Console.WriteLine($"MAddress: {merchantAddress}");
         Console.WriteLine($"CAddress: {customerAddress}");
 

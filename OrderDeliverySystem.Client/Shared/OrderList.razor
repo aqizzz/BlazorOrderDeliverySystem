@@ -17,12 +17,8 @@
 @rendermode InteractiveServer
 
 
-<MudTable Items="@orders" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<OrderDTO,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
-    @*<ToolBarContent>
-    <MudText Class="my-2" Typo="Typo.h4">Orders</MudText>
-    <MudSpacer />
-    <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-    </ToolBarContent>*@
+<MudTable Items="@orders" FixedHeader=true Hover="true" Height="400px"  Loading="@isLoading" LoadingProgressColor="Color.Error">
+   
     <HeaderContent>
         <MudTh Class="text-center">OrderId</MudTh>
         <MudTh Class="text-center">OrderTime</MudTh>
@@ -83,17 +79,6 @@
         <MudTablePager />
     </PagerContent>
 </MudTable>
-
-<div class="d-flex flex-wrap mt-4">
-    <MudSwitch @bind-Value="hover" Color="Color.Primary">Hover</MudSwitch>
-    <MudSwitch @bind-Value="dense" Color="Color.Secondary">Dense</MudSwitch>
-    <MudSwitch @bind-Value="striped" Color="Color.Tertiary">Striped</MudSwitch>
-    <MudSwitch @bind-Value="bordered" Color="Color.Warning">Bordered</MudSwitch>
-    <MudSpacer />
-    <div style="min-width:200px;">
-        <MudText Class="align-self-center d-inline">Selected: @selectedItem1?.OrderId</MudText>
-    </div>
-</div>
 
 
 @code {
