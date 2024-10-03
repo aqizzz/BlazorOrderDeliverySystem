@@ -13,83 +13,95 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
 @inject OrderService Orderservice
+@inject NavigationManager Navigation
 @rendermode InteractiveServer
 
 
-    <MudTable Items="@orders" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<OrderDTO,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1" >
+<MudTable Items="@orders" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<OrderDTO,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
     @*<ToolBarContent>
-        <MudText Class="my-2" Typo="Typo.h4">Orders</MudText>
-            <MudSpacer />
-            <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    <MudText Class="my-2" Typo="Typo.h4">Orders</MudText>
+    <MudSpacer />
+    <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>*@
-        <HeaderContent>
-            <MudTh Class="text-center">OrderId</MudTh>
-            <MudTh Class="text-center">OrderTime</MudTh>
-            <MudTh Class="text-center">Item Name</MudTh>
-            <MudTh Class="text-center">Item Quantity</MudTh>
-            <MudTh Class="text-center">TotalAmount</MudTh>
-            <MudTh Class="text-center">Actions</MudTh>
+    <HeaderContent>
+        <MudTh Class="text-center">OrderId</MudTh>
+        <MudTh Class="text-center">OrderTime</MudTh>
+        <MudTh Class="text-center">Item Name</MudTh>
+        <MudTh Class="text-center">Item Quantity</MudTh>
+        <MudTh Class="text-center">TotalAmount</MudTh>
+        <MudTh Class="text-center">Actions</MudTh>
 
-        </HeaderContent>
+    </HeaderContent>
 
-        <RowTemplate>
+    <RowTemplate>
 
-            <MudTd Class="text-center" DataLabel="OrderId">@context.OrderId</MudTd>
-            <MudTd Class="text-center" DataLabel="OrderTime">@context.CreatedAt.ToString("MM/dd/yyyy hh:mm:ss")</MudTd>
-            <MudTd Class="text-center" DataLabel="ItemName">
-                @foreach (var orderItem in @context.OrderItems)
-                {
-                    <MudText>@orderItem.ItemName</MudText>
-                    <MudDivider Class="border-2" />
-                }
-            </MudTd>
+        <MudTd Class="text-center" DataLabel="OrderId">@context.OrderId</MudTd>
+        <MudTd Class="text-center" DataLabel="OrderTime">@context.CreatedAt.ToString("MM/dd/yyyy hh:mm:ss")</MudTd>
+        <MudTd Class="text-center" DataLabel="ItemName">
+            @foreach (var orderItem in @context.OrderItems)
+            {
+                <MudText>@orderItem.ItemName</MudText>
+                <MudDivider Class="border-2" />
+            }
+        </MudTd>
 
-            <MudTd Class="text-center" DataLabel="Quantity">
-                @foreach (var orderItem in @context.OrderItems)
-                {
-                    <MudText>@orderItem.Quantity</MudText>
-                    <MudDivider Class="border-2" />
-                }
+        <MudTd Class="text-center" DataLabel="Quantity">
+            @foreach (var orderItem in @context.OrderItems)
+            {
+                <MudText>@orderItem.Quantity</MudText>
+                <MudDivider Class="border-2" />
+            }
 
-            </MudTd>
-            <MudTd Class="text-center" DataLabel="TotalAmount">@context.TotalAmount.ToString("C")</MudTd>
-            <MudTd DataLabel="Action" Class="d-flex justify-content-center">
-                @if (context.Status.Equals("Pending"))
-                {
+        </MudTd>
+        <MudTd Class="text-center" DataLabel="TotalAmount">@context.TotalAmount.ToString("C")</MudTd>
+        <MudTd DataLabel="Action" Class="d-flex justify-content-center">
+           
+            @if (context.Status.Equals("Pending"))
+            {
+                <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Approve" Style="color: rgba(168, 0, 0, 1);" OnClick="() => UpdateOrder(context)" />
 
-                    <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Approve" Style="color: rgba(168, 0, 0, 1);" OnClick="() => ApproveOrder(context)" />
+                <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Cancel" Color="Color.Default" OnClick="() => CancelOrder(context)" />
+            }
+            else if (context.Status.Equals("Approved"))
+            {
+                <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="In Deliveryy" Style="color: rgba(168, 0, 0, 1);" OnClick="() => UpdateOrder(context)" />
+            }
+            else if (context.Status.Equals("In Delivery"))
+            {
+                <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Finish Delivery" Style="color: rgba(168, 0, 0, 1);" OnClick="() => UpdateOrder(context)" />
+            }
+            else
+            {
+                <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="@context.Status" Style="color: rgba(168, 0, 0, 1);" Disabled="true" />
+            }
 
-                    <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Cancel" Color="Color.Default" OnClick="() => CancelOrder(context)" />
+            
+        </MudTd>
 
-                }
-                else
-                {
-                    <MudFab Variant="Variant.Outlined" Color="Color.Secondary" Label="Approved" Style="color: rgba(168, 0, 0, 1);" Disabled="true" />
-                }
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
 
-            </MudTd>
-
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager />
-        </PagerContent>
-    </MudTable>
- 
-    <div class="d-flex flex-wrap mt-4">
-        <MudSwitch @bind-Value="hover" Color="Color.Primary">Hover</MudSwitch>
-        <MudSwitch @bind-Value="dense" Color="Color.Secondary">Dense</MudSwitch>
-        <MudSwitch @bind-Value="striped" Color="Color.Tertiary">Striped</MudSwitch>
-        <MudSwitch @bind-Value="bordered" Color="Color.Warning">Bordered</MudSwitch>
-        <MudSpacer />
-        <div style="min-width:200px;">
-            <MudText Class="align-self-center d-inline">Selected: @selectedItem1?.OrderId</MudText>
-        </div>
+<div class="d-flex flex-wrap mt-4">
+    <MudSwitch @bind-Value="hover" Color="Color.Primary">Hover</MudSwitch>
+    <MudSwitch @bind-Value="dense" Color="Color.Secondary">Dense</MudSwitch>
+    <MudSwitch @bind-Value="striped" Color="Color.Tertiary">Striped</MudSwitch>
+    <MudSwitch @bind-Value="bordered" Color="Color.Warning">Bordered</MudSwitch>
+    <MudSpacer />
+    <div style="min-width:200px;">
+        <MudText Class="align-self-center d-inline">Selected: @selectedItem1?.OrderId</MudText>
     </div>
+</div>
 
 
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
+    [Inject]
+    private IAuthService AuthService { get; set; }
+
 
     [Parameter]
     public int UserId { get; set; }
@@ -97,7 +109,9 @@
     public bool recent { get; set; }
     [Parameter]
     public string role { get; set; }
-  
+    [Parameter]
+    public UpdateOrderDTO order { get; set; }
+
 
 
     private bool dense = false;
@@ -107,7 +121,8 @@
     private string searchString1 = "";
     private OrderDTO selectedItem1 = null;
     private HashSet<OrderDTO> selectedOrders = new HashSet<OrderDTO>();
-    private List<OrderDTO> orders = new();
+
+    public List<OrderDTO> orders = new List<OrderDTO>();
 
 
     // private IEnumerable<ViewItemDTO> Orders = new List<ViewItemDTO>();
@@ -120,18 +135,13 @@
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-       
+
         if (user.Identity.IsAuthenticated)
         {
-            if (user.IsInRole("Customer"))
-            {
-                await LoadOrders();
 
-            }
-            else
-            {
-                Console.WriteLine("User is not in the Customer role.");
-            }
+            await LoadOrders();
+
+
         }
         else
         {
@@ -142,12 +152,25 @@
     {
         try
         {
-            orders = await Orderservice.GetOrdersByRole(role, recent);
+
+            if (role != null)
+            {
+                var response = await Orderservice.GetOrdersTableByRole(role, recent);
+                if (response != null)
+                {
+                    orders = response;
+                }
+                else
+                {
+                    Console.WriteLine($"No order was found");
+                }
+
+            }
 
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading cart: {ex.Message}");
+            Console.WriteLine($"Error loading orders: {ex.Message}");
         }
         finally
         {
@@ -156,16 +179,95 @@
         }
     }
 
-    private async Task ApproveOrder(OrderDTO order)
+    private async Task UpdateOrder(OrderDTO thisOrder)
     {
-       
-       await Orderservice.UpdateOrder(order);
+        if (thisOrder == null)
+        {
+            Console.WriteLine("thisOrder is null");
+            return; // Early return if thisOrder is null
+        }
+
+        // Check if order is initialized
+        if (order == null)
+        {
+            order = new UpdateOrderDTO(); // Initialize if necessary
+        }
+
+        // Accessing properties with checks
+        if (thisOrder.OrderId != null)
+        {
+            order.OrderId = thisOrder.OrderId; // Ensure thisOrder is not null before accessing
+        }
+
+        if (thisOrder.Status != null)
+        {
+
+            order.Status = thisOrder.Status; // Update status
+
+
+        }
+
+        // Perform the update
+        try
+        {
+            await Orderservice.UpdateOrder(order);
+            if (UserId<=6)
+            {
+                Navigation.NavigateTo("/merchant-worker", forceLoad: true);
+            }
+            else
+            {
+                Navigation.NavigateTo("/merchant-worker", forceLoad: true);
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating order: {ex.Message}");
+        }
+
+        // Trigger UI update
         StateHasChanged();
     }
 
-    private void CancelOrder(OrderDTO order)
-    {
 
+
+    private async Task CancelOrder(OrderDTO thisOrder)
+    {
+        if (thisOrder == null)
+        {
+            Console.WriteLine("thisOrder is null");
+            return; // Early return if thisOrder is null
+        }
+
+        // Check if order is initialized
+        if (order == null)
+        {
+            order = new UpdateOrderDTO(); // Initialize if necessary
+        }
+
+        // Accessing properties with checks
+        if (thisOrder.OrderId != null)
+        {
+            order.OrderId = thisOrder.OrderId; // Ensure thisOrder is not null before accessing
+        }
+
+         order.Status = "Cancelled"; // Update status
+           
+
+        // Perform the update
+        try
+        {
+            await Orderservice.CancelOrder(order);
+            Navigation.NavigateTo("/merchant-orders", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating order: {ex.Message}");
+        }
+
+        // Trigger UI update
+        StateHasChanged();
     }
 
     private bool FilterFunc1(OrderDTO order) => FilterFunc(order, searchString1);

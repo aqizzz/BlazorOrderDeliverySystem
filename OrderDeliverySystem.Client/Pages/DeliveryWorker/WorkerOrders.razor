@@ -1,4 +1,4 @@
-﻿@page "/merchant-orders"
+﻿@page "/worker-orders"
 @using System.Net.Http.Json
 @using MudBlazor
 @using OrderDeliverySystem.Client.Infrastructure.Services.Orders
@@ -27,9 +27,9 @@
         <MudTabPanel>
 
             <ChildContent>
-                <AuthorizeView Roles="Merchant">
+                <AuthorizeView Roles="Worker">
                     <Authorized>
-                        <OrderList role="merchant" recent="true" />
+                        <OrderList role="worker" recent="true" />
                     </Authorized>
                 </AuthorizeView>
             </ChildContent>
@@ -39,9 +39,9 @@
         </MudTabPanel>
         <MudTabPanel>
             <ChildContent>
-                <AuthorizeView Roles="Merchant">
+                <AuthorizeView Roles="Worker">
                     <Authorized>
-                        <OrderList role="merchant" recent="false" />
+                        <OrderList role="worker" recent="false" />
                     </Authorized>
                 </AuthorizeView>
             </ChildContent>

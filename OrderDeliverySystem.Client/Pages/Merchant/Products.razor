@@ -1,13 +1,18 @@
 ﻿@page "/merchant-items"
 @using System.Net.Http.Json
 @using MudBlazor
-@inject HttpClient httpClient
+@using OrderDeliverySystem.Client.Infrastructure.Services.Item
 @using OrderDeliverySystem.Client.Shared
- @using OrderDeliverySystem.Share.Data.Models 
+@* @using OrderDeliverySystem.Share.Data.Models *@
 @using OrderDeliverySystem.Share.DTOs
 @using OrderDeliverySystem.Client.Shared.Common
+@using Microsoft.AspNetCore.Components.Authorization
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@inject HttpClient httpClient
+@inject ItemService ItemService
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @rendermode InteractiveServer
 
 
@@ -15,28 +20,31 @@
 
 <MudContainer Class="my-10">
 
-    <MudContainer Class=" d-flex justify-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
-        <MudPaper Class="px-16 pt-10 ma-2 " Elevation="3" Width="100%">
-            <div class=" mt-2 d-flex justify-content-between ">
-                <MudText Class="pt-4" Typo="Typo.h4" GutterBottom="false">My Orders</MudText>
-                <MudFab Href="/create-item" Style="color:rgba(112, 0, 0, 1);" Label="Create New Item" />
-            </div>
-            <MudDivider Class=" border-4" Style="border-color:rgba(112, 0, 0, 1);" />
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>ItemList</h3>
+        @* <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateNewItem"> *@
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Href="/create-item">
+            Create New Item
+        </MudButton>
+    </div>
 
-            
-       
     <!-- 表格显示部分 -->
     @* <MudTable Items="@Items" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped"  @bind-SelectedItem="selectedItem1"> *@
-        <MudTable Items="@Items" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<ViewItemDTO,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
-       
+    <MudTable Items="@Items" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<ViewItemDTO,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Items</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
         <HeaderContent>
             <MudTh>Merchant ID</MudTh>
             <MudTh>Item ID</MudTh>
-            <MudTh>Item Name</MudTh>         
+            <MudTh>Item Name</MudTh>
             <MudTh>Item Description</MudTh>
             <MudTh>Price</MudTh>
             <MudTh>Item Picture</MudTh>
             <MudTh>Available</MudTh>
+            <MudTh>Action</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="MerchantId">@context.MerchantId</MudTd>
@@ -44,43 +52,58 @@
             <MudTd DataLabel="Name">@context.ItemName</MudTd>
             <MudTd DataLabel="Description">@context.ItemDescription</MudTd>
             <MudTd DataLabel="Price">@context.ItemPrice.ToString("C")</MudTd>
-            <MudTd DataLabel="Picture">@context.ItemPic</MudTd>          
+            <MudTd DataLabel="Picture">@context.ItemPic</MudTd>
             <MudTd DataLabel="Available">@context.ItemIsAvailable</MudTd>
 
             @* add to cart button  *@
-            @* <MudTd DataLabel="Action">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => AddToCart(context)">
-                    Add to Cart
+            <MudTd DataLabel="Action">
+                <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="() => NavigateToEdit(context.ItemId)">
+                    Modify
                 </MudButton>
-            </MudTd> *@
+                <MudButton Variant="Variant.Filled" OnClick="() => Remove(context.ItemId)">
+                    Remove
+                </MudButton>
+            </MudTd>
 
         </RowTemplate>
         <PagerContent>
             <MudTablePager />
         </PagerContent>
     </MudTable>
-        </MudPaper>
-    </MudContainer>
- 
 
-   <!-- 交互控件部分 -->
+
+    <!-- Temporary debugging using foreach loop to display raw data -->
+    @* <div>
+    <h3>Raw Data (for debugging)</h3>
+    <ul>
+    @foreach (var item in Items)
+    {
+    <li>@item.MerchantId - @item.ItemId - @item.ItemName - @item.ItemDescription - @item.ItemPrice - @item.ItemPic - @item.ItemIsAvailable</li>
+    }
+    </ul>
+    </div> *@
+
+    @*    <!-- 交互控件部分 -->
     <div class="d-flex flex-wrap mt-4">
-        <MudSwitch @bind-Value="hover" Color="Color.Primary">Hover</MudSwitch>
-        <MudSwitch @bind-Value="dense" Color="Color.Secondary">Dense</MudSwitch>
-        <MudSwitch @bind-Value="striped" Color="Color.Tertiary">Striped</MudSwitch>
-        <MudSwitch @bind-Value="bordered" Color="Color.Warning">Bordered</MudSwitch>
-        <MudSpacer />
-        <div style="min-width:200px;">
-            <MudText Class="align-self-center d-inline">Selected: @selectedItem1?.ItemName</MudText>
-        </div>
-    </div> 
+    <MudSwitch @bind-Value="hover" Color="Color.Primary">Hover</MudSwitch>
+    <MudSwitch @bind-Value="dense" Color="Color.Secondary">Dense</MudSwitch>
+    <MudSwitch @bind-Value="striped" Color="Color.Tertiary">Striped</MudSwitch>
+    <MudSwitch @bind-Value="bordered" Color="Color.Warning">Bordered</MudSwitch>
+    <MudSpacer />
+    <div style="min-width:200px;">
+    <MudText Class="align-self-center d-inline">Selected: @selectedItem1?.ItemName</MudText>
+    </div>
+    </div> *@
 
 </MudContainer>
 
 @code {
-    [Parameter]
-    public int userId { get; set; }
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+    [Inject]
+    private IAuthService AuthService { get; set; }
 
+    private int merchantId = 2;
 
     private bool dense = false;
     private bool hover = true;
@@ -102,12 +125,12 @@
     {
         try
         {
-            var httpClient = HttpClientFactory.CreateClient("API");
-            var response = await httpClient.GetFromJsonAsync<List<ViewItemDTO>>($"api/items/merchant/{userId}");
+            var response = await ItemService.GetItems();
 
             if (response != null)
             {
                 Items = response;
+               
             }
         }
         catch (Exception ex)
@@ -121,7 +144,7 @@
         }
     }
 
-     private bool FilterFunc1(ViewItemDTO item) => FilterFunc(item, searchString1);
+    private bool FilterFunc1(ViewItemDTO item) => FilterFunc(item, searchString1);
 
     private bool FilterFunc(ViewItemDTO item, string searchString)
     {
@@ -137,32 +160,11 @@
     }
 
 
-    private async Task Modify(UpdateItemDTO item, int itemId)
+    private void NavigateToEdit(int itemId)
     {
-        try
-        {
-            var httpClient = HttpClientFactory.CreateClient("ApiClient");
-
-          
-            var response = await httpClient.PutAsJsonAsync($"/api/items/{itemId}", item);
-
-            if (response.IsSuccessStatusCode)
-            {
-                Console.WriteLine($"Item {item.ItemName} updated successfully.");
-              
-            }
-            else
-            {
-                Console.WriteLine($"Failed to update item {item.ItemName}. Response: {response.StatusCode}");
-            
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error updating item: {ex.Message}");
-         
-        }
-   }
+        // Navigate to the Edit page and pass the MerchantId as a query parameter
+        NavigationManager.NavigateTo($"/updateMerchantItem/{itemId}");
+    }
 
     private async Task Remove(int itemId)
     {
@@ -170,24 +172,24 @@
         {
             var httpClient = HttpClientFactory.CreateClient("ApiClient");
 
-        
-            var response = await httpClient.DeleteAsync($"/api/items/{itemId}");
+            // DELETE 请求到 /api/items/{itemId} 来删除 Item
+            var response = await ItemService.RemoveItem(itemId);
 
-            if (response.IsSuccessStatusCode)
+            if (response.Succeeded)
             {
-                Console.WriteLine($"Item with id {itemId} deleted successfully.");
-            
+                await LoadMenuItems();
+                StateHasChanged();
             }
             else
             {
-                Console.WriteLine($"Failed to delete item with id {itemId}. Response: {response.StatusCode}");
-          
+                Console.WriteLine($"Failed to delete item with id {itemId}. ");
+                // 处理失败情况，可以显示错误信息
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error deleting item: {ex.Message}");
-            
+            // 可以选择显示异常消息或者做其他处理
         }
     }
 
