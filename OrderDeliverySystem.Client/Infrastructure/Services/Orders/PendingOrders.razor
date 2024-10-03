@@ -1,4 +1,4 @@
-﻿@page "/merchant-orders"
+﻿@page "/worker-ordersis"
 @using System.Net.Http.Json
 @using MudBlazor
 @using OrderDeliverySystem.Client.Infrastructure.Services.Orders
@@ -22,14 +22,14 @@
 <MudContainer Class="my-10">
     <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My Orders</MudText>
 
-    <MudTabs TabHeaderClass="d-flex justify-content-end " Elevation="1" Rounded="true" PanelClass="pa-2" ActiveTabClass="border-solid border-1 mud-border-primary">
+    <MudTabs TabHeaderClass="d-flex justify-content-end " Elevation="1" Rounded="true" PanelClass="pa-6" ActiveTabClass="border-solid border-1 mud-border-primary">
 
         <MudTabPanel>
 
             <ChildContent>
                 <AuthorizeView Roles="Merchant">
                     <Authorized>
-                        <OrderList role="merchant" recent="true" />
+                        <OrderList role="recentOrders" recent="true" />
                     </Authorized>
                 </AuthorizeView>
             </ChildContent>

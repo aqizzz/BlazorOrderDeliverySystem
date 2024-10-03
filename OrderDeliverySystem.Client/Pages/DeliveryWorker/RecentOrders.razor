@@ -1,60 +1,272 @@
-﻿@page "/worker-orders"
-@inject OrderService OrderService
+﻿@page "/worker-recent"
+@*attribute [Authorize(Roles = "Customer")]*@
+@using Microsoft.AspNetCore.Authorization;
+@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using OrderDeliverySystem.Client.Shared
-@inject IJSRuntime JSRuntime
+@using OrderDeliverySystem.Share.DTOs
 @using System.ComponentModel.DataAnnotations
 @using OrderDeliverySystem.Client.Infrastructure.Services.Orders;
 @using OrderDeliverySystem.Client.Shared.Common
-@using OrderDeliverySystem.Share.DTOs
 @using OrderDeliverySystem.Share.Data
-@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
-@using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
-@inject AuthenticationStateProvider AuthenticationStateProvider
+@using System.Security.Claims
 @inject IHttpClientFactory HttpClientFactory
-@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+
+
+@inject OrderService OrderService
+@inject GeocodingService GeocodingService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 @rendermode InteractiveServer
 
 
-<MudContainer Class="my-10">
+
+
+@if (recent != null)
+{
+    
+    <MudContainer Class="my-10">
+       
     <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My Orders</MudText>
-        @if (recentOrders.Any())
-        {
-            @foreach (var order in recentOrders)
+    <MudDivider Class=" border-2" Style="border-color:rgba(112, 0, 0, 1);" />
+    <MudGrid>
+    @foreach(var order in recent)
+    {
+       <MudItem xs="12" sm="12" md="12" Class="d-flex justify-content-between align-items-center border-b-4 border-solid" Style="border-color:rgba(112, 0, 0, 1);">
+        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">OrderId: @order.OrderId</MudText>
+     </MudItem>
+
+    <MudItem xs="12" sm="12" md="2">
+        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">@order.Merchant.MerchantPic</MudText>
+    </MudItem>
+    <MudItem xs="12" sm="12" md="2">
+        <MudGrid>
+            <MudItem xs="12">
+                    <MudText Class="pb-2" Typo="Typo.h5">@order.Merchant.BusinessName</MudText>
+                <div Class="pb-2">
+                <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.AccessTime"></MudIcon>
+                            <MudText Class="d-inline-block" Typo="Typo.body2">Time: @order.Merchant.PreparingTime mins</MudText>
+                </div>
+                <div Class="pb-2">
+                <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.LocationOn"></MudIcon>
+                            <MudText Class="d-inline-block" Typo="Typo.body2">Address: @order.Merchant.User.Addresses.FirstOrDefault().FullAddress</MudText>
+                </div>
+            </MudItem>
+        </MudGrid>
+    </MudItem>
+    <MudItem xs="12" sm="12" md="3" Class="d-flex justify-content-center align-item-center"  GutterBottom="true">
+       <div>
+                <MudText Typo="Typo.body1" Align="Align.Center">
+                    Order Time: @order.CreatedAt.ToString("MM/dd/yy hh:mm tt")</MudText>
+        <MudText Typo="Typo.body1" Align="Align.Center" >Arrived time: 09/14/2024 19:25</MudText>
+                    <MudText Typo="Typo.body1" Align="Align.Center">Status: @order.Status</MudText>
+        </div>
+    </MudItem>
+    <MudItem xs="12" sm="12" md="2" >
+            <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount: $@order.TotalAmount</MudText>
+    </MudItem>
+
+            @if (order.Status.Equals("Approved"))
             {
-            <!-- <OrderCard Order="@order" -->
+                <MudItem xs="12" sm="12" md="3">
+                    <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Assign Dellivery" Style="color: rgba(168, 0, 0, 1);" OnClick="() => UpdateOrder(order)" />
+                </MudItem>
+            }
+             else if (order.Status.Equals("In Delivery"))
+            {
+                <MudItem xs="12" sm="12" md="3">
+                    <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Finish Delivery" Style="color: rgba(168, 0, 0, 1);" OnClick="() => UpdateOrder(order)" />
+                    
+                </MudItem>
+            }
+            
+    
+        <MudItem xs="12" sm="12" md="12" Class=" border-t-4 border-solid mt-4" Style="border-color:rgba(112, 0, 0, 1);">
+       
+        <MudGrid>
+             <MudItem xs="12" sm="12" md="6">
+
+                        @*  <gmp-map center="45.4717513802915, -73.86366488029152"
+                     zoom="10"
+                     map-id="DEMO_MAP_ID"
+                    style="height: 600px"></gmp-map>*@
+                            @if (MerchantLat != 0 && CustomerLat != 0)
+                            {
+                                <GoogleMap MerchantLat="@MerchantLat" MerchantLng="@MerchantLng" CustomerLat="@CustomerLat" CustomerLng="@CustomerLng" Id="@order.OrderId" />
+                            }
+                            else
+                            {
+                                <MudText>Loading map...</MudText>
+                            }
+                       
+            </MudItem>          
+         
+             <MudItem xs="12" sm="12" md="6">
+            </MudItem>
+        </MudGrid>
+        </MudItem>
+
+    }
+</MudGrid>
+</MudContainer>
+}
+else
+{
+    <MudText>Loading...</MudText>
+}
+@code {
+    private ClaimsPrincipal user;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+    [Inject]
+    private IAuthService AuthService { get; set; }
+    [Parameter]
+    public int UserId { get; set; }
+  
+    private OrderDTO order;
+
+    [Parameter]
+    public UpdateOrderDTO updateOrder { get; set; }
+
+    private List<OrderDTO> recent = new List<OrderDTO>();
+
+    private double MerchantLat;
+    private double MerchantLng;
+    private double CustomerLat;
+    private double CustomerLng;
+    private int orderId;
+    private bool isLoading = true;
+    protected override async Task OnInitializedAsync()
+    {
+
+        @*await base.OnInitializedAsync();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;*@
+        //orderId = int.Parse(Id);
+        await base.OnInitializedAsync();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            if (user.IsInRole("Worker"))
+            {
+                await LoadOrders();
+            }
+            else
+            {
+                Console.WriteLine("User is not in the Worker role.");
             }
         }
         else
         {
-            <MudText>You have no recent orders!</MudText>
+            Console.WriteLine("User is not authenticated");
         }
 
-</MudContainer>
-@code {
-
-    private List<OrderDTO> recentOrders = new();
-    private List<OrderDTO> orderHistory = new();
-    // private OrderDTO? selectedOrder = new();
-    [Inject]
-    private IAuthService AuthService { get; set; }
-
-
-    protected override async Task OnInitializedAsync()
-    {
-
-        await base.OnInitializedAsync();
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        int workerId = 9;
-        //recentOrders = await OrderService.GetOrdersByRole("worker",  true);
-       
     }
-    private void ShowOrderDetails(OrderDTO order)
+
+
+
+    private async Task LoadOrders()
     {
-        //selectedOrderItems = order.OrderItems;
+        try
+        {
+            recent = await OrderService.GetOrdersTableByRole("worker", true);
+            Console.WriteLine($"Order History Count: {recent.Count}");
+            if (recent != null)
+            {
+                foreach (var order in recent)
+                {
+                    await loadMap(order);
+                    Console.WriteLine($"Order Id: {order.OrderId}, Created At: {order.CreatedAt}, Merchant: {order.Merchant.BusinessName}");
+                }
+            }
+
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading orders: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
     }
-    bool _expanded = true;
+    private async Task loadMap(OrderDTO thisOrder)
+    {
+        var merchantAddress = thisOrder.Merchant.User.Addresses?.FirstOrDefault()?.FullAddress;
+        var customerAddress = thisOrder.Customer.User.Addresses?.FirstOrDefault()?.FullAddress;
+        Console.WriteLine($"MAddress: {merchantAddress}");
+        Console.WriteLine($"CAddress: {customerAddress}");
+
+        if (merchantAddress != null && customerAddress != null)
+        {
+            (MerchantLat, MerchantLng) = await GeocodingService.GetCoordinatesFromAddressAsync(merchantAddress);
+            (CustomerLat, CustomerLng) = await GeocodingService.GetCoordinatesFromAddressAsync(customerAddress);
+        }
+        Console.WriteLine($"MCoordinates: {MerchantLat}, { MerchantLng}");
+        Console.WriteLine($"CCoordinates: {CustomerLat}, {CustomerLng}");
+    }
+
+    private async Task UpdateOrder(OrderDTO thisOrder)
+    {
+        if (thisOrder == null)
+        {
+            Console.WriteLine("thisOrder is null");
+            return; // Early return if thisOrder is null
+        }
+
+        // Check if order is initialized
+        if (order == null)
+        {
+            updateOrder = new UpdateOrderDTO(); // Initialize if necessary
+        }
+
+        // Accessing properties with checks
+        if (thisOrder.OrderId != null)
+        {
+            updateOrder.OrderId = thisOrder.OrderId; // Ensure thisOrder is not null before accessing
+        }
+
+        if (thisOrder.Status != null)
+        {
+
+            updateOrder.Status = thisOrder.Status; // Update status
+
+
+        }
+        var status = updateOrder.Status;
+        // Perform the update
+        try
+        {
+            if (status.Equals("Approved"))
+            {
+                await OrderService.AssignOrder(updateOrder);
+            }
+            else if (status.Equals("In Delivery"))
+            {
+                await OrderService.FinishOrder(updateOrder);
+            }
+
+            Navigation.NavigateTo("/worker-recent", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating order: {ex.Message}");
+        }
+
+        // Trigger UI update
+        StateHasChanged();
+    }
+
+   
+
+    bool _expanded = false;
 
     private void OnExpandCollapseClick()
     {
@@ -62,3 +274,4 @@
     }
 
 }
+

@@ -321,7 +321,7 @@ namespace OrderDeliverySystem.Share.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderItemId"));
 
                     b.Property<decimal>("Discount")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(5, 2)");
 
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
@@ -336,7 +336,7 @@ namespace OrderDeliverySystem.Share.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Tax")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(5, 2)");
 
                     b.HasKey("OrderItemId");
 
