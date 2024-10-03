@@ -187,9 +187,9 @@ namespace OrderDeliverySystemApi.Controllers
             {
                 User = newUser,
                 UserId = newUser.UserId,
-                WorkerAvailability = false,
+                WorkerAvailability = user.WorkerAvailability || false,
                 CommissionRate = user.CommissionRate,
-                LastTaskAssigned = null
+                LastTaskAssigned = DateTime.Now
             };
 
             context.DeliveryWorkers.Add(newWorker);

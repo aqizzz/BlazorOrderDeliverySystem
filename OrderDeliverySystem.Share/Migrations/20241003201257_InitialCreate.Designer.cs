@@ -12,7 +12,7 @@ using OrderDeliverySystem.Share.Data;
 namespace OrderDeliverySystem.Share.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20241003161852_InitialCreate")]
+    [Migration("20241003201257_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -157,13 +157,13 @@ namespace OrderDeliverySystem.Share.Migrations
                         .HasPrecision(5, 2)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("IsAvailable")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime?>("LastTaskAssigned")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("WorkerAvailability")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("WorkerId");
@@ -180,11 +180,11 @@ namespace OrderDeliverySystem.Share.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("IsAvailable")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("ItemDescription")
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("ItemIsAvailable")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ItemName")
                         .HasColumnType("TEXT");
@@ -388,6 +388,9 @@ namespace OrderDeliverySystem.Share.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(true);
+
+                    b.Property<int>("IsActived")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("LastName")
                         .HasColumnType("TEXT");

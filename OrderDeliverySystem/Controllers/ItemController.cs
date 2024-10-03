@@ -27,7 +27,7 @@ namespace OrderDeliverySystem.Controllers
         {
             var items = await _context.Items
                 .Include(i => i.Merchant)
-                .Where(i => i.ItemIsAvailable == true)
+                .Where(i => i.IsAvailable == 1)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -59,7 +59,7 @@ namespace OrderDeliverySystem.Controllers
         {
             var items = await _context.Items
                 .Include(i => i.Merchant)
-                .Where(i => i.Merchant.UserId == merchantId && i.ItemIsAvailable == true)
+                .Where(i => i.Merchant.UserId == merchantId && i.IsAvailable == 1)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

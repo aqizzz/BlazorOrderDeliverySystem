@@ -23,6 +23,7 @@ namespace OrderDeliverySystem.Share.Migrations
                     LastName = table.Column<string>(type: "TEXT", nullable: true),
                     Phone = table.Column<string>(type: "TEXT", nullable: true),
                     Role = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    IsActived = table.Column<int>(type: "INTEGER", nullable: false),
                     IsActive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
@@ -82,7 +83,7 @@ namespace OrderDeliverySystem.Share.Migrations
                     WorkerId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     UserId = table.Column<int>(type: "INTEGER", nullable: false),
-                    WorkerAvailability = table.Column<bool>(type: "INTEGER", nullable: false),
+                    IsAvailable = table.Column<int>(type: "INTEGER", nullable: false),
                     CommissionRate = table.Column<decimal>(type: "TEXT", precision: 5, scale: 2, nullable: true),
                     LastTaskAssigned = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
@@ -172,7 +173,7 @@ namespace OrderDeliverySystem.Share.Migrations
                     ItemDescription = table.Column<string>(type: "TEXT", nullable: true),
                     ItemPrice = table.Column<decimal>(type: "TEXT", precision: 10, scale: 2, nullable: false),
                     ItemPic = table.Column<string>(type: "TEXT", nullable: true),
-                    ItemIsAvailable = table.Column<bool>(type: "INTEGER", nullable: false)
+                    IsAvailable = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
