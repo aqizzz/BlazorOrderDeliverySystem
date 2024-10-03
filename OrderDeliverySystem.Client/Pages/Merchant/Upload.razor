@@ -1,5 +1,62 @@
-﻿<h3>Upload</h3>
+﻿@page "/upload"
+@inject IHttpClientFactory httpClientFactory
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveAuto
+<br /><br /><br /><br />
+<InputFile OnChange="OnFileSelected" />
+<MudButton @onclick="UploadImage">Upload</MudButton>
 
 @code {
+    private IBrowserFile selectedFile;
+    private string uploadUrl;
 
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+    }
+
+    private async Task UploadImage()
+    {
+        if (selectedFile != null)
+        {
+            var httpClient = this.httpClientFactory.CreateClient("API");
+
+            try
+            {
+                // Call backend to get the SAS Token
+                var response = await httpClient.GetStringAsync($"api/Blob/GetSasUrl?fileName={selectedFile.Name}");
+                uploadUrl = response; // SAS URL
+
+                // Prepare the file content with correct MIME type
+                var content = new StreamContent(selectedFile.OpenReadStream());
+                content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(selectedFile.ContentType);
+
+                // Use a separate HttpClient to upload the file to Blob Storage using SAS URL
+                var uploadHttpClient = new HttpClient(); // Don't use the API HttpClient for the SAS upload
+                var result = await uploadHttpClient.PutAsync(uploadUrl, content);
+
+                if (result.IsSuccessStatusCode)
+                {
+                    // Get the uploaded blob URL (without the SAS token)
+                    var blobUrl = uploadUrl.Split('?')[0];
+                    Console.WriteLine($"Image uploaded successfully: {blobUrl}");
+                    await LogToBrowserConsole($"Url: {blobUrl}");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to upload image to Blob Storage.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error uploading image: {ex.Message}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("No file selected.");
+        }
+    }
+
+    private async Task LogToBrowserConsole(string message) => await JSRuntime.InvokeVoidAsync("console.log", message);
 }
