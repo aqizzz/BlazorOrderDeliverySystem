@@ -4,13 +4,8 @@ using System.Net;
 
 namespace OrderDeliverySystem.Share.Data
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) 
-        {
-            
-        }
-
         public DbSet<User> Users { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<DeliveryWorker> DeliveryWorkers { get; set; }
@@ -171,8 +166,7 @@ namespace OrderDeliverySystem.Share.Data
             {
                 entity.HasKey(r => r.ReviewId);
                 entity.HasOne(r => r.Order)
-                    .WithMany(o => o.Reviews)
-                    .HasForeignKey(r => r.OrderId)
+                    .WithOne(o => o.Reviews)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(r => r.Customer)

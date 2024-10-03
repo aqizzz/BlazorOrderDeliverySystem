@@ -85,6 +85,38 @@ namespace OrderDeliverySystem.Controllers
             return Ok(viewItems);
         }
 
+        // GET: api/items/merchant/{merchantId}
+        [HttpGet("merchant")]
+        [Authorize(Roles = "Merchant")]
+        public async Task<ActionResult<IEnumerable<ViewItemDTO>>> GetItems()
+        {
+            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            var merchant = await _context.Merchants.FirstOrDefaultAsync(m => m.UserId == userId);
+            if (merchant == null)
+            {
+                return NotFound(new { Error = "Merchant not found." });
+            }
+
+            var items = await _context.Items
+               .Where(i => i.MerchantId == merchant.MerchantId)
+               .ToListAsync();
+
+            // 将 Item 实体转换为 ViewItemDTO
+            var viewItems = items.Select(item => new ViewItemDTO
+            {
+                MerchantId = item.MerchantId,
+                ItemId = item.ItemId,
+                ItemName = item.ItemName,
+                ItemDescription = item.ItemDescription,
+                ItemPrice = item.ItemPrice,
+                ItemPic = item.ItemPic,
+                ItemIsAvailable = item.ItemIsAvailable
+            }).ToList();
+
+            return Ok(viewItems);
+        }
+
         // GET: api/items/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<ViewItemDTO>> GetItem(int id)
@@ -194,20 +226,19 @@ namespace OrderDeliverySystem.Controllers
 
 
         // PUT: api/items/{id}
-        [HttpPut("{id}")]
+        [HttpPut("{itemId}")]
         [Authorize(Roles = "Merchant")]
-        public async Task<ActionResult<Item>> UpdateItem(int id, UpdateItemDTO updatedItemDto)
+        public async Task<ActionResult<Item>> UpdateItem(int itemId, UpdateItemDTO updatedItemDto)
         {
             // 获取当前用户的 ID
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             // 查找数据库中的 Item
-            var existingItem = await _context.Items.FindAsync(id);
+            var existingItem = await _context.Items.FindAsync(itemId);
             if (existingItem == null)
             {
-                return NotFound($"Item with id {id} not found.");
+                return NotFound($"Item not found.");
             }
-
 
             // 更新属性
             existingItem.ItemName = updatedItemDto.ItemName;
@@ -238,12 +269,7 @@ namespace OrderDeliverySystem.Controllers
                 return NotFound($"Item with id {id} not found.");
             }
 
-            // Ensure the user is the owner of the item 
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Get the current user's ID
-            if (item.MerchantId != int.Parse(userId))
-            {
-                return Forbid(); // User is not authorized to delete this item
-            }
+
 
             // Remove the item from the database
             _context.Items.Remove(item);

@@ -39,8 +39,10 @@
 <AuthorizeView Roles="Worker">
     <Authorized>
         <MudNavLink Href="/worker-profile" Icon="@Icons.Material.Filled.Dashboard">Profile Management</MudNavLink>
-        <MudNavLink Href="/worker-orders" Icon="@Icons.Material.Filled.Dashboard">Order</MudNavLink>
-        <MudNavLink Href="/worker-history-orders" Icon="@Icons.Material.Filled.Dashboard">Histiry Order</MudNavLink>
+       
+         <MudNavLink Href="/worker-recent" Icon="@Icons.Material.Filled.Dashboard">Recent Order</MudNavLink>
+         <MudNavLink Href="/worker-orders" Icon="@Icons.Material.Filled.Dashboard">Mylist Order</MudNavLink>
+        <MudNavLink Href="/worker-history-orders" Icon="@Icons.Material.Filled.Dashboard">History Orders</MudNavLink>
         <MudNavLink Href="/password" Icon="@Icons.Material.Filled.Receipt">Password Reset</MudNavLink>
     </Authorized>
 </AuthorizeView>
