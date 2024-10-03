@@ -154,7 +154,15 @@
     [Parameter]
     public int UserId { get; set; }
 
-    public CreateOrderDTO order = new CreateOrderDTO();
+    public CreateOrderDTO order = new CreateOrderDTO
+    {
+        CartId = 0,
+        CustomerId = 0,
+        MerchantIds = new List<int>(),
+        TotalAmount = 0m,
+        CartItems = new List<GetOrderItemResponseDTO>(),
+        Merchants = new List<MerchantProfileDTO>(),
+    };
 
     private const decimal TaxRate = 0.15m;
     private const decimal DeliveryFee = 6.00m;
@@ -178,7 +186,6 @@
     private bool isLoading = true;
     private List<int> merchantIds = new();
     private List<MerchantProfileDTO> merchants = new();
-
     private List<GetOrderItemResponseDTO> cartItems = new();
 
     bool success;

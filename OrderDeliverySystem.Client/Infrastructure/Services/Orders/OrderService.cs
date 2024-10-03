@@ -5,6 +5,7 @@ using System.Runtime.Intrinsics.Arm;
 using System.Text.Json;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
+using OrderDeliverySystem.Client.Infrastructure.Extensions;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.Data.Models;
 using OrderDeliverySystem.Share.DTOs;
@@ -66,15 +67,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
 
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
             var uri = $"{Base}";
-            var response = await httpClient.PostAsJsonAsync(uri, order);
-            if (!response.IsSuccessStatusCode)
-            {
-                var errors = await response.Content.ReadFromJsonAsync<string>();
-                return errors != null
-                    ? Result.Failure(errors) // Return the errors if present
-                    : Result.Failure("An unknown error occurred.");
-            }
-            return Result.Success;
+            return await httpClient.PostAsJsonAsync(uri, order).ToResult() ;
         }
     
 
@@ -85,15 +78,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
 
             var uri = $"{Base}/update";
-            var response = await httpClient.PutAsJsonAsync(uri, order);
-            if (!response.IsSuccessStatusCode)
-            {
-                var errors = await response.Content.ReadFromJsonAsync<string>();
-                return errors != null
-                    ? Result.Failure(errors) // Return the errors if present
-                    : Result.Failure("An unknown error occurred.");
-            }
-            return Result.Success;
+            return await httpClient.PutAsJsonAsync(uri, order).ToResult(); 
         }
 
 
@@ -125,15 +110,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
 
             var uri = $"{Base}/cancel";
-            var response = await httpClient.PutAsJsonAsync(uri, order);
-            if (!response.IsSuccessStatusCode)
-            {
-                var errors = await response.Content.ReadFromJsonAsync<string>();
-                return errors != null
-                    ? Result.Failure(errors) // Return the errors if present
-                    : Result.Failure("An unknown error occurred.");
-            }
-            return Result.Success;
+            return await httpClient.PutAsJsonAsync(uri, order).ToResult();
         }
 
         public async Task<Result> ApproveOrder(UpdateOrderDTO order)
@@ -143,15 +120,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
 
             var uri = $"{Base}/approve";
-            var response = await httpClient.PutAsJsonAsync(uri, order);
-            if (!response.IsSuccessStatusCode)
-            {
-                var errors = await response.Content.ReadFromJsonAsync<string>();
-                return errors != null
-                    ? Result.Failure(errors) // Return the errors if present
-                    : Result.Failure("An unknown error occurred.");
-            }
-            return Result.Success;
+            return await httpClient.PutAsJsonAsync(uri, order).ToResult();
         }
 
         public async Task<Result> AssignOrder(UpdateOrderDTO order)
@@ -161,15 +130,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
 
             var uri = $"{Base}/assign";
-            var response = await httpClient.PutAsJsonAsync(uri, order);
-            if (!response.IsSuccessStatusCode)
-            {
-                var errors = await response.Content.ReadFromJsonAsync<string>();
-                return errors != null
-                    ? Result.Failure(errors) // Return the errors if present
-                    : Result.Failure("An unknown error occurred.");
-            }
-            return Result.Success;
+            return await httpClient.PutAsJsonAsync(uri, order).ToResult();
         }
 
         public async Task<Result> FinishOrder(UpdateOrderDTO order)
@@ -179,15 +140,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Orders
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
 
             var uri = $"{Base}/finish";
-            var response = await httpClient.PutAsJsonAsync(uri, order);
-            if (!response.IsSuccessStatusCode)
-            {
-                var errors = await response.Content.ReadFromJsonAsync<string>();
-                return errors != null
-                    ? Result.Failure(errors) // Return the errors if present
-                    : Result.Failure("An unknown error occurred.");
-            }
-            return Result.Success;
+            return await httpClient.PutAsJsonAsync(uri, order).ToResult();
         }
     }
 }

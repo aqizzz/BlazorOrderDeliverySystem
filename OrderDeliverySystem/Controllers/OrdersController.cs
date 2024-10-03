@@ -63,18 +63,18 @@ namespace OrderDeliverySystemApi.Controllers
             // Fetch required entities from the database (Merchant and Customer)
             var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-
+           
             var customer = await _context.Customers.Include(c => c.User).FirstOrDefaultAsync(c => c.UserId == userId);
 
 
             if (customer == null)
             {
-                return NotFound("Customer not found.");
+                return NotFound(new { Eoor = "Customer not found."});
             }
             var customerId = orderDto.CustomerId;
             if (customerId != customer.CustomerId)
             {
-                return NotFound("Not the user");
+                return NotFound(new { Eoor = "Not the user" });
             }
 
             var customerAddress = await _context.Addresses
@@ -83,96 +83,79 @@ namespace OrderDeliverySystemApi.Controllers
 
             if (customerAddress == null)
             {
-                return NotFound($"Customer with ID {customer.UserId} not found.");
+                return NotFound(new { Eoor = $"Customer with ID {customer.UserId} not found." });
             }
 
 
             var merchants = orderDto.Merchants;
-            if (merchants == null)
+            if (merchants == null || merchants.Count() <= 0)
             {
-                return NotFound($"No merchant was found.");
+                return NotFound(new { Eoor = $"No merchant was found." });
             }
-            if (merchants.Count() > 0)
+           
+            foreach (var thisMerchant in merchants)
             {
-                foreach (var thisMerchant in merchants)
+                if (thisMerchant == null)
                 {
-                    if (thisMerchant == null)
-                    {
-                        return NotFound($"No merchant was found.");
-                    }
-
-
-                    var merchant = await _context.Merchants.FindAsync(thisMerchant.UserId);
-                    if (merchant == null)
-                    {
-                        return NotFound($"Merchant with ID {thisMerchant.UserId} not found.");
-                    }
-
-                    var merchantAddress = await _context.Addresses
-                       .Where(a => a.UserId == merchant.UserId)
-                       .FirstOrDefaultAsync();
-
-                    if (merchantAddress == null)
-                    {
-                        return NotFound($"Address with ID {merchant.UserId} not found.");
-                    }
-
-
-                    var order = new Order
-                    {
-                        CustomerId = customer.CustomerId,
-                        MerchantId = merchant.MerchantId,
-                        PickupAddressId = merchantAddress.AddressId,
-                        DropoffAddressId = customerAddress.AddressId,
-                        TotalAmount = orderDto.TotalAmount,
-                        Status = "Pending",
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now,
-                        Merchant = merchant,
-                        Customer = customer,
-                        OrderItems = new List<OrderItem>(),
-                    };
-
-                    _context.Orders.Add(order);
-                    await _context.SaveChangesAsync();
-                    var newOrderId = order.OrderId;
-                    decimal totalAmount = 0m;
-                    foreach (var orderItemDto in orderDto.CartItems)
-                    {
-                        // Fetch the Item based on ItemId from the DTO
-                        var item = await _context.Items.FindAsync(orderItemDto.ItemId);
-                        if (item == null)
-                        {
-                            return NotFound($"Item with ID {orderItemDto.ItemId} not found.");
-                        }
-                        if (item.MerchantId == merchant.MerchantId)
-                        {
-                            var orderItem = new OrderItem
-                            {
-                                ItemId = orderItemDto.ItemId,
-                                Quantity = orderItemDto.Quantity,
-                                PriceAtOrder = orderItemDto.ItemPrice,
-                                OrderId = newOrderId,
-                                Discount = 0.00m,
-                                Tax = 0.15m,
-                                Order = order, // Set the Order property
-                                Item = item    // Set the Item property (required)
-                            };
-
-                            order.OrderItems.Add(orderItem);
-                            totalAmount += (decimal)orderItemDto.ItemPrice * (decimal)orderItemDto.Quantity;
-                        }
-                    }
-
-                    order.TotalAmount = totalAmount;
-
-                    await _context.SaveChangesAsync();
-                    totalAmount = 0m;
+                    return NotFound(new { Eoor = $"No merchant was found." });
                 }
+
+
+                var merchant = await _context.Merchants.FindAsync(thisMerchant.UserId);
+                if (merchant == null)
+                {
+                    return NotFound(new { Eoor = $"Merchant with ID {thisMerchant.UserId} not found." });
+                }
+
+                var merchantAddress = await _context.Addresses
+                    .Where(a => a.UserId == merchant.UserId)
+                    .FirstOrDefaultAsync();
+
+                if (merchantAddress == null)
+                {
+                    return NotFound(new { Eoor = $"Address with ID {merchant.UserId} not found." });
+                }
+
+                var order = new Order
+                {
+                    CustomerId = customer.CustomerId,
+                    MerchantId = merchant.MerchantId,
+                    PickupAddressId = merchantAddress.AddressId,
+                    DropoffAddressId = customerAddress.AddressId,
+                    TotalAmount = orderDto.TotalAmount,
+                    Status = "Pending",
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now,
+                    Merchant = merchant,
+                    Customer = customer,
+                    OrderItems = new List<OrderItem>(),
+                };
+
+                _context.Orders.Add(order);
+                await _context.SaveChangesAsync();
+                var newOrderId = order.OrderId;
+              
+                var cartItems  = await _context.CartItems
+                    .Include(c => c.Item)
+                    .ToListAsync();
+
+                var orderItem = cartItems.Select( C => new OrderItem
+                {
+                    ItemId = C.ItemId,
+                    Quantity = C.Quantity,
+                    PriceAtOrder = C.Item.ItemPrice,
+                    OrderId = newOrderId,
+                    Discount = 0.00m,
+                    Tax = 0.15m,
+                    Order = order, // Set the Order property
+                    Item = C.Item,  // Set the Item property (required)
+                }).ToList();
+
+                order.OrderItems = orderItem;
+
+                await _context.SaveChangesAsync();
             }
-
-
-
+            
             // Return created order
             return Ok("MenuItem has been successfully updated");
 
@@ -221,7 +204,7 @@ namespace OrderDeliverySystemApi.Controllers
             }
             else
             {
-                return NotFound("No order need to be updated here");
+                return NotFound(new { Eoor = "No order need to be updated here" });
             }
 
 
@@ -244,19 +227,19 @@ namespace OrderDeliverySystemApi.Controllers
 
                 if (worker == null)
                 {
-                    return NotFound("No worker can take this Order");
+                    return NotFound(new { Eoor = "No worker can take this Order" });
                 }
 
                 var workerId = order.WorkerId;
                 if (workerId == null || workerId <= 0)
                 {
-                    return NotFound("No worker can take this Order");
+                    return NotFound(new { Eoor = "No worker can take this Order" });
                 }
                 var exitorder = await _context.Orders.Where(o => o.Status.Equals("Approved") && o.WorkerId == workerId).ToListAsync();
 
                 if (exitorder != null && exitorder.Count > 1)
                 {
-                    return NotFound("No worder can be found");
+                    return NotFound(new { Eoor = "No worder can be found" });
 
                 }
                 else if (exitorder.Count == 1)
@@ -293,14 +276,14 @@ namespace OrderDeliverySystemApi.Controllers
                 var workerId = order.WorkerId;
                 if (workerId == null || workerId <= 0)
                 {
-                    return NotFound("No worker can take this Order");
+                    return NotFound(new { Eoor = "No worker can take this Order" });
                 }
                 var worker = await _context.DeliveryWorkers.FindAsync(workerId);
 
 
                 if (worker == null)
                 {
-                    return NotFound("No worker can take this Order");
+                    return NotFound(new { Eoor = "No worker can take this Order" });
                 }
                 worker.WorkerAvailability = true;
                 worker.LastTaskAssigned = DateTime.Now;
@@ -311,7 +294,7 @@ namespace OrderDeliverySystemApi.Controllers
             }
             else
             {
-                return NotFound("No valid Status");
+                return NotFound(new { Eoor = "No valid Status" });
             }
 
             await _context.SaveChangesAsync();
@@ -328,7 +311,7 @@ namespace OrderDeliverySystemApi.Controllers
             var customer = await _context.Customers.FindAsync(customerId);
             if (customer == null)
             {
-                return NotFound("Customer not found.");
+                return NotFound(new { Eoor = "Customer not found." });
             }
             var recentOrders = await _context.Orders
                 .Where(o => o.CustomerId == customerId && o.Status != "Delivered")
@@ -343,7 +326,7 @@ namespace OrderDeliverySystemApi.Controllers
 
             if (!recentOrders.Any())
             {
-                return NotFound("No recent orders found for this customer.");
+                return NotFound(new { Eoor = "No recent orders found for this customer." });
             }
             return Ok(recentOrders);
         }
@@ -369,7 +352,7 @@ namespace OrderDeliverySystemApi.Controllers
 
             if (!orderHistory.Any())
             {
-                return NotFound("No order history found for this customer.");
+                return NotFound(new { Eoor = "No order history found for this customer." });
             }
             return Ok(orderHistory);
         }
@@ -381,12 +364,12 @@ namespace OrderDeliverySystemApi.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userIdClaim == null)
             {
-                return Unauthorized("User is not authenticated.");
+                return Unauthorized(new { Eoor = "User is not authenticated." });
             }
             if (!int.TryParse(userIdClaim, out int userId))
             {
                 // Return bad request if the user ID is not valid
-                return BadRequest("Invalid user ID.");
+                return BadRequest(new { Eoor = "Invalid user ID." });
             }
 
             if (order == null || order.OrderId <= 0)
