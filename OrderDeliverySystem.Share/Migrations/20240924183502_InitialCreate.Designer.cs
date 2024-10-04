@@ -12,7 +12,7 @@ using OrderDeliverySystem.Share.Data;
 namespace OrderDeliverySystem.Share.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20241003062809_InitialCreate")]
+    [Migration("20240924183502_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -324,7 +324,7 @@ namespace OrderDeliverySystem.Share.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderItemId"));
 
                     b.Property<decimal>("Discount")
-                        .HasColumnType("decimal(5, 2)");
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
@@ -339,7 +339,7 @@ namespace OrderDeliverySystem.Share.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Tax")
-                        .HasColumnType("decimal(5, 2)");
+                        .HasColumnType("decimal(18, 2)");
 
                     b.HasKey("OrderItemId");
 

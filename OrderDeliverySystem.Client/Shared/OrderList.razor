@@ -17,8 +17,12 @@
 @rendermode InteractiveServer
 
 
-<MudTable Items="@orders" FixedHeader=true Hover="true" Height="400px"  Loading="@isLoading" LoadingProgressColor="Color.Error">
-   
+<MudTable Items="@orders" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<OrderDTO,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
+    @*<ToolBarContent>
+    <MudText Class="my-2" Typo="Typo.h4">Orders</MudText>
+    <MudSpacer />
+    <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>*@
     <HeaderContent>
         <MudTh Class="text-center">OrderId</MudTh>
         <MudTh Class="text-center">OrderTime</MudTh>
@@ -58,6 +62,14 @@
 
                 <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Cancel" Color="Color.Default" OnClick="() => CancelOrder(context)" />
             }
+            else if (context.Status.Equals("Approved"))
+            {
+                <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="In Deliveryy" Style="color: rgba(168, 0, 0, 1);" OnClick="() => UpdateOrder(context)" />
+            }
+            else if (context.Status.Equals("In Delivery"))
+            {
+                <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="Finish Delivery" Style="color: rgba(168, 0, 0, 1);" OnClick="() => UpdateOrder(context)" />
+            }
             else
             {
                 <MudFab Class="d-inline-block m-1" Variant="Variant.Filled" Label="@context.Status" Style="color: rgba(168, 0, 0, 1);" Disabled="true" />
@@ -71,6 +83,17 @@
         <MudTablePager />
     </PagerContent>
 </MudTable>
+
+<div class="d-flex flex-wrap mt-4">
+    <MudSwitch @bind-Value="hover" Color="Color.Primary">Hover</MudSwitch>
+    <MudSwitch @bind-Value="dense" Color="Color.Secondary">Dense</MudSwitch>
+    <MudSwitch @bind-Value="striped" Color="Color.Tertiary">Striped</MudSwitch>
+    <MudSwitch @bind-Value="bordered" Color="Color.Warning">Bordered</MudSwitch>
+    <MudSpacer />
+    <div style="min-width:200px;">
+        <MudText Class="align-self-center d-inline">Selected: @selectedItem1?.OrderId</MudText>
+    </div>
+</div>
 
 
 @code {
@@ -89,8 +112,6 @@
     [Parameter]
     public UpdateOrderDTO order { get; set; }
 
-    public bool ShowErrors { get; set; } = false;
-    public string Errors { get; set; } = string.Empty;
 
 
     private bool dense = false;
@@ -189,20 +210,14 @@
         // Perform the update
         try
         {
-            var result=await Orderservice.ApproveOrder(order);
-            
-            Navigation.NavigateTo("/merchant-orders", forceLoad: true);
-            if (result.Succeeded)
+            await Orderservice.UpdateOrder(order);
+            if (UserId<=6)
             {
-                ShowErrors = false;
-                StateHasChanged();
-                NavigationManager.NavigateTo("/my-orders");
-
+                Navigation.NavigateTo("/merchant-worker", forceLoad: true);
             }
             else
             {
-                Errors = result.Error;
-                ShowErrors = true;
+                Navigation.NavigateTo("/merchant-worker", forceLoad: true);
             }
 
         }

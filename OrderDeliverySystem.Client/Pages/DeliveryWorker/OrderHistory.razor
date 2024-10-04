@@ -41,9 +41,9 @@
 			<MudTd>@context.OrderId</MudTd>
 			<MudTd>@context.CreatedAt</MudTd>
 			<MudTd>@context.Merchant.BusinessName</MudTd>
-			<MudTd>@context.Customer.User.Addresses?.FirstOrDefault()?.FullAddress</MudTd>
+			<MudTd>@context.Customer.User.Addresses.FirstOrDefault().FullAddress</MudTd>
 			<MudTd>@context.OrderItems.Count()</MudTd>
-			<MudTd>@context.DeliveryWorker?.CommissionRate</MudTd>
+			<MudTd>@context.DeliveryWorker.CommissionRate</MudTd>
 			<MudTd></MudTd>
 			</RowTemplate>
 	</MudTable>
@@ -59,7 +59,7 @@
 
 	[CascadingParameter]
 	private Task<AuthenticationState> authenticationState { get; set; }
-	private List<OrderDTO> orderHistory = new List<OrderDTO>();
+	private List<OrderDTO> orderHistory = new();
 	[Inject]
 	private IAuthService AuthService { get; set; }
 	[Parameter]
@@ -93,13 +93,13 @@
 			Console.WriteLine("User is not authenticated");
 		}
 
-		
+
 	}
 	private async Task LoadOrders()
 	{
 		try
 		{
-			orderHistory = await Orderservice.GetOrdersTableByRole("worker", false);
+			orderHistory = await Orderservice.GetOrdersTableByRole("worker", true);
 			Console.WriteLine($"Order History Count: {orderHistory.Count}");
 			if (orderHistory != null)
 			{

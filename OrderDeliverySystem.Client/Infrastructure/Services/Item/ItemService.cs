@@ -63,8 +63,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Item
         {
             var httpClient = httpClientFactory.CreateClient("API");
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
-            var path = basePath + "/merchant";
-            return await httpClient.GetFromJsonAsync<List<ViewItemDTO>>(path);
+            return await httpClient.GetFromJsonAsync<List<ViewItemDTO>>(basePath);
         }
 
         public async Task<Result> RemoveItem(int itemId)

@@ -12,11 +12,11 @@ namespace OrderDeliverySystem.Share.DTOs.PlacedOrderDTO
             public int CartItemId { get; set; }
             public int MerchantId { get; set; }
             public int ItemId { get; set; }
-            public string? ItemName { get; set; }
+            public string ItemName { get; set; }
             public decimal ItemPrice { get; set; }
-            public string? ItemPic { get; set; }
+            public string ItemPic { get; set; }
             public int Quantity { get; set; }
-            public MerchantProfileDTO? MerchantProfile { get; set; }
+            public MerchantProfileDTO MerchantProfile { get; set; }
        
 
 
