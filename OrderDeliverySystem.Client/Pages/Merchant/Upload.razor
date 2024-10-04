@@ -1,22 +1,95 @@
 ﻿@page "/upload"
 @inject IHttpClientFactory httpClientFactory
+@using System.Security.Claims
+@using Azure.Storage.Blobs
+@using Azure.Storage.Blobs.Models
+@inject BlobServiceClient blobService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveAuto
+
+
 <br /><br /><br /><br />
+
+
+
 <InputFile OnChange="OnFileSelected" />
-<MudButton @onclick="UploadImage">Upload</MudButton>
+<MudButton @onclick="UploadImage">Upload</MudButton><p>@UserId</p>
 
 @code {
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+
+    private ClaimsPrincipal user;
+
     private IBrowserFile selectedFile;
     private string uploadUrl;
+
+    public string UserId { get; set; }
+
+    string newBlobName = string.Empty;
+    bool loadedPhoto = false;
+    bool uploadSuccessful = false;
+
+    private string uploadedBlobUrl = string.Empty;
 
     private async Task OnFileSelected(InputFileChangeEventArgs e)
     {
         selectedFile = e.File;
+
+        uploadSuccessful = false;
+
+        await LogToBrowserConsole($"UserId: {uploadedBlobUrl}");
+
+        var containerClient = blobService.GetBlobContainerClient(UserId);
+
+        var response = await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
+
+        if (response != null)
+        {
+            await LogToBrowserConsole($"Container '{UserId}' created or already exists.");
+        }
+
+        newBlobName = $"{Guid.NewGuid().ToString()}.jpg";
+
+        await LogToBrowserConsole($"New Blob Name: {newBlobName}");
+
+        var blobClient = containerClient.GetBlobClient(newBlobName);
+
+        await blobClient.UploadAsync(e.File.OpenReadStream(maxAllowedSize: 204800));
+
+        loadedPhoto = true;
+
+        uploadSuccessful = true;
+
+        uploadedBlobUrl = blobClient.Uri.ToString();
+
+        await LogToBrowserConsole($"Url: {uploadedBlobUrl}");
+
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationState;
+        user = authState.User;
+
+        var userIdClaim = user.FindFirst(claim => claim.Type == "UserId");
+
+        if (userIdClaim != null)
+        {
+            UserId = "merchant" + userIdClaim.Value;
+        }
+        else
+        {
+            UserId = "User not authenticated";
+        }
     }
 
     private async Task UploadImage()
     {
+        uploadSuccessful = false;
         if (selectedFile != null)
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
