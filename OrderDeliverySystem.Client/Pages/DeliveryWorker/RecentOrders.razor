@@ -10,19 +10,15 @@
 @using OrderDeliverySystem.Share.Data
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
+@using System.Globalization
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
-
-
 @inject OrderService OrderService
 @inject GeocodingService GeocodingService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 @rendermode InteractiveServer
-
-
-
 
 @if (recent != null)
 {
@@ -65,7 +61,7 @@
         </div>
     </MudItem>
     <MudItem xs="12" sm="12" md="2" >
-            <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount: $@order.TotalAmount</MudText>
+                    <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount: $@order.TotalAmount.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
     </MudItem>
 
             @if (order.Status.Equals("Approved"))

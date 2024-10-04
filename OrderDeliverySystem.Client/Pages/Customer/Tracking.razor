@@ -22,6 +22,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@using System.Globalization
 
 
 
@@ -65,7 +66,7 @@
         </div>
     </MudItem>
     <MudItem xs="12" sm="12" md="2" >
-            <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount: $@order.TotalAmount</MudText>
+                <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount: @order.TotalAmount.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
     </MudItem>
         <MudItem xs="12" sm="12" md="12" Class=" border-t-4 border-solid mt-4" Style="border-color:rgba(112, 0, 0, 1);">
         <MudCollapse Expanded="_expanded">

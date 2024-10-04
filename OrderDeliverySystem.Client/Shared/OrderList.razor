@@ -9,6 +9,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@using System.Globalization
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
@@ -53,7 +54,7 @@
             }
 
         </MudTd>
-        <MudTd Class="text-center" DataLabel="TotalAmount">@context.TotalAmount.ToString("C")</MudTd>
+        <MudTd Class="text-center" DataLabel="TotalAmount">@context.TotalAmount.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudTd>
         <MudTd DataLabel="Action" Class="d-flex justify-content-center">
            
             @if (context.Status.Equals("Pending"))
