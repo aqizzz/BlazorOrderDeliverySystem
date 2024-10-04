@@ -17,8 +17,10 @@ using OrderDeliverySystem.Client.Infrastructure;
 using MudBlazor.Services;
 using OrderDeliverySystem.Client.Infrastructure.Services.Orders;
 using OrderDeliverySystem.Hubs;
+using OrderDeliverySystem.Client.Infrastructure.Services.Review;
 using OrderDeliverySystem.Client.Infrastructure.Services.Cart;
 using OrderDeliverySystem.Client.Infrastructure.Services.Item;
+using Microsoft.Extensions.Azure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,6 +63,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         .LogTo(Console.WriteLine, LogLevel.Information);
 });
 
+var storageConnection = builder.Configuration["StorageConnection"];
+
+builder.Services.AddAzureClients(azureBuilder =>
+{
+    azureBuilder.AddBlobServiceClient(storageConnection);
+});
+
 // Bind JWT settings
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 
@@ -78,7 +87,7 @@ var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-var baseUrl = "https://orderdeliverysystemtesttestapi.azure-api.net";
+var baseUrl = "https://blazororderdeliverysystemapi.azure-api.net";
 if (environment == "Development")
 {
     baseUrl = "https://localhost:7027/";
@@ -110,6 +119,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStatePr
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ItemService>();
 builder.Services.AddScoped<TokenHelper>();
 builder.Services.AddMudServices();
