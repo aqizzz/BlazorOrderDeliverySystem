@@ -28,7 +28,13 @@
                 <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.LocationOn"></MudIcon>
                     @foreach (var address in Order.Merchant.User.Addresses)
                     {
-                        <MudText Class="d-inline-block" Typo="Typo.body2">Address: @address.FullAddress</MudText>
+                        <MudText Class="d-inline-block" Typo="Typo.body2">
+                            Address:  @((@address.Unit != "" ? @address.Unit + ", " : "") +
+                        (@address.Address != "" ? @address.Address + ", " : "") +
+                        (@address.City != "" ? @address.City + ", " : "") +
+                        (@address.Province != "" ? @address.Province + ", " : "") +
+                        (@address.Postcode ?? ""))
+                        </MudText>
                     }
                 </div>
             </MudItem>
