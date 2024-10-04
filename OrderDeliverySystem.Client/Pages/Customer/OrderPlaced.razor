@@ -60,7 +60,7 @@
                                     <MudItem xs="12" sm="12" md="6">
                                         <MudGrid Class="ps-10 ">
                                             <MudItem xs="4">
-                                                @*<MudImage Src="@merchant.MerchantPic" Width="60" Height="35" Alt="@merchant.BusinessName" Class="rounded-lg mt-4 my-2" />*@
+                                                <MudImage Src="@order?.Merchant?.MerchantPic" Width="60" Height="35" Alt="@order?.Merchant?.BusinessName" Class="rounded-lg mt-4 my-2" />
                                             </MudItem>
 
                                             <MudItem xs="8">
@@ -103,7 +103,8 @@
                                             foreach (var theitem in order.CartItems)
                                             {
                                                 <div class="d-flex justify-content-around align-items-center">
-                                                    @*<MudImage Src="@theitem.ItemPic" Width="60" Height="35" Alt="@merchant.FirstName" Class="rounded-lg mt-4" />*@
+                                                    <MudImage Src="@theitem.ItemPic" Width="60" Height="35" Alt="@theitem.ItemName" Class="rounded-lg mt-4" />
+                                                   
                                                     <MudText>@theitem.ItemName</MudText>
                                                     <MudText> @theitem.ItemPrice.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
                                                     <MudText>X @theitem.Quantity</MudText>

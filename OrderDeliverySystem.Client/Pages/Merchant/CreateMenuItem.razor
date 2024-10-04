@@ -56,10 +56,10 @@
                             <MudItem xs="12" md="6" Class="d-flex justify-content-center">
                         <div>
                                     <MudField Class="d-block" Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
-                            <MudImage Src="@newItem.ItemPic" Alt="Merchant Picture" style="max-width: 100%; height: auto;" />
+                            <MudImage Src="@newItem.ItemPic" Alt="Merchant Picture" Style=" height: 200px;" />
                         </MudField>
 
-                                <MudFileUpload Class="d-block" T="IBrowserFile" FilesChanged="UploadImage">
+                                <MudFileUpload Class="d-block my-2" T="IBrowserFile" FilesChanged="UploadImage">
                             <ActivatorContent>
                                         <MudFab Style="color:white;background-color:rgba(112, 0, 0, 1);"
                                         StartIcon="@Icons.Material.Filled.Image"
@@ -93,7 +93,7 @@
             ItemName = "",
             ItemDescription = "",
             ItemPrice = 0,
-            ItemPic = "",
+            ItemPic = "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png",
             ItemIsAvailable = true,   
     };
 
