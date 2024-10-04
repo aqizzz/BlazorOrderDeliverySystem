@@ -10,7 +10,17 @@
 <MudGrid>
     <MudItem xs="12" sm="12" md="12" Class="d-flex justify-content-between align-items-center border-b-4 border-solid" Style="border-color:rgba(112, 0, 0, 1);">
         <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">OrderId: @Order.OrderId</MudText>
-        <MudButton OnClick="OnExpandCollapseClick" >@(_expanded ? "Details" : "Details")</MudButton>
+        @if (Order.Status.Equals("Delivered"))
+        {
+            <AuthorizeView Roles="Customer">
+                <Authorized>
+                    <MudButton Href="/create-review">Send Review</MudButton>
+                </Authorized>
+
+            </AuthorizeView>
+        }
+       
+        <MudButton OnClick="OnExpandCollapseClick">@(_expanded ? "Details" : "Details")</MudButton>
     </MudItem>
 
     <MudItem xs="12" sm="12" md="2">
