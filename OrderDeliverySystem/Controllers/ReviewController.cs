@@ -62,7 +62,6 @@ namespace OrderDeliverySystemApi.Controllers
 
         // Customer can view reviews based on different merchantId
         [HttpGet("customerReviews/{userId}")]
-        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> customerGetReviews(int userId)
         {
             var merchant = await _context.Merchants.FirstOrDefaultAsync(c => c.UserId == userId);

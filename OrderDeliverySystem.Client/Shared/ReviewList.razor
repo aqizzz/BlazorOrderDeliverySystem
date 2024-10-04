@@ -6,8 +6,9 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<h3>Review List</h3>
 
+<MudContainer Class="my-10">
+    <h3>Review List</h3>
 @if (isLoading)
 {
     <MudProgressCircular Indeterminate="true" />
@@ -47,7 +48,7 @@ else
 {
     <MudText Typo="Typo.subtitle1" Color="Color.Error">No reviews found for this merchant.</MudText>
 }
-
+</MudContainer>
 @code {
     private List<GetReviewResponseDTO> reviews = new();
     private bool isLoading = true;
@@ -60,24 +61,9 @@ else
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        if (user.Identity.IsAuthenticated)
-        {
-            if (user.IsInRole("Customer"))
-            {
-                isLoading = true;
-                await LoadReviews();
-                isLoading = false;
-            }
-            else
-            {
-                Console.WriteLine("User is not in the Customer role.");
-            }
-        }
-        else
-        {
-            Console.WriteLine("User is not authenticated");
-            NavigationManager.NavigateTo("/login");
-        }
+        isLoading = true;
+        await LoadReviews();
+        isLoading = false;  
     }
 
     private async Task LoadReviews()

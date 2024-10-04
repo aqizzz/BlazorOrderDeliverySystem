@@ -56,53 +56,42 @@
 
                             @if (order != null)
                             {
-                                <MudGrid Class="ps-10 ">
-                                    <MudItem xs="12" sm="12" md="6">
-                                        <MudGrid Class="ps-10 ">
-                                            <MudItem xs="4">
-                                                <MudImage Src="@order?.Merchant?.MerchantPic" Width="60" Height="35" Alt="@order?.Merchant?.BusinessName" Class="rounded-lg mt-4 my-2" />
+                                <MudGrid Class="ps-2">
+                                    <MudItem xs="12"  md="6">
+                                        <MudGrid>
+                                            <MudItem xs="4" >
+                                                <MudImage Src="@order?.Merchant?.MerchantPic" Width="80" Height="50" Alt="@order?.Merchant?.BusinessName" Class="rounded-lg mt-4" />
                                             </MudItem>
 
                                             <MudItem xs="8">
                                                 <MudText Typo="Typo.h6">@order?.Merchant?.BusinessName</MudText>
                                                 <MudText Typo="Typo.body2">@order?.Merchant?.MerchantDescription</MudText>
                                             </MudItem>
-                                            <MudItem xs="12">
-
-                                                <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.AccessTime"></MudIcon>
-                                                <MudText Class="d-inline-block" Typo="Typo.body2">
-                                                    Estimated Time:
-                                                    @(order.Merchant.PreparingTime.HasValue ? order?.Merchant?.PreparingTime.Value + 15 : 30) ~ @(order.Merchant.PreparingTime.HasValue ? order?.Merchant?.PreparingTime.Value + 30 : 45) mins
-                                                </MudText>
-                                            </MudItem>
-                                            <MudItem xs="12">
-                                                <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.LocationOn"></MudIcon>
-
-                                                @if (order?.Merchant?.Address == null && order?.Merchant?.City == null)
-                                                {
-                                                    <MudText Class="inline-block" Typo="Typo.body2">Address: No Addres Information.</MudText>
-                                                }
-                                                else
-                                                {
-                                                    @if (order?.Merchant ?.Unit == "")
-                                                    {
-                                                        <MudText Class="d-inline-block" Typo="Typo.body2">Address:  @order?.Merchant?.Address, @order?.Merchant?.City, @order?.Merchant?.Postcode</MudText>
-                                                    }
-                                                    else
-                                                    {
-                                                        <MudText Typo="Typo.body2">Address: @order?.Merchant?.Unit, @order?.Merchant?.Address, @order?.Merchant?.City, @order?.Merchant?.Postcode</MudText>
-                                                    }
-                                                }
+                                            <MudItem xs="12" >
+                                                <div class="my-2">
+                                                    <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.AccessTime"></MudIcon>
+                                                    <MudText Class="d-inline-block" Typo="Typo.body2">
+                                                        Estimated Time:
+                                                        @(order.Merchant.PreparingTime.HasValue ? order?.Merchant?.PreparingTime.Value + 15 : 30) ~ @(order.Merchant.PreparingTime.HasValue ? order?.Merchant?.PreparingTime.Value + 30 : 45) mins
+                                                    </MudText>
+                                                </div>
+                                                <div class="my-2">
+                                                    <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.LocationOn"></MudIcon>
+                                                    @((@order.Merchant?.Unit != "" ? @order.Merchant?.Unit + ", " : "") +
+                                                        (@order.Merchant?.Address != "" ? @order.Merchant?.Address + ", " : "") +
+                                                        (@order.Merchant?.City != "" ? @order.Merchant?.City + ", " : "") +
+                                                        (@order.Merchant?.Postcode ?? ""))
+                                                </div>
                                             </MudItem>
                                         </MudGrid>
                                     </MudItem>
-                                    <MudItem xs="12" sm="9" md="6">
+                                    <MudItem xs="12" md="6">
 
                                         @if (order.CartItems != null)
                                         {
                                             foreach (var theitem in order.CartItems)
                                             {
-                                                <div class="d-flex justify-content-around align-items-center">
+                                                <div class="d-flex justify-content-between align-items-center">
                                                     <MudImage Src="@theitem.ItemPic" Width="60" Height="35" Alt="@theitem.ItemName" Class="rounded-lg mt-4" />
                                                    
                                                     <MudText>@theitem.ItemName</MudText>
@@ -124,13 +113,14 @@
                 </MudItem>
 
                 <MudItem xs="12" sm="12" md="3" Class="d-flex align-content-end">
-                    <div>
+                    <MudPaper Elevation="0" Class="w-100">
                         <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(Before tax): @subtotal.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
                         <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Tax (15%): @tax.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
                         <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(After tax):  @total.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
-                        <MudText Class="pt-4 ps-6 border-b-2 border-solid mb-2" Typo="Typo.body2" Align="Align.Start" GutterBottom="true" Style="border-color:rgba(112, 0, 0, 1);">Delevery Fee:  @totalDeliveryFee.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
+                        <MudText Class="pt-4 ps-6 mb-2" Typo="Typo.body2" Align="Align.Start" GutterBottom="true" >Delevery Fee:  @totalDeliveryFee.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
+                        <MudDivider Class="mt-5 border-2" Style="border-color:rgba(112, 0, 0, 1);" />
                         <MudText Class="pt-4 ps-6" Typo="Typo.subtitle2" Align="Align.Start" GutterBottom="true">Total Amount:  @totalAmount.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
-                    </div>
+                    </MudPaper>
                 </MudItem>
 
             </MudGrid>
@@ -138,7 +128,7 @@
         </MudContainer>
         <MudCardActions>
 
-            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="CreateOrder">Order Now</MudButton>
+            <MudButton ButtonType="ButtonType.Submit" Class="ml-auto rounded-pill" Style="width:30%;color:white; background-color:rgba(112, 0, 0, 1);" OnClick="CreateOrder">Order Now</MudButton>
         </MudCardActions>
     }
 </MudContainer>
