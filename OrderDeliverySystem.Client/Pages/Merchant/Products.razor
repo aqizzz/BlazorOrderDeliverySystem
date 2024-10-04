@@ -52,7 +52,7 @@
                 @context.ItemDescription
                 </MudTd>
             <MudTd DataLabel="Price">@context.ItemPrice.ToString("C")</MudTd>
-            <MudTd DataLabel="Picture">@context.ItemPic</MudTd>
+            <MudTd DataLabel="Picture"><MudImage Src="@context.ItemPic" Width="150" Height="100" OnClick="() => AddToCart(item.ItemId, 1)" Class="mr-2 " /></MudTd>
             <MudTd DataLabel="Available">@context.ItemIsAvailable</MudTd>
 
             @* add to cart button  *@

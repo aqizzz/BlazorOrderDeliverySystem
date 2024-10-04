@@ -28,7 +28,7 @@
         @foreach (var item in cartItems)
         {
             <MudItem Class="d-flex align-items-center mb-2">
-                <MudAvatar Image="@item.ItemPic" Size="Size.Medium" Class="mr-2" />
+                <MudImage Src="@item.ItemPic" Width="50" Class="mr-2" />
                 <div class="flex-grow-1">
                     <MudText Typo="Typo.subtitle1">@item.ItemName</MudText>
                 </div>
