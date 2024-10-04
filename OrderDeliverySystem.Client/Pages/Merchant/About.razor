@@ -1,7 +1,57 @@
-﻿@page "/merchant/{userId:int}/about"
+﻿@using OrderDeliverySystem.Client.Infrastructure.Services.Profile
+@using System.Text.Json
+@using OrderDeliverySystem.Share.DTOs
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IAuthorizationService AuthorizationService
 
-<h3>About</h3>
+@if(merchant == null)
+{
+    <div>Loading...</div>
+}
+else
+{
+   
+<MudContainer Class="my-10">
+    <MudPaper Class="p-4">
+       
+        <MudCardMedia Image="@merchant.MerchantPic" Height="200" />
+        <MudDivider Class="mb-4 border-2" />
+        <MudText Typo="Typo.body1">
+            Welcome to our company! We are dedicated to providing top-quality products and services to our customers.
+            Our mission is to innovate, lead, and inspire with a focus on sustainability and customer satisfaction.
+        </MudText>
+        <MudText Typo="Typo.body1">
+            @merchant.MerchantDescription
+        </MudText>
+        <MudDivider Class="mb-4 border-2" />
+
+        <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">Contact</MudText>
+        <MudDivider Class="mb-4 border-2" />
+        <MudText Typo="Typo.body1">
+            Email: @merchant.Email
+        </MudText>
+        <MudText Typo="Typo.body1">
+            Phone: @merchant.Phone
+        </MudText>
+        <MudText Typo="Typo.body1" Class="mt-2">
+            Address: @((@merchant.Unit != "" ? @merchant.Unit + ", " : "") +
+                (@merchant.Address != "" ? @merchant.Address + ", " : "") +
+                (@merchant.City != "" ? @merchant.City + ", " : "") +
+                (@merchant.Province != "" ? @merchant.Province + ", " : "") +
+                (@merchant.Postcode ?? ""))
+        </MudText>
+
+    </MudPaper>
+</MudContainer>
+}
 
 @code {
+    [Parameter]
+    public MerchantProfileDTO merchant { get; set; }
 
+    private string fulladdress;
+
+  
+   
 }

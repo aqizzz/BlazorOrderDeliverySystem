@@ -8,11 +8,18 @@
 
     <MudPaper Class="pa-4">
         <MudStack Spacing="2">
-            <MudButton OnClick="OnExpandCollapseClick">@(_expanded ? "Collapse" : "Expand")</MudButton>
-            <MudDivider />
-            <MudCollapse Expanded="_expanded">
-                This content is collapsible.
-            </MudCollapse>
+            
+            <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">Contact</MudText>
+            <MudDivider Class="mb-4 border-2" />
+            <MudText Typo="Typo.body1" Class="mt-2">
+                Email:dinnerPal@123.gmail
+            </MudText>
+            <MudText Typo="Typo.body1" Class="mt-2">
+                Phone:123-123-1234
+            </MudText>
+            <MudText Typo="Typo.body1" Class="mt-2">
+                Address:123 Main Street, Business City, Country
+            </MudText>
         </MudStack>
     </MudPaper>
 
