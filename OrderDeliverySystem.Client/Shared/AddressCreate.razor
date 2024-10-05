@@ -11,6 +11,7 @@
 @inject IHttpClientFactory httpClientFactory
 @inject NavigationManager NavigationManager
 @inject IProfileService ProfileService
+@inject IAddressService AddressService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveAuto
@@ -28,7 +29,7 @@
                 else
                 {
                     <MudRadio Value="@("Radio 1")">Default Addresses</MudRadio>
-                    <MudRadio Value="@("Radio 2")" Color="Color.Primary">Create New Address</MudRadio>
+                    <MudRadio Value="@("Radio 2")" Color="Color.Primary">Update Address</MudRadio>
                 }
             </MudRadioGroup>
         </MudForm>
@@ -180,7 +181,6 @@
                     <MudItem xs="12" Class="d-flex justify-content-start">
                         <MudButton Class="m-2" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Address</MudButton>
                         <MudButton Class="m-2" ButtonType="ButtonType.Reset" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LockReset" Color="Color.Primary">Reset</MudButton>
-                        <MudButton Class="m-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/customer-profile">Cancel</MudButton>
                     </MudItem>
                 </MudGrid>
             </EditForm>
