@@ -22,14 +22,16 @@
     <MudDivider Class="mb-2" Style="border-color:rgba(112, 0, 0, 1);" />
     <MudText Typo="Typo.subtitle1">Order Id : @OrderId</MudText>
     <MudText Class="my-3" Typo="Typo.body1">Please rate and leave your review here</MudText>
-        
+         <EditForm>
+                <ErrorsList ShowErrors="@showErrors" Errors="@errors" />
             <MudRating @bind-SelectedValue="newReview.Rating" Size="Size.Medium" Label="Rating" Required="true" />
             <MudTextField @bind-Value="newReview.Comment" Label="Comment" Lines="5" Required="true" />
            
-    <div class="my-3 d-flex justify-content-between align-items-center">
-        <MudButton Class="rounded-pill" Style="width:40%;color:white; background-color: rgba(112, 0, 0, 1);" OnClick="@(() => ShowSubmitDialog())">Submit</MudButton>
-        <MudButton Class="rounded-pill" Style="width:40%; background-color:lightgrey; color: rgba(112, 0, 0, 1);" OnClick="ResetForm">Reset</MudButton>
-    </div>
+            <div class="my-3 d-flex justify-content-between align-items-center">
+                <MudButton Class="rounded-pill" Style="width:40%;color:white; background-color: rgba(112, 0, 0, 1);" OnClick="@(() => ShowSubmitDialog())">Submit</MudButton>
+                <MudButton Class="rounded-pill" Style="width:40%; background-color:lightgrey; color: rgba(112, 0, 0, 1);" OnClick="ResetForm">Reset</MudButton>
+            </div>
+         </EditForm>
     @if (showSubmitDialog)
     {
         <div class="custom-dialog-backdrop">
@@ -44,44 +46,6 @@
     
 </MudPaper>
 
-
-
-
-
-<MudContainer Class="my-10 d-flex justify-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
-    <MudPaper Class="px-16 pt-10 ma-2 " Elevation="3" Width="100%">
-            
-       
-        <MudPaper Class="pa-4">
-
-            <EditForm>
-                <ErrorsList ShowErrors="@showErrors" Errors="@errors" />
-            <MudText Typo="Typo.h5">Customer Create Review</MudText>
-            <MudRating @bind-SelectedValue="newReview.Rating" Size="Size.Medium" Label="Rating" Required="true" />
-            <MudTextField @bind-Value="newReview.Comment" Label="Comment" Lines="5" Required="true" />
-              
-            <MudButton OnClick="@(() => ShowSubmitDialog())" Variant="Variant.Filled" Color="Color.Primary">Submit</MudButton>
-            <MudButton Type="button" Variant="Variant.Filled" Color="Color.Secondary" OnClick="ResetForm">Cancel</MudButton>
-            </EditForm>
-        </MudPaper>
-            
-        <MudText Typo="Typo.h5" Color="Color.Error">Unauthorized: You do not have permission to create reviews.</MudText>
-            
-    </MudPaper>
-</MudContainer>
-
-
-@if (showSubmitDialog)
-{
-    <div class="custom-dialog-backdrop">
-        <div class="custom-dialog">
-            <MudText Typo="Typo.h6">Submit Review Confirmation</MudText>
-            <MudText Typo="Typo.body1">Are you sure you want to submit this review?</MudText>
-            <MudButton OnClick="@(async () => await CreateReview())" Color="Color.Primary" Class="mt-2">Yes</MudButton>
-            <MudButton OnClick="CancelSubmit" Color="Color.Secondary" Class="mt-2">No</MudButton>
-        </div>
-    </div>
-}
 
 @code {
     [Parameter] public EventCallback OnClose { get; set; }

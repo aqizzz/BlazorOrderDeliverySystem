@@ -6,6 +6,7 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+@inject IDialogService DialogService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @rendermode InteractiveServer
 
@@ -59,25 +60,25 @@
     </MudItem>
     <MudItem xs="12" sm="12" md="2">
         <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount: @Order.TotalAmount.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
-        @if (Order.Status.Equals("Delivered"))
+        @if (!CanReview)
         {
-            @if (Order?.Reviews == null)
-            {
-                <AuthorizeView Roles="Customer">
-                    <Authorized>
-                        <MudButton Class="rounded-pill" Style="width:100%;color:white; background-color: rgba(112, 0, 0, 1);" OnClick="OnExpandReviewClick">
-                            Write Review
-                        </MudButton>
-                    </Authorized>
-                </AuthorizeView>
-                <MudCollapse Expanded="_reviewExpanded">
-                    @if (_reviewExpanded)
-                    {
-                        <CusCreateReview OrderId="@Order.OrderId" OnClose="CloseReview" />
-                    }
-                </MudCollapse>
-            }  
-
+            <AuthorizeView Roles="Customer">
+                <Authorized>
+                    <MudButton Class="rounded-pill" Style="width:100%;color:white; background-color: rgba(112, 0, 0, 1);" @onclick="OpenCreateReviewDialogAsync">
+                                Write Review
+                            </MudButton>
+                </Authorized>
+            </AuthorizeView>
+        }
+        else
+        {
+            <AuthorizeView Roles="Customer">
+                <Authorized>
+                    <MudButton Class="rounded-pill" Style="width:100%;background-color:lightgray; color: rgba(112, 0, 0, 1);" @onclick="OpenReviewDialogAsync">
+                        Read Review
+                    </MudButton>
+                </Authorized>
+            </AuthorizeView>
         }
     </MudItem>
 
@@ -137,9 +138,9 @@
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        
-        Console.WriteLine($"Selected restaurant ID: {Order.OrderId}");
-        NavigationManager.LocationChanged += OnReviewLocationChanged;
+
+      
+
     
     }
 
@@ -169,28 +170,28 @@
     {
         return GetTotalAfterTax() + DeliveryFee;
     }
-    bool _reviewExpanded = false;
-
-    private void OnExpandReviewClick()
+   
+    private Task OpenReviewDialogAsync()
     {
-        _reviewExpanded = !_reviewExpanded;
+        var parameters = new DialogParameters<ReviewDialog> { 
+            { x => x.OrderId, Order.OrderId } ,
+             { x => x.Review, Order.Reviews }
+        };
+        var options = new DialogOptions { CloseOnEscapeKey = true, CloseButton = true, MaxWidth = MaxWidth.ExtraLarge };
+
+        return DialogService.ShowAsync<ReviewDialog>("Simple Dialog", options);
     }
 
-    private void CloseReview()
+    private Task OpenCreateReviewDialogAsync()
     {
-        _reviewExpanded = false;
+        var parameters = new DialogParameters<CreateReviewDialog> {
+            { x => x.OrderId, Order.OrderId }  
+        };
+        var options = new DialogOptions { CloseOnEscapeKey = true, CloseButton = true, MaxWidth = MaxWidth.ExtraLarge };
+       
+
+        return DialogService.ShowAsync<CreateReviewDialog>("Simple Dialog", options);
     }
 
-    private void OnReviewLocationChanged(object sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
-    {
-        _reviewExpanded = false;
-        StateHasChanged();
-    }
-
-    public void Dispose()
-    {
-        // 防止内存泄漏，取消订阅事件
-        NavigationManager.LocationChanged -= OnReviewLocationChanged;
-    }
 
 }

@@ -1,0 +1,53 @@
+﻿@using MudBlazor
+@using OrderDeliverySystem.Share.DTOs.ReviewDTO
+@using OrderDeliverySystem.Client.Shared.Common
+@using Microsoft.AspNetCore.Components.Authorization
+@using OrderDeliverySystem.Share.DTOs
+@using OrderDeliverySystem.Client.Infrastructure.Services.Review
+@using System.Security.Claims
+@inject ISnackbar Snackbar
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IReviewService ReviewService
+@inject NavigationManager NavigationManager
+@inject IAuthorizationService AuthorizationService
+
+
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h5" Style="color:rgba(112, 0, 0, 1);">Create Review</MudText>
+        <MudIconButton Icon="@Icons.Material.Filled.Close" Style="color: rgba(112, 0, 0, 1);" />
+    </TitleContent>
+    <DialogContent>
+        <CusCreateReview OrderId="OrderId"/>
+    </DialogContent>
+    <DialogActions>
+
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; }
+    [Parameter] public int OrderId { get; set; }
+
+
+    private void Cancel() => MudDialog.Cancel();
+ 
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+
+    private ClaimsPrincipal user;
+
+  
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+    }
+}
+

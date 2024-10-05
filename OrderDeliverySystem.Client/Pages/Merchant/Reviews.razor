@@ -33,7 +33,7 @@
                 <MudTd DataLabel="Rating">@context.Rating</MudTd>
                 <MudTd DataLabel="Comment">@context.Comment</MudTd>
                 <MudTd DataLabel="Reply">@context.Reply</MudTd>
-                <MudTd DataLabel="Created At">@context.CreatedAt.ToString("yyyy-MM-dd")</MudTd>
+                <MudTd DataLabel="Created At">@context.CreatedAt?.ToString("yyyy-MM-dd")</MudTd>
                 <MudTd DataLabel="Reply Created At">@context.ReplyCreatedAt?.ToString("yyyy-MM-dd")</MudTd>
                 <MudTd>
                     @if (string.IsNullOrEmpty(@context.Reply))
