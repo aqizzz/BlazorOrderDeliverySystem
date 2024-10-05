@@ -12,7 +12,7 @@
     <MudDivider Class="mb-2" Style="border-color:rgba(112, 0, 0, 1);" />
     <MudTextField Value="@OrderId" Label="Order Id" ReadOnly="true" />
     <MudRating SelectedValue="Review.Rating" Size="Size.Medium" Label="Rating" ReadOnly="true" />
-    <MudTextField Value="@Review.CreatedAt?.ToString("MM/dd/yyyy hh:mm:ss tt")" Label="Create At" ReadOnly="true" />
+    <MudTextField Value="@Review.CreatedAt.ToString("MM/dd/yyyy hh:mm:ss tt")" Label="Create At" ReadOnly="true" />
     <MudTextField Value="@Review.Comment" Label="Comment" ReadOnly="true" />
     @if (Review.Reply != null && Review.Reply != "")
     {
