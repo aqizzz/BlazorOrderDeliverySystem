@@ -31,18 +31,4 @@
 		<ProjectReference Include="..\OrderDeliverySystem.Share\OrderDeliverySystem.Share.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <UpToDateCheckInput Remove="Pages\ItemList.razor" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Content Update="Shared\OrderList.razor">
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	  </Content>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <UpToDateCheckInput Remove="Infrastructure\Services\Orders\PendingOrders.razor" />
-	</ItemGroup>
-
 </Project>
