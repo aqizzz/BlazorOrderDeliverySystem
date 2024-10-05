@@ -165,12 +165,12 @@ builder.Services.AddSignalR();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    context.Database.Migrate();
-    await UserSeeder.EnsureAdminUserExists(context);
-}
+//using (var scope = app.Services.CreateScope())
+//{
+//    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//    context.Database.Migrate();
+//    await UserSeeder.EnsureAdminUserExists(context);
+//}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
