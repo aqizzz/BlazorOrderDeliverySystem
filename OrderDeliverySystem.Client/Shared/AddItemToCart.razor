@@ -29,7 +29,7 @@
         <MudPaper Class="pa-3 mb-3" Elevation="1">
         <MudGrid>
         <MudItem xs="2">
-        <MudAvatar Image="/images/fries.png" Size="Size.Medium" Class="mr-2" />
+                    <MudImage Src="@item.ItemPic" Width="150" Height="100" OnClick="() => AddToCart(item.ItemId, 1)" Class="mr-2" />
         </MudItem>
         <MudItem xs="7">
         <MudText Typo="Typo.subtitle1">@item.ItemName

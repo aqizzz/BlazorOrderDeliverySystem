@@ -35,7 +35,7 @@ namespace OrderDeliverySystemApi.Controllers
                 Email = user.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.Password),
                 Role = "Customer",
-                IsActive = true,
+                IsActived = 1,
                 CreatedAt = DateTime.Now,
             };
 
@@ -176,7 +176,7 @@ namespace OrderDeliverySystemApi.Controllers
                 Email = user.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.Password),
                 Role = "Worker",
-                IsActive = true,
+                IsActived = 1,
                 CreatedAt = DateTime.Now,
             };
 
@@ -187,9 +187,9 @@ namespace OrderDeliverySystemApi.Controllers
             {
                 User = newUser,
                 UserId = newUser.UserId,
-                WorkerAvailability = false,
+                WorkerAvailability = user.WorkerAvailability || false,
                 CommissionRate = user.CommissionRate,
-                LastTaskAssigned = null
+                LastTaskAssigned = DateTime.Now
             };
 
             context.DeliveryWorkers.Add(newWorker);
@@ -235,7 +235,7 @@ namespace OrderDeliverySystemApi.Controllers
                 Email = user.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.Password),
                 Role = "Merchant",
-                IsActive = true,
+                IsActived = 1,
                 CreatedAt = DateTime.Now,
             };
 

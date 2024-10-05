@@ -18,14 +18,12 @@
 
 <h3>Menus</h3>
 
-<MudContainer Class="my-10">
+<MudContainer Class="my-10" MaxWidth="MaxWidth.ExtraLarge">
 
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <h3>ItemList</h3>
         @* <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateNewItem"> *@
-        <MudButton Variant="Variant.Filled" Color="Color.Error" Href="/create-item">
-            Create New Item
-        </MudButton>
+        <MudFab Class="mx-2" Label="Create New Item" Href="/create-item" Style="width:20%;color:white;background-color:rgba(112, 0, 0, 1);"/>
     </div>
 
     <!-- 表格显示部分 -->
@@ -37,32 +35,30 @@
             <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         </ToolBarContent>
         <HeaderContent>
-            <MudTh>Merchant ID</MudTh>
-            <MudTh>Item ID</MudTh>
-            <MudTh>Item Name</MudTh>
-            <MudTh>Item Description</MudTh>
-            <MudTh>Price</MudTh>
-            <MudTh>Item Picture</MudTh>
-            <MudTh>Available</MudTh>
-            <MudTh>Action</MudTh>
+            <MudTh Style="width: 50px;">Merchant ID</MudTh>
+            <MudTh Style="width: 50px;">Item ID</MudTh>
+            <MudTh Style="width: 100px;">Item Name</MudTh>
+            <MudTh Style="width: 300px;">Item Description</MudTh>
+            <MudTh Style="width: 50px;">Price</MudTh>
+            <MudTh Style="width: 100px;">Item Picture</MudTh>
+            <MudTh Style="width: 50px;">Available</MudTh>
+            <MudTh Style="width: 250px;">Action</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="MerchantId">@context.MerchantId</MudTd>
             <MudTd DataLabel="ItemId">@context.ItemId</MudTd>
             <MudTd DataLabel="Name">@context.ItemName</MudTd>
-            <MudTd DataLabel="Description">@context.ItemDescription</MudTd>
+            <MudTd DataLabel="Description">
+                @context.ItemDescription
+                </MudTd>
             <MudTd DataLabel="Price">@context.ItemPrice.ToString("C")</MudTd>
-            <MudTd DataLabel="Picture">@context.ItemPic</MudTd>
+            <MudTd DataLabel="Picture"><MudImage Src="@context.ItemPic" Width="150" Height="100" OnClick="() => AddToCart(item.ItemId, 1)" Class="mr-2 " /></MudTd>
             <MudTd DataLabel="Available">@context.ItemIsAvailable</MudTd>
 
             @* add to cart button  *@
             <MudTd DataLabel="Action">
-                <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="() => NavigateToEdit(context.ItemId)">
-                    Modify
-                </MudButton>
-                <MudButton Variant="Variant.Filled" OnClick="() => Remove(context.ItemId)">
-                    Remove
-                </MudButton>
+                <MudFab Label="Modify" Class="m-2" Style="width:40%;color:white;background-color:rgba(112, 0, 0, 1);" OnClick="() => NavigateToEdit(context.ItemId)"/>
+                <MudFab Label="Remove" Class="m-2" Style="width:40%;background-color:Default;color:rgba(112, 0, 0, 1);" OnClick="() => Remove(context.ItemId)" />
             </MudTd>
 
         </RowTemplate>

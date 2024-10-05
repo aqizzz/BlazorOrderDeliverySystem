@@ -55,7 +55,7 @@ namespace OrderDeliverySystem.Client.Infrastructure
             var claims = this.ParseClaimsFromJwt(savedToken);
 
             var identity = new ClaimsIdentity(claims, "jwt");
-            var userId = claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+            var userId = claims.FirstOrDefault(c => c.Type == "nameid")?.Value;
             var userRole = claims.FirstOrDefault(c => c.Type == "role")?.Value;
 
             if (!string.IsNullOrEmpty(userId))

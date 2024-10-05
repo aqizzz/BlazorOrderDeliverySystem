@@ -1,4 +1,6 @@
-﻿namespace OrderDeliverySystem.Share.Data.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace OrderDeliverySystem.Share.Data.Models
 {
     public class User
     {
@@ -9,9 +11,8 @@
         public string? LastName { get; set; }
         public string? Phone { get; set; }
         public required string Role { get; set; }
-        public bool IsActive { get; set; }
+        public int IsActived { get; set; }
         public DateTime CreatedAt { get; set; }
-
         public Customer? Customer { get; set; }
         public DeliveryWorker? DeliveryWorker { get; set; }
         public Merchant? Merchant { get; set; }
