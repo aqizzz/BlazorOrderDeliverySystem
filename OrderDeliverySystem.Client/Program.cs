@@ -24,6 +24,7 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<ApiAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
 builder.Services.AddScoped<TokenHelper>();
+builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IReviewService, ReviewService>();builder.Services.AddMudServices();

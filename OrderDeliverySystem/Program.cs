@@ -121,6 +121,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddScoped<ItemService>();
 builder.Services.AddScoped<TokenHelper>();
 builder.Services.AddMudServices();
