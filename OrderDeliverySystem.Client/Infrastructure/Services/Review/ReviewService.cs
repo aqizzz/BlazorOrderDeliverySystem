@@ -6,6 +6,8 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
+using OrderDeliverySystem.Share.Data;
+using OrderDeliverySystem.Client.Infrastructure.Extensions;
 
 namespace OrderDeliverySystem.Client.Infrastructure.Services.Review
 {
@@ -30,21 +32,20 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Review
         }
 
         // Add Review
-        public async Task<HttpResponseMessage> AddReview(CreateReviewRequestDTO reviewDto)
+        public async Task<Result> AddReview(CreateReviewRequestDTO reviewDto)
         {
             var httpClient = _httpClientFactory.CreateClient("API");
             await _tokenHelper.ConfigureHttpClientAuthorization(httpClient);
-            var response = await httpClient.PostAsJsonAsync(AddReviewPath, reviewDto);
-            return response;
+            return await httpClient.PostAsJsonAsync(AddReviewPath, reviewDto).ToResult();
         }
 
         // Delete Review
-        public async Task<HttpResponseMessage> DeleteReview(int reviewId)
+        public async Task<Result> DeleteReview(int reviewId)
         {
             var httpClient = _httpClientFactory.CreateClient("API");
             await _tokenHelper.ConfigureHttpClientAuthorization(httpClient);
-            var response = await httpClient.DeleteAsync($"{DeleteReviewPath}/{reviewId}");
-            return response;
+            var uri = $"{DeleteReviewPath}/{reviewId}";
+            return await httpClient.DeleteAsync(uri).ToResult();
         }
 
         // Get Reviews by Merchant
@@ -75,12 +76,12 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Review
         }
 
         // Update Reply
-        public async Task<HttpResponseMessage> UpdateReply(int reviewId, UpdateReplyRequestDTO replyDto)
+        public async Task<Result> UpdateReply(int reviewId, UpdateReplyRequestDTO replyDto)
         {
             var httpClient = _httpClientFactory.CreateClient("API");
             await _tokenHelper.ConfigureHttpClientAuthorization(httpClient);
-            var response = await httpClient.PutAsJsonAsync($"{UpdateReplyPath}/{reviewId}", replyDto);
-            return response;
+            var uri = $"{UpdateReplyPath}/{reviewId}";
+            return await httpClient.PutAsJsonAsync(uri, replyDto).ToResult();
         }
     }
 }

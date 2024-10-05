@@ -28,7 +28,7 @@ namespace OrderDeliverySystemApi.Controllers
             var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
 
             if (customer == null)
-                return BadRequest("Customer not found or mismatched customer ID.");
+                return BadRequest(new { Error = "Customer not found or mismatched customer ID." });
 
             var review = new Review
             {
@@ -53,7 +53,7 @@ namespace OrderDeliverySystemApi.Controllers
         {
             var review = await _context.Reviews.FindAsync(reviewId);
             if (review == null)
-                return NotFound("Review not found.");
+                return NotFound(new { Error = "Review not found." });
 
             _context.Reviews.Remove(review);
             await _context.SaveChangesAsync();
@@ -68,7 +68,7 @@ namespace OrderDeliverySystemApi.Controllers
 
             if (merchant == null)
             {
-                return NotFound("Merchant not found.");
+                return NotFound(new { Error = "Merchant not found." });
             }
 
             int merchantId = merchant.MerchantId;
@@ -90,7 +90,7 @@ namespace OrderDeliverySystemApi.Controllers
                 .ToListAsync();
 
             if (!reviews.Any())
-                return NotFound("No reviews found for this merchant.");
+                return NotFound(new { Error = "No reviews found for this merchant." });
 
             return Ok(reviews);
         }
@@ -107,7 +107,7 @@ namespace OrderDeliverySystemApi.Controllers
 
             if (merchant == null)
             {
-                return NotFound("Merchant not found.");
+                return NotFound(new { Error = "Merchant not found." });
             }
 
             int merchantId = merchant.MerchantId;
@@ -130,7 +130,7 @@ namespace OrderDeliverySystemApi.Controllers
                 .ToListAsync();
 
             if (!reviews.Any())
-                return NotFound("No reviews found for your merchant.");
+                return NotFound(new { Error = "No reviews found for your merchant." });
 
             return Ok(reviews);
             
@@ -158,7 +158,7 @@ namespace OrderDeliverySystemApi.Controllers
                 .ToListAsync();
 
             if (!reviews.Any())
-                return NotFound("No reviews found.");
+                return NotFound(new { Error = "No reviews found." });
 
             return Ok(reviews);
         }
@@ -178,7 +178,7 @@ namespace OrderDeliverySystemApi.Controllers
 
             if (merchant == null)
             {
-                return NotFound("Merchant not found.");
+                return NotFound(new { Error = "Merchant not found." });
             }
 
             int merchantId = merchant.MerchantId;
@@ -188,7 +188,7 @@ namespace OrderDeliverySystemApi.Controllers
                 .FirstOrDefaultAsync(r => r.ReviewId == reviewId && r.Order.MerchantId == merchantId);
 
             if (review == null)
-                return NotFound("Review not found or you are not authorized to update this review.");
+                return NotFound(new { Error = "Review not found or you are not authorized to update this review." });
 
             review.Reply = replyDto.Reply;
             review.ReplyCreatedAt = replyDto.ReplyCreatedAt ?? DateTime.UtcNow;

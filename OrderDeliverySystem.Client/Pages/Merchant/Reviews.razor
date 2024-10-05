@@ -136,7 +136,7 @@
             };
 
             var response = await ReviewService.UpdateReply(_selectedReviewId, updateReplyDto);
-            if (response.IsSuccessStatusCode)
+            if (response)
             {
                 await LoadReviews(); // Reload reviews after submitting the reply
                 CancelReply(); // Close the input after submitting
