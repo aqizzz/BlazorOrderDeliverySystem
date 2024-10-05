@@ -4,8 +4,6 @@ using OrderDeliverySystem.Client.Infrastructure.Extensions;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Share.DTOs;
 using System.Net.Http.Json;
-using System.Net.Http.Headers;
-using System.Text.Json;
 
 namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
 {

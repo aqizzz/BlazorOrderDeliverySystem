@@ -41,8 +41,8 @@ namespace OrderDeliverySystem.Share.Data
                     .IsRequired()
                     .HasMaxLength(50);
 
-                entity.Property(u => u.IsActive)
-                    .HasDefaultValue(true);
+                entity.Property(u => u.IsActived)
+                    .HasDefaultValue(1);
 
             });
 

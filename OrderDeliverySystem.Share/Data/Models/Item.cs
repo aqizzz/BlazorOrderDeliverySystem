@@ -1,4 +1,6 @@
-﻿namespace OrderDeliverySystem.Share.Data.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace OrderDeliverySystem.Share.Data.Models
 {
     public class Item
     {
@@ -8,7 +10,14 @@
         public string? ItemDescription { get; set; }
         public decimal ItemPrice { get; set; }
         public string? ItemPic { get; set; }
-        public bool ItemIsAvailable { get; set; }
+        public int IsAvailable { get; set; } 
+
+        [NotMapped]
+        public bool ItemIsAvailable
+        {
+            get => IsAvailable == 1; 
+            set => IsAvailable = value ? 1 : 0; 
+        }
         public required Merchant Merchant { get; set; }
 
         public ICollection<CartItem>? CartItems { get; set; }

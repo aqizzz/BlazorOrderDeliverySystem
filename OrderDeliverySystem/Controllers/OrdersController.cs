@@ -238,7 +238,7 @@ namespace OrderDeliverySystemApi.Controllers
             if (order.Status == "Approved")
             {
                 var worker = await _context.DeliveryWorkers
-                    .Where(w => w.WorkerAvailability == true) // Ensure worker is available and has a task history
+                    .Where(w => w.IsAvailable == 1) // Ensure worker is available and has a task history
                     .OrderBy(w => w.LastTaskAssigned) // Get the worker with the oldest LastTaskAssigned date
                     .FirstOrDefaultAsync();
 
@@ -917,8 +917,8 @@ namespace OrderDeliverySystemApi.Controllers
             }
 
             var worker = await _context.DeliveryWorkers
-                   .Where(w => w.WorkerAvailability == true) 
-                   .OrderBy(w => w.LastTaskAssigned) 
+                   .Where(w => w.IsAvailable == 1)
+                   .OrderBy(w => w.LastTaskAssigned)
                    .FirstOrDefaultAsync();
 
             if (worker == null)
@@ -1013,13 +1013,14 @@ namespace OrderDeliverySystemApi.Controllers
             await _context.SaveChangesAsync();
 
 
-            var deliveryTask = await _context.DeliveryTasks.FindAsync(updatedOrder.OrderId);
+            var deliveryTask = await _context.DeliveryTasks.FirstOrDefaultAsync(dt => dt.OrderId == updatedOrder.OrderId);
             if (order == null)
             {
                 return NotFound(new { Error = "No order was found." });
             }
 
             deliveryTask.Status = "Completed";
+            deliveryTask.CompletedTime = DateTime.Now;
             _context.Entry(deliveryTask).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 

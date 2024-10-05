@@ -1,6 +1,7 @@
 ﻿@using MudBlazor
 @using OrderDeliverySystem.Share.DTOs
 @using System.ComponentModel.DataAnnotations
+@using System.Globalization
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
@@ -10,11 +11,21 @@
 <MudGrid>
     <MudItem xs="12" sm="12" md="12" Class="d-flex justify-content-between align-items-center border-b-4 border-solid" Style="border-color:rgba(112, 0, 0, 1);">
         <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">OrderId: @Order.OrderId</MudText>
-        <MudButton OnClick="OnExpandCollapseClick" >@(_expanded ? "Details" : "Details")</MudButton>
+        @if (Order.Status.Equals("Delivered"))
+        {
+            <AuthorizeView Roles="Customer">
+                <Authorized>
+                    <MudButton Href="/create-review">Send Review</MudButton>
+                </Authorized>
+
+            </AuthorizeView>
+        }
+       
+        <MudButton OnClick="OnExpandCollapseClick">@(_expanded ? "Details" : "Details")</MudButton>
     </MudItem>
 
     <MudItem xs="12" sm="12" md="2">
-        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Picture</MudText>
+        <MudImage Src="@Order?.Merchant?.MerchantPic" Width="60" Height="35" Alt="@Order?.Merchant?.BusinessName" Class="rounded-lg mt-4 my-2" />
     </MudItem>
     <MudItem xs="12" sm="12" md="3">
         <MudGrid>
@@ -43,7 +54,13 @@
         </div>
     </MudItem>
     <MudItem xs="12" sm="12" md="2">
-        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount: $@Order.TotalAmount</MudText>
+        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount: @Order.TotalAmount.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
+        @if (CanReview)
+        {
+            <MudLink Href="@($"/create-review/{Order.OrderId}")" Class="mud-button mud-button-filled mud-button-secondary">
+                Write Review
+            </MudLink>
+        } 
     </MudItem>
 
     <MudItem xs="12" sm="12" md="12">
@@ -65,11 +82,11 @@
                     }
                 </MudItem>
                 <MudItem xs="12" sm="12" md="3">
-                    <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(Before tax):  $@Order.TotalAmount</MudText>
-                    <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Tax (15%):  @GetTaxAmount().ToString("C")</MudText>
-                    <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(After tax):  @GetTotalAfterTax().ToString("C")</MudText>
+                    <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(Before tax):  @Order.TotalAmount.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
+                    <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Tax (15%):  @GetTaxAmount().ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
+                    <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(After tax):  @GetTotalAfterTax().ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
                     <MudText Class="pt-4 ps-6 border-b-2 border-solid mb-2" Typo="Typo.body2" Align="Align.Start" GutterBottom="true" Style="border-color:rgba(112, 0, 0, 1);">Delivery Fee:  $6 ( $3/ km )</MudText>
-                    <MudText Class="pt-4 ps-6" Typo="Typo.subtitle2" Align="Align.Start" GutterBottom="true">Total Amount:  @GetTotalAmount().ToString("C")</MudText>
+                    <MudText Class="pt-4 ps-6" Typo="Typo.subtitle2" Align="Align.Start" GutterBottom="true">Total Amount:  @GetTotalAmount().ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
                 </MudItem>
             </MudGrid>
         </MudCollapse>
@@ -87,6 +104,9 @@
 @code {
     [Parameter]
     public OrderDTO Order{ get; set; }
+
+    [Parameter]
+    public bool CanReview { get; set; }
 
     private const decimal TaxRate = 0.15m;
     private const decimal DeliveryFee = 6.00m;
@@ -121,4 +141,5 @@
     {
         return GetTotalAfterTax() + DeliveryFee;
     }
+
 }

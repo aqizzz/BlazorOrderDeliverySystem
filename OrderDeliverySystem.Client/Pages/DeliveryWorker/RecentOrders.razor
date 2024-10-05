@@ -10,11 +10,10 @@
 @using OrderDeliverySystem.Share.Data
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
+@using System.Globalization
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
-
-
 @inject OrderService OrderService
 @inject GeocodingService GeocodingService
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -24,7 +23,7 @@
 
 
 
-@if(order != null)
+@if (recent != null)
 {
     
 
@@ -38,7 +37,7 @@
     </MudItem>
 
     <MudItem xs="12" sm="12" md="2">
-        <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Picture</MudText>
+                    <MudImage Src="@order.Merchant.MerchantPic" Width="150" Height="100" Alt="@order.Merchant.BusinessName" Class="rounded-lg mt-4" />
     </MudItem>
     <MudItem xs="12" sm="12" md="2">
         <MudGrid>
@@ -64,7 +63,7 @@
         </div>
     </MudItem>
     <MudItem xs="12" sm="12" md="2" >
-            <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount: $@order.TotalAmount</MudText>
+                    <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount: $@order.TotalAmount.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
     </MudItem>
 
             @if (order.Status.Equals("Approved"))

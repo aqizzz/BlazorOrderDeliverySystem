@@ -14,6 +14,8 @@
 	<ItemGroup>
     <None Include="..\OrderDeliverySystem.Client\Pages\Admin\UserProfileDialog.razor" Link="UserProfileDialog.razor" />
     <None Include="..\OrderDeliverySystem.Client\Pages\ErrorsList.razor" Link="ErrorsList.razor" />
+		<None Include="OrderDeliverySystem.db" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Always" />
+    
   </ItemGroup>
 
   <ItemGroup>
@@ -31,11 +33,13 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.8">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+	<PackageReference Include="Microsoft.Extensions.Azure" Version="1.7.5" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">

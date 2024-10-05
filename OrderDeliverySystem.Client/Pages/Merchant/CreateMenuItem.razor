@@ -21,27 +21,64 @@
 @using OrderDeliverySystem.Client.Infrastructure.Extensions
 @using OrderDeliverySystem.Client.Infrastructure.Services.Item
 @using OrderDeliverySystem.Client.Shared.Common
+@using Azure.Storage.Blobs
+@using Azure.Storage.Blobs.Models
+@inject BlobServiceClient blobService
 @rendermode InteractiveServer
 <MudContainer Class="my-10 d-flex justify-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
         <MudPaper Class="px-16 pt-10 ma-2 " Elevation="3" Width="100%">
 <AuthorizeView Roles="Merchant">
     <Authorized>
-        <MudPaper Class="pa-4">
-            <MudText Typo="Typo.h5">Create New Menu Item</MudText>
-            <EditForm Model="@newItem" OnValidSubmit="CreateItem" Context="CreateItemForm">
-                <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
-                <MudTextField @bind-Value="newItem.ItemName" Label="Item Name" Required="true" />
-                <MudTextField @bind-Value="newItem.ItemDescription" Label="Description" />
-                <MudNumericField @bind-Value="newItem.ItemPrice" Label="Price" Required="true" />
-                <MudTextField @bind-Value="newItem.ItemPic" Label="Image URL" />
-                <MudSwitch @bind-Value="newItem.ItemIsAvailable" T="bool" Color="Color.Error">@(newItem.ItemIsAvailable ? "Available" : "Not Available")</MudSwitch>
-                <br />
-                <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Error" OnClick="@(()=>CreateItem())">Submit</MudButton>
-                @* <MudButton Type="button" Variant="Variant.Filled" Color="Color.Secondary" >Reset</MudButton> *@
-                <MudButton Type="button" Variant="Variant.Filled"  OnClick="ResetForm">Reset</MudButton>
+   
+           <MudText Typo="Typo.h5">Create New Menu Item</MudText>
+             <EditForm Model="@newItem" OnValidSubmit="CreateItem" Context="CreateItemForm">
+                    <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudGrid>
+                            <MudItem xs="12">
+                                    <MudTextField @bind-Value="newItem.ItemName" Label="Item Name" Required="true" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                    <MudTextField @bind-Value="newItem.ItemDescription" Label="Description" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                    <MudNumericField @bind-Value="newItem.ItemPrice" Label="Price" Required="true" />
+                            </MudItem>
+                                <MudItem xs="12">
+                                    <MudSwitch @bind-Value="newItem.ItemIsAvailable" T="bool" Color="Color.Error">@(newItem.ItemIsAvailable ? "Available" : "Not Available")</MudSwitch>
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudFab Class="m-2" Label="Submit" Variant="Variant.Filled" Style="width:40%;color:white;background-color:rgba(112, 0, 0, 1);" OnClick="@(()=>CreateItem())">Submit</MudFab>
+                                    <MudFab Class="m-2" Style="width:40%;background-color:Default;color:rgba(112, 0, 0, 1);" Label="Reset" Variant="Variant.Filled" OnClick="ResetForm">Reset</MudFab>
+                                </MudItem>
+
+                        </MudGrid>
+                       
+                    </MudItem>
+                            <MudItem xs="12" md="6" Class="d-flex justify-content-center">
+                        <div>
+                                    <MudField Class="d-block" Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
+                            <MudImage Src="@newItem.ItemPic" Alt="Merchant Picture" Style=" height: 200px;" />
+                        </MudField>
+
+                        <MudFileUpload Class="d-block my-2" T="IBrowserFile" FilesChanged="UploadImage">
+                            <ActivatorContent>
+                                        <MudFab Style="color:white;background-color:rgba(112, 0, 0, 1);"
+                                        StartIcon="@Icons.Material.Filled.Image"
+                                        Label="Load picture" />
+                            </ActivatorContent>
+                        </MudFileUpload>
+                                </div>
+                    </MudItem>
+
+                </MudGrid>
+
+                <MudSpacer/>
+                       
             </EditForm>
             <MudSnackbarProvider />
-        </MudPaper>
+
     </Authorized>
     <NotAuthorized>
         <MudText Typo="Typo.h5" Color="Color.Error">Unauthorized: You do not have permission to create items.</MudText>
@@ -59,7 +96,7 @@
             ItemName = "",
             ItemDescription = "",
             ItemPrice = 0,
-            ItemPic = "",
+            ItemPic = "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png",
             ItemIsAvailable = true,   
     };
 
@@ -69,6 +106,14 @@
 
     public bool ShowErrors { get; set; } = false;
     public string Errors { get; set; } = string.Empty;
+
+    public string MerchantUserId { get; set; }
+
+    private string uploadUrl;
+    string newBlobName = string.Empty;
+    bool loadedPhoto = false;
+    bool uploadSuccessful = false;
+    private string uploadedBlobUrl = string.Empty;
 
 
     protected override async Task OnInitializedAsync()
@@ -103,8 +148,34 @@
                 ItemName = "",
                 ItemDescription = "",
                 ItemPrice = 0,
-                ItemPic = "",
+                ItemPic = "https://www.eclosio.ong/wp-content/uploads/2018/08/default.png",
                 ItemIsAvailable = true,
             };
     }
+
+    private async Task UploadImage(IBrowserFile file)
+    {
+        uploadSuccessful = false;
+
+        var containerClient = blobService.GetBlobContainerClient(MerchantUserId);
+
+        var response = await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
+
+        newBlobName = $"{Guid.NewGuid().ToString()}.jpg";
+
+        var blobClient = containerClient.GetBlobClient(newBlobName);
+
+        await blobClient.UploadAsync(file.OpenReadStream(maxAllowedSize: 1048576));
+
+        loadedPhoto = true;
+
+        uploadSuccessful = true;
+
+        uploadedBlobUrl = blobClient.Uri.ToString();
+
+        newItem.ItemPic = uploadedBlobUrl;
+
+        StateHasChanged();
+    }
+
 }

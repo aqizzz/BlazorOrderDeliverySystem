@@ -8,6 +8,7 @@ using OrderDeliverySystem.Client.Infrastructure.Services.Orders;
 using OrderDeliverySystem.Client.Infrastructure.Services.Profile;
 using OrderDeliverySystem.Client.Infrastructure.Services.Cart;
 using OrderDeliverySystem.Client.Infrastructure.Services.Item;
+using OrderDeliverySystem.Client.Infrastructure.Services.Review;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddMudServices();
@@ -25,7 +26,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStatePr
 builder.Services.AddScoped<TokenHelper>();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddMudServices();
+builder.Services.AddScoped<IReviewService, ReviewService>();builder.Services.AddMudServices();
 
 builder.Services.AddScoped<ICartService, CartService>();
 //builder.Services.AddHttpClient("API", client =>

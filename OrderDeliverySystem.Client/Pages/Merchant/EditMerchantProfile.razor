@@ -9,6 +9,9 @@
 @using System.Security.Claims
 @using OrderDeliverySystem.Client.Infrastructure.Services.Profile
 @using System.Text.Json
+@using Azure.Storage.Blobs
+@using Azure.Storage.Blobs.Models
+@inject BlobServiceClient blobService
 @inject IHttpClientFactory httpClientFactory
 @inject NavigationManager NavigationManager
 @inject IProfileService ProfileService
@@ -17,171 +20,171 @@
 @rendermode InteractiveAuto
 
 <MudContainer Class="my-10 d-flex justify-content-center align-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
-@if (isLoading)
-{
-    <p>Loading profile...</p>
-}
-else if (model != null)
-{
+    @if (isLoading)
+    {
+        <p>Loading profile...</p>
+    }
+    else if (model != null)
+    {
         <MudPaper Class="pa-16 ma-2" Elevation="3">
-        <EditForm Model="@model" OnValidSubmit="HandleUpdateProfile" FormName="profileForm">
-            <ErrorsList ShowErrors="@ShowErrors" Errors="@Errors" />
-            <DataAnnotationsValidator />
-            <MudGrid>
-
-                <div Style="display:none;">
-                    <MudTextField id="userId" @bind-Value="model.UserId" ReadOnly="true" />
-                </div>
+            <EditForm Model="@model" OnValidSubmit="HandleUpdateProfile" FormName="profileForm">
+                <ErrorsList ShowErrors="@ShowErrors" Errors="@Errors" />
+                <DataAnnotationsValidator />
                 <MudGrid>
-                    <MudItem xs="2">
-                        <MudField Label="Business Name:" AlignLabel="Align.Start" Underline="false" />
-                    </MudItem>
-                    <MudItem xs="8">
-                        <MudField Underline="false">
-                            <MudTextField id="businessName" @bind-Value="model.BusinessName" For="@(() => model.BusinessName)" Variant="Variant.Filled" />
-                        </MudField>
-                    </MudItem>
-                    <MudItem xs="2">
-                    </MudItem>
 
-                    <MudItem xs="2">
-                        <MudField Label="Firstname:" AlignLabel="Align.Start" Underline="false" />
-                    </MudItem>
-                    <MudItem xs="8">
-                        <MudField Underline="false">
-                            <MudTextField id="firstName" @bind-Value="model.FirstName" For="@(() => model.FirstName)" Variant="Variant.Filled" />
-                        </MudField>
-                    </MudItem>
-                    <MudItem xs="2">
-                    </MudItem>
+                    <div Style="display:none;">
+                        <MudTextField id="userId" @bind-Value="model.UserId" ReadOnly="true" />
+                    </div>
+                    <MudGrid>
+                        <MudItem xs="8">
+                            <MudGrid>
 
-                    <MudItem xs="2">
-                        <MudField Label="Lastname:" AlignLabel="Align.Start" Underline="false" />
-                    </MudItem>
-                    <MudItem xs="8">
-                        <MudField Underline="false">
-                            <MudTextField id="lastName" @bind-Value="model.LastName" For="@(() => model.LastName)" Variant="Variant.Filled" />
-                        </MudField>
-                    </MudItem>
-                    <MudItem xs="2">
-                    </MudItem>
+                                <MudItem xs="3">
+                                    <MudField Label="Business Name:" AlignLabel="Align.Start" Underline="false" />
+                                </MudItem>
+                                <MudItem xs="9">
+                                    <MudField Underline="false">
+                                        <MudTextField id="businessName" @bind-Value="model.BusinessName" For="@(() => model.BusinessName)" Variant="Variant.Filled" />
+                                    </MudField>
+                                </MudItem>
 
-                    <MudItem xs="2">
-                        <MudField Label="Email:" AlignLabel="Align.Start" Underline="false" />
-                    </MudItem>
-                    <MudItem xs="8">
-                        <MudField Underline="false">
-                            <MudTextField id="email" @bind-Value="model.Email" For="@(() => model.Email)" Variant="Variant.Filled" Disabled="true"/>
-                        </MudField>
-                    </MudItem>
-                    <MudItem xs="2">
-                    </MudItem>
+                                <MudItem xs="3">
+                                    <MudField Label="Firstname:" AlignLabel="Align.Start" Underline="false" />
+                                </MudItem>
+                                <MudItem xs="9">
+                                    <MudField Underline="false">
+                                        <MudTextField id="firstName" @bind-Value="model.FirstName" For="@(() => model.FirstName)" Variant="Variant.Filled" />
+                                    </MudField>
+                                </MudItem>
 
-                    <MudItem xs="2">
-                        <MudField Label="Phone:" AlignLabel="Align.Start" Underline="false" />
-                    </MudItem>
-                    <MudItem xs="8">
-                        <MudField Underline="false">
-                            <MudTextField id="phone" @bind-Value="model.Phone" For="@(() => model.Phone)" Variant="Variant.Filled" />
-                        </MudField>
-                    </MudItem>
-                    <MudItem xs="2">
-                    </MudItem>
+                                <MudItem xs="3">
+                                    <MudField Label="Lastname:" AlignLabel="Align.Start" Underline="false" />
+                                </MudItem>
+                                <MudItem xs="9">
+                                    <MudField Underline="false">
+                                        <MudTextField id="lastName" @bind-Value="model.LastName" For="@(() => model.LastName)" Variant="Variant.Filled" />
+                                    </MudField>
+                                </MudItem>
 
-                    <MudItem xs="2">
-                        <MudField Label="Description:" AlignLabel="Align.Start" Underline="false" />
-                    </MudItem>
-                    <MudItem xs="8">
-                        <MudField Underline="false">
-                            <MudTextField id="merchantDescription" @bind-Value="model.MerchantDescription" For="@(() => model.MerchantDescription)" Variant="Variant.Filled" />
-                        </MudField>
-                    </MudItem>
-                    <MudItem xs="2">
-                    </MudItem>
+                                <MudItem xs="3">
+                                    <MudField Label="Email:" AlignLabel="Align.Start" Underline="false" />
+                                </MudItem>
+                                <MudItem xs="9">
+                                    <MudField Underline="false">
+                                        <MudTextField id="email" @bind-Value="model.Email" For="@(() => model.Email)" Variant="Variant.Filled" Disabled="true" />
+                                    </MudField>
+                                </MudItem>
 
-                    <MudItem xs="2">
-                        <MudField Label="Preparing Time:" AlignLabel="Align.Start" Underline="false" />
-                    </MudItem>
-                    <MudItem xs="8">
-                        <MudField Underline="false">
-                            <MudTextField id="preparingTime" @bind-Value="model.PreparingTime" For="@(() => model.PreparingTime)" Variant="Variant.Filled" />
-                        </MudField>
-                    </MudItem>
-                    <MudItem xs="2">
-                    </MudItem>
+                                <MudItem xs="3">
+                                    <MudField Label="Phone:" AlignLabel="Align.Start" Underline="false" />
+                                </MudItem>
+                                <MudItem xs="9">
+                                    <MudField Underline="false">
+                                        <MudTextField id="phone" @bind-Value="model.Phone" For="@(() => model.Phone)" Variant="Variant.Filled" />
+                                    </MudField>
+                                </MudItem>
 
-                    <MudItem xs="2">
-                        <MudField Label="Unit:" AlignLabel="Align.Start" Underline="false" />
-                    </MudItem>
-                    <MudItem xs="8">
-                        <MudField Underline="false">
-                                <MudTextField id="unit" @bind-Value="model.Unit" For="@(() => model.Unit)" Variant="Variant.Filled" Required />
-                        </MudField>
-                    </MudItem>
-                    <MudItem xs="2">
-                    </MudItem>
+                                <MudItem xs="3">
+                                    <MudField Label="Description:" AlignLabel="Align.Start" Underline="false" />
+                                </MudItem>
+                                <MudItem xs="9">
+                                    <MudField Underline="false">
+                                        <MudTextField id="merchantDescription" @bind-Value="model.MerchantDescription" For="@(() => model.MerchantDescription)" Variant="Variant.Filled" />
+                                    </MudField>
+                                </MudItem>
 
-                    <MudItem xs="2">
-                        <MudField Label="Address:" AlignLabel="Align.Start" Underline="false" />
-                    </MudItem>
-                    <MudItem xs="8">
-                        <MudField Underline="false">
-                                <MudTextField id="address" @bind-Value="model.Address" For="@(() => model.Address)" Variant="Variant.Filled" Required />
-                        </MudField>
-                    </MudItem>
-                    <MudItem xs="2">
-                    </MudItem>
+                                <MudItem xs="3">
+                                    <MudField Label="Preparing Time:" AlignLabel="Align.Start" Underline="false" />
+                                </MudItem>
+                                <MudItem xs="9">
+                                    <MudField Underline="false">
+                                        <MudTextField id="preparingTime" @bind-Value="model.PreparingTime" For="@(() => model.PreparingTime)" Variant="Variant.Filled" />
+                                    </MudField>
+                                </MudItem>
 
-                    <MudItem xs="2">
-                        <MudField Label="City:" AlignLabel="Align.Start" Underline="false" />
-                    </MudItem>
-                    <MudItem xs="8">
-                        <MudField Underline="false">
-                                <MudTextField id="city" @bind-Value="model.City" For="@(() => model.City)" Variant="Variant.Filled" Required />
-                        </MudField>
-                    </MudItem>
-                    <MudItem xs="2">
-                    </MudItem>
+                                <MudItem xs="3">
+                                    <MudField Label="Unit:" AlignLabel="Align.Start" Underline="false" />
+                                </MudItem>
+                                <MudItem xs="9">
+                                    <MudField Underline="false">
+                                        <MudTextField id="unit" @bind-Value="model.Unit" For="@(() => model.Unit)" Variant="Variant.Filled" Required />
+                                    </MudField>
+                                </MudItem>
 
-                    <MudItem xs="2">
-                        <MudField Label="Province:" AlignLabel="Align.Start" Underline="false" />
-                    </MudItem>
-                    <MudItem xs="8">
-                        <MudField Underline="false">
-                                <MudTextField id="province" @bind-Value="model.Province" For="@(() => model.Province)" Variant="Variant.Filled" Required />
-                        </MudField>
-                    </MudItem>
-                    <MudItem xs="2">
-                    </MudItem>
+                                <MudItem xs="3">
+                                    <MudField Label="Address:" AlignLabel="Align.Start" Underline="false" />
+                                </MudItem>
+                                <MudItem xs="9">
+                                    <MudField Underline="false">
+                                        <MudTextField id="address" @bind-Value="model.Address" For="@(() => model.Address)" Variant="Variant.Filled" Required />
+                                    </MudField>
+                                </MudItem>
 
-                    <MudItem xs="2">
-                        <MudField Label="Postcode:" AlignLabel="Align.Start" Underline="false" />
-                    </MudItem>
-                    <MudItem xs="8">
-                        <MudField Underline="false">
-                            <MudTextField id="postcode" @bind-Value="model.Postcode" For="@(() => model.Postcode)" Variant="Variant.Filled" Required/>
-                        </MudField>
-                    </MudItem>
-                </MudGrid>
-                <MudItem xs="2">
-                </MudItem>
+                                <MudItem xs="3">
+                                    <MudField Label="City:" AlignLabel="Align.Start" Underline="false" />
+                                </MudItem>
+                                <MudItem xs="9">
+                                    <MudField Underline="false">
+                                        <MudTextField id="city" @bind-Value="model.City" For="@(() => model.City)" Variant="Variant.Filled" Required />
+                                    </MudField>
+                                </MudItem>
+
+                                <MudItem xs="3">
+                                    <MudField Label="Province:" AlignLabel="Align.Start" Underline="false" />
+                                </MudItem>
+                                <MudItem xs="9">
+                                    <MudField Underline="false">
+                                        <MudTextField id="province" @bind-Value="model.Province" For="@(() => model.Province)" Variant="Variant.Filled" Required />
+                                    </MudField>
+                                </MudItem>
+
+                                <MudItem xs="3">
+                                    <MudField Label="Postcode:" AlignLabel="Align.Start" Underline="false" />
+                                </MudItem>
+                                <MudItem xs="9">
+                                    <MudField Underline="false">
+                                        <MudTextField id="postcode" @bind-Value="model.Postcode" For="@(() => model.Postcode)" Variant="Variant.Filled" Required />
+                                    </MudField>
+                                </MudItem>
+
+
+                            </MudGrid>
+                        </MudItem>
+
+                        <MudItem xs="4">
+                            <MudItem xs="12">
+                                <MudField Underline="false" Margin="Margin.None" Style="margin-top: 16px;">
+                                    <MudImage Src="@model.MerchantPic" Alt="Merchant Picture" style="max-width: 100%; height: auto;" />
+                                </MudField>
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudFileUpload T="IBrowserFile" FilesChanged="UploadImage">
+                                    <ActivatorContent>
+                                        <MudFab Color="Color.Secondary"
+                                                StartIcon="@Icons.Material.Filled.Image"
+                                                Label="Load picture" />
+                                    </ActivatorContent>
+                                </MudFileUpload>
+                            </MudItem>
+                        </MudItem>
+                    </MudGrid>
 
                     <MudItem xs="12" Class="d-flex justify-content-start align-items-center">
-                    <MudButton Class="m-2" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Profile</MudButton>
-                    <MudButton Class="m-2" ButtonType="ButtonType.Reset" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LockReset" Color="Color.Primary">Reset</MudButton>
-                    <AuthorizeView Roles="Merchant" Context="MerchantOnly">
-                        <Authorized>
+                        <MudButton Class="m-2" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Profile</MudButton>
+                        <MudButton Class="m-2" ButtonType="ButtonType.Reset" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LockReset" Color="Color.Primary">Reset</MudButton>
+                        <AuthorizeView Roles="Merchant" Context="MerchantOnly">
+                            <Authorized>
                                 <MudButton Class="m-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/merchant-profile">Cancel</MudButton>
-                        </Authorized>
-                        <NotAuthorized>
-                            <MudButton Class="mx-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/user-management">Cancel</MudButton>
-                        </NotAuthorized>
-                    </AuthorizeView>
-                       
-                </MudItem>
-            </MudGrid>
-        </EditForm>
-    </MudPaper>
+                            </Authorized>
+                            <NotAuthorized>
+                                <MudButton Class="mx-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/user-management">Cancel</MudButton>
+                            </NotAuthorized>
+                        </AuthorizeView>
+
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+        </MudPaper>
     }
 </MudContainer>
 @code {
@@ -195,18 +198,36 @@ else if (model != null)
     private MerchantProfileDTO model = new MerchantProfileDTO { BusinessName = "New business" };
     private ClaimsPrincipal user;
 
-    private int userId = 4;
 
     public bool ShowErrors { get; set; } = false;
     public string Errors { get; set; } = string.Empty;
 
+    public string MerchantUserId { get; set; }
+
     private bool isLoading = true;
+
+    private string uploadUrl;
+    string newBlobName = string.Empty;
+    bool loadedPhoto = false;
+    bool uploadSuccessful = false;
+    private string uploadedBlobUrl = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         user = authState.User;
         await LoadMerchantProfile();
+
+        var userIdClaim = user.FindFirst(claim => claim.Type == "UserId");
+
+        if (userIdClaim != null)
+        {
+            MerchantUserId = "merchant" + userIdClaim.Value;
+        }
+        else
+        {
+            MerchantUserId = "User not authenticated";
+        }
     }
 
     private async Task LoadMerchantProfile()
@@ -247,7 +268,7 @@ else if (model != null)
             else
             {
                 NavigationManager.NavigateTo("/merchant-profile", forceLoad: true);
-            }   
+            }
         }
         else
         {
@@ -255,4 +276,42 @@ else if (model != null)
             ShowErrors = true;
         }
     }
+
+    private async Task UploadImage(IBrowserFile file)
+    {
+        uploadSuccessful = false;
+
+        await LogToBrowserConsole($"UserId: {uploadedBlobUrl}");
+
+        var containerClient = blobService.GetBlobContainerClient(MerchantUserId);
+
+        var response = await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
+
+        if (response != null)
+        {
+            await LogToBrowserConsole($"Container '{MerchantUserId}' created or already exists.");
+        }
+
+        newBlobName = $"{Guid.NewGuid().ToString()}.jpg";
+
+        await LogToBrowserConsole($"New Blob Name: {newBlobName}");
+
+        var blobClient = containerClient.GetBlobClient(newBlobName);
+
+        await blobClient.UploadAsync(file.OpenReadStream(maxAllowedSize: 1048576));
+
+        loadedPhoto = true;
+
+        uploadSuccessful = true;
+
+        uploadedBlobUrl = blobClient.Uri.ToString();
+
+        model.MerchantPic = uploadedBlobUrl;
+
+        await LogToBrowserConsole($"Url: {uploadedBlobUrl}");
+
+        StateHasChanged();
+    }
+
+    private async Task LogToBrowserConsole(string message) => await JSRuntime.InvokeVoidAsync("console.log", message);
 }

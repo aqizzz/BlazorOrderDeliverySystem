@@ -5,6 +5,9 @@
 @using System.Security.Claims
 @using OrderDeliverySystem.Client.Infrastructure.Services.Item
 @using System.Text.Json
+@using Azure.Storage.Blobs
+@using Azure.Storage.Blobs.Models
+@inject BlobServiceClient blobService
 @inject IHttpClientFactory httpClientFactory
 @inject NavigationManager NavigationManager
 @inject ItemService ItemService
@@ -73,7 +76,13 @@
                             </MudItem>
                             <MudItem xs="8">
                                 <MudField Underline="false">
-                                    <MudTextField id="ItemPic" @bind-Value="model.ItemPic" For="@(() => model.ItemPic)" Variant="Variant.Filled" />
+                                    <MudFileUpload Class="d-block my-2" T="IBrowserFile" FilesChanged="UploadImage">
+                                        <ActivatorContent>
+                                            <MudFab Style="color:white;background-color:rgba(112, 0, 0, 1);"
+                                                    StartIcon="@Icons.Material.Filled.Image"
+                                                    Label="Load picture" />
+                                        </ActivatorContent>
+                                    </MudFileUpload>
                                 </MudField>
                             </MudItem>
 
@@ -112,14 +121,29 @@
 
     private bool isLoading = true;
 
-    private string MerchantId;
+    public string MerchantUserId { get; set; }
+
+    private string uploadUrl;
+    string newBlobName = string.Empty;
+    bool loadedPhoto = false;
+    bool uploadSuccessful = false;
+    private string uploadedBlobUrl = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         user = authState.User;
 
-        MerchantId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userIdClaim = user.FindFirst(claim => claim.Type == "UserId");
+
+        if (userIdClaim != null)
+        {
+            MerchantUserId = "merchant" + userIdClaim.Value;
+        }
+        else
+        {
+            MerchantUserId = "User not authenticated";
+        }
 
         await LoadItem();
     }
@@ -156,5 +180,30 @@
     private void GoBack()
     {
         NavigationManager.NavigateTo("/merchant-items");
+    }
+
+    private async Task UploadImage(IBrowserFile file)
+    {
+        uploadSuccessful = false;
+
+        var containerClient = blobService.GetBlobContainerClient(MerchantUserId);
+
+        var response = await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
+
+        newBlobName = $"{Guid.NewGuid().ToString()}.jpg";
+
+        var blobClient = containerClient.GetBlobClient(newBlobName);
+
+        await blobClient.UploadAsync(file.OpenReadStream(maxAllowedSize: 1048576));
+
+        loadedPhoto = true;
+
+        uploadSuccessful = true;
+
+        uploadedBlobUrl = blobClient.Uri.ToString();
+
+        model.ItemPic = uploadedBlobUrl;
+
+        StateHasChanged();
     }
 }
