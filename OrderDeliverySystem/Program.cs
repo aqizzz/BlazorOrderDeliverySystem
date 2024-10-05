@@ -55,12 +55,13 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    string dbPath = Path.Combine(AppContext.BaseDirectory, "OrderDeliverySystem.db");
+    string dbPath = Path.Combine(Directory.GetCurrentDirectory(), "OrderDeliverySystem.db");
 
     options.UseSqlite($"Data Source={dbPath}",
         sqliteOptions => sqliteOptions.MigrationsAssembly("OrderDeliverySystem.Share"))
         .EnableSensitiveDataLogging()
         .LogTo(Console.WriteLine, LogLevel.Information);
+    Console.WriteLine($"Database path: {dbPath}");
 });
 
 var storageConnection = builder.Configuration["StorageConnection"];
@@ -87,7 +88,7 @@ var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-var baseUrl = "https://blazororderdeliverysystemapi.azure-api.net";
+var baseUrl = "https://orderdeliverysystem.azurewebsites.net/";
 if (environment == "Development")
 {
     baseUrl = "https://localhost:7027/";
@@ -167,6 +168,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    context.Database.Migrate();
     await UserSeeder.EnsureAdminUserExists(context);
 }
 

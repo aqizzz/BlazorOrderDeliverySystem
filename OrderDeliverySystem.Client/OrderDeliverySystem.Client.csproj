@@ -11,11 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="Infrastructure\Services\Orders\PendingOrders.razor" />
-    <Content Remove="Pages\ItemList.razor" />
-  </ItemGroup>
-
-  <ItemGroup>
 	<PackageReference Include="Azure.Storage.Blobs" Version="12.22.1" />
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
@@ -38,16 +33,6 @@
 
 	<ItemGroup>
 	  <UpToDateCheckInput Remove="Pages\ItemList.razor" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <_ContentIncludedByDefault Remove="Infrastructure\Services\Orders\PendingOrders.razor" />
-	  <_ContentIncludedByDefault Remove="Pages\ItemList.razor" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Include="Infrastructure\Services\Orders\PendingOrders.razor" />
-	  <None Include="Pages\ItemList.razor" />
 	</ItemGroup>
 
 	<ItemGroup>
