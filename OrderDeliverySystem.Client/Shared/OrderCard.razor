@@ -2,44 +2,38 @@
 @using OrderDeliverySystem.Share.DTOs
 @using System.ComponentModel.DataAnnotations
 @using System.Globalization
+@using System.Security.Claims
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @rendermode InteractiveServer
 
 
 <MudGrid>
     <MudItem xs="12" sm="12" md="12" Class="d-flex justify-content-between align-items-center border-b-4 border-solid" Style="border-color:rgba(112, 0, 0, 1);">
         <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">OrderId: @Order.OrderId</MudText>
-        @if (Order.Status.Equals("Delivered"))
-        {
-            <AuthorizeView Roles="Customer">
-                <Authorized>
-                    <MudButton Href="/create-review">Send Review</MudButton>
-                </Authorized>
-
-            </AuthorizeView>
-        }
        
-        <MudButton OnClick="OnExpandCollapseClick">@(_expanded ? "Details" : "Details")</MudButton>
+       
+        <MudButton OnClick="OnExpandCollapseClick">@(_detailExpanded ? "Details" : "Details")</MudButton>
     </MudItem>
 
     <MudItem xs="12" sm="12" md="2">
-        <MudImage Src="@Order?.Merchant?.MerchantPic" Width="60" Height="35" Alt="@Order?.Merchant?.BusinessName" Class="rounded-lg mt-4 my-2" />
+        <MudImage Src="@Order?.Merchant?.MerchantPic" Width="130" Height="80" Alt="@Order?.Merchant?.BusinessName" Class="rounded-lg mt-4 my-2" />
     </MudItem>
     <MudItem xs="12" sm="12" md="3">
         <MudGrid>
             <MudItem xs="12">
                 <MudText Class="pb-2" Typo="Typo.h5">@Order.Merchant.BusinessName</MudText>
                 <div Class="pb-2">
-                <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.AccessTime"></MudIcon>
-                <MudText Class="d-inline-block" Typo="Typo.body2">Time: @Order.Merchant.PreparingTime mins</MudText>
+
+                    <MudText  Typo="Typo.body2"> <MudIcon  Icon="@Icons.Material.Outlined.AccessTime"></MudIcon> Lead Time: @Order.Merchant.PreparingTime mins</MudText>
                 </div>
                 <div Class="pb-2">
-                <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.LocationOn"></MudIcon>
                     @foreach (var address in Order.Merchant.User.Addresses)
                     {
                         <MudText Class="d-inline-block" Typo="Typo.body2">
+                            <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.LocationOn"></MudIcon> 
                             Address:  @((@address.Unit != "" ? @address.Unit + ", " : "") +
                         (@address.Address != "" ? @address.Address + ", " : "") +
                         (@address.City != "" ? @address.City + ", " : "") +
@@ -53,34 +47,55 @@
     </MudItem>
     <MudItem xs="12" sm="12" md="5" Class="d-flex justify-content-center align-item-center"  GutterBottom="true">
        <div>
-        <MudText Typo="Typo.body1" Align="Align.Center" >Order Time: @Order.CreatedAt.ToString("MM/dd/yy hh:mm tt")</MudText>
-        <MudText Typo="Typo.body1" Align="Align.Center" >Arrival time: 09/14/2024 19:25</MudText>
-        <MudText Typo="Typo.body1" Align="Align.Center" >Status: @Order.Status</MudText>
-        <MudLink OnClick="GoTracking"> <MudText Typo="Typo.body1" Align="Align.Center" >Delivery Tracking-></MudText></MudLink>
+            <MudText Typo="Typo.body1" Align="Align.Start">Order Time: @Order.CreatedAt.ToString("MM/dd/yyyy hh:mm tt")</MudText>
+            <MudText Typo="Typo.body1" Align="Align.Start">
+                Arrival time: @Order?.CreatedAt.AddMinutes(Order?.Merchant?.PreparingTime.HasValue == true
+                ? Order.Merchant.PreparingTime.Value + 30
+                : 45).ToString("MM/dd/yyyy hh:mm tt")
+            </MudText>
+            <MudText Typo="Typo.body1" Align="Align.Start">Status: @Order.Status</MudText>
+            <MudLink OnClick="GoTracking"> <MudText Typo="Typo.body1" Align="Align.Start">Delivery Tracking-></MudText></MudLink>
         </div>
     </MudItem>
     <MudItem xs="12" sm="12" md="2">
         <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount: @Order.TotalAmount.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
-        @if (CanReview)
+        @if (Order.Status.Equals("Delivered"))
         {
-            <MudLink Href="@($"/create-review/{Order.OrderId}")" Class="mud-button mud-button-filled mud-button-secondary">
-                Write Review
-            </MudLink>
-        } 
+            @if (Order?.Reviews == null)
+            {
+                <AuthorizeView Roles="Customer">
+                    <Authorized>
+                        <MudButton Class="rounded-pill" Style="width:100%;color:white; background-color: rgba(112, 0, 0, 1);" OnClick="OnExpandReviewClick">
+                            Write Review
+                        </MudButton>
+                    </Authorized>
+                </AuthorizeView>
+                <MudCollapse Expanded="_reviewExpanded">
+                    @if (_reviewExpanded)
+                    {
+                        <CusCreateReview OrderId="@Order.OrderId" OnClose="CloseReview" />
+                    }
+                </MudCollapse>
+            }  
+
+        }
     </MudItem>
 
     <MudItem xs="12" sm="12" md="12">
-        <MudCollapse Expanded="_expanded">
+        <MudCollapse Expanded="_detailExpanded">
             <MudDivider Class="border-t-2 border-solid mt-4" Style="border-color:rgba(112, 0, 0, 1);"></MudDivider>
             <MudGrid>
                 <MudItem xs="12" sm="12" md="9">
+                    <MudText>Name： @Order.Customer.User.FirstName @Order.Customer.User.LastName</MudText>
+                    <MudText>Phone:@Order.Customer.User.Phone</MudText>
+                    <MudText>Address: @Order.Customer.User.Addresses.</MudText>
+                    <MudDivider Class="border-t-2 border-solid mt-4" Style="border-color:rgba(112, 0, 0, 1);"></MudDivider>
                     @if (Order.OrderItems!= null)
                     {
                         foreach (var theitem in Order.OrderItems)
                         {
                             <div class="d-flex justify-content-around align-items-center">
-                                @*<MudImage Src="@theitem.ItemPic" Width="60" Height="35" Alt="@merchant.FirstName" Class="rounded-lg mt-4" />*@
-                                <MudText>@theitem.ItemName</MudText>
+                               <MudText>@theitem.ItemName</MudText>
                                 <MudText> @theitem.ItemPrice</MudText>
                                 <MudText>@theitem.Quantity</MudText>
                             </div>
@@ -103,7 +118,7 @@
     <MudItem xs="12" sm="12" md="12" Class="d-flex justify-content-between align-items-center border-t-4 border-solid mt-4" Style="border-color:rgba(112, 0, 0, 1);">
 
     </MudItem>
-
+    
 </MudGrid>
 
 
@@ -116,18 +131,25 @@
 
     private const decimal TaxRate = 0.15m;
     private const decimal DeliveryFee = 6.00m;
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+
+        await base.OnInitializedAsync();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
         
         Console.WriteLine($"Selected restaurant ID: {Order.OrderId}");
+        NavigationManager.LocationChanged += OnReviewLocationChanged;
+    
     }
 
-    bool _expanded = false;
+    bool _detailExpanded = false;
 
     private void OnExpandCollapseClick()
     {
-        _expanded = !_expanded;
+        _detailExpanded = !_detailExpanded;
     }
+    
 
     private void GoTracking()
     {
@@ -146,6 +168,29 @@
     private decimal GetTotalAmount()
     {
         return GetTotalAfterTax() + DeliveryFee;
+    }
+    bool _reviewExpanded = false;
+
+    private void OnExpandReviewClick()
+    {
+        _reviewExpanded = !_reviewExpanded;
+    }
+
+    private void CloseReview()
+    {
+        _reviewExpanded = false;
+    }
+
+    private void OnReviewLocationChanged(object sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        _reviewExpanded = false;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        // 防止内存泄漏，取消订阅事件
+        NavigationManager.LocationChanged -= OnReviewLocationChanged;
     }
 
 }

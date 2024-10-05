@@ -69,18 +69,21 @@
                                             </MudItem>
                                             <MudItem xs="12" >
                                                 <div class="my-2">
-                                                    <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.AccessTime"></MudIcon>
+                                                   
                                                     <MudText Class="d-inline-block" Typo="Typo.body2">
-                                                        Estimated Time:
+                                                        <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.AccessTime"></MudIcon> Estimated Time:
                                                         @(order.Merchant.PreparingTime.HasValue ? order?.Merchant?.PreparingTime.Value + 15 : 30) ~ @(order.Merchant.PreparingTime.HasValue ? order?.Merchant?.PreparingTime.Value + 30 : 45) mins
                                                     </MudText>
                                                 </div>
                                                 <div class="my-2">
-                                                    <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.LocationOn"></MudIcon>
-                                                    @((@order.Merchant?.Unit != "" ? @order.Merchant?.Unit + ", " : "") +
-                                                        (@order.Merchant?.Address != "" ? @order.Merchant?.Address + ", " : "") +
-                                                        (@order.Merchant?.City != "" ? @order.Merchant?.City + ", " : "") +
-                                                        (@order.Merchant?.Postcode ?? ""))
+                                                    <MudText Class="d-inline-block" Typo="Typo.body2">
+                                                        <MudIcon Class="d-inline-block" Icon="@Icons.Material.Outlined.LocationOn"></MudIcon> 
+                                                        @((@order.Merchant?.Unit != "" ? @order.Merchant?.Unit + ", " : "") +
+                                                            (@order.Merchant?.Address != "" ? @order.Merchant?.Address + ", " : "") +
+                                                            (@order.Merchant?.City != "" ? @order.Merchant?.City + ", " : "") +
+                                                            (@order.Merchant?.Postcode ?? ""))
+                                                    </MudText>
+                                                   
                                                 </div>
                                             </MudItem>
                                         </MudGrid>

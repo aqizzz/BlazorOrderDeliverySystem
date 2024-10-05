@@ -7,6 +7,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO;
 using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO.OrderDeliverySystem.Share.DTOs.CartDTO;
+using OrderDeliverySystem.Share.DTOs.ReviewDTO;
 
 
 
@@ -409,6 +410,7 @@ namespace OrderDeliverySystemApi.Controllers
             IQueryable<Order> query = _context.Orders
                 .Include(o => o.Customer)
                 .Include(o => o.OrderItems)
+                .Include(o => o.Reviews)
                 .Include(o => o.Merchant)
                 .Include(o => o.DeliveryWorker);
 
@@ -470,6 +472,15 @@ namespace OrderDeliverySystemApi.Controllers
                     TotalAmount = o.TotalAmount,
                     CreatedAt = o.CreatedAt,
                     Status = o.Status,
+                    Reviews = new GetReviewResponseDTO
+                    {
+                        ReviewId = o.Reviews.ReviewId,
+                        Comment = o.Reviews.Comment,
+                        Rating = o.Reviews.Rating,
+                        Reply = o.Reviews.Reply,
+                        CreatedAt = o.Reviews.CreatedAt,
+                        ReplyCreatedAt = o.Reviews.CreatedAt,
+                    },
                     Customer = new CustomerDTO1
                     {
                         CustomerId = o.Customer.CustomerId,

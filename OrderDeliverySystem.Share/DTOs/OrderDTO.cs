@@ -1,4 +1,5 @@
 ﻿using OrderDeliverySystem.Share.Data.Models;
+using OrderDeliverySystem.Share.DTOs.ReviewDTO;
 
 namespace OrderDeliverySystem.Share.DTOs
 {
@@ -18,5 +19,6 @@ namespace OrderDeliverySystem.Share.DTOs
         public  MerchantDTO1 Merchant { get; set; }
         public WorkerDTO1? DeliveryWorker { get; set; }
         public ICollection<AppOrderItem> OrderItems { get; set; }
+        public GetReviewResponseDTO? Reviews { get; set; }
     }
 }
