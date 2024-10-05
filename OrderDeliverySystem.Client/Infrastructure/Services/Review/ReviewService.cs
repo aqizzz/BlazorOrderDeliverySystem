@@ -1,11 +1,5 @@
-﻿using Blazored.LocalStorage;
-using Microsoft.AspNetCore.Components.Authorization;
-using OrderDeliverySystem.Share.DTOs.ReviewDTO;
-using System.Net.Http;
+﻿using OrderDeliverySystem.Share.DTOs.ReviewDTO;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
-using System;
-using System.Collections.Generic;
 using OrderDeliverySystem.Share.Data;
 using OrderDeliverySystem.Client.Infrastructure.Extensions;
 
@@ -22,8 +16,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Review
         private const string MerchantReviewsPath = "api/review/merchantReviews";
         private const string AdminReviewsPath = "api/review/adminReviews";
         private const string UpdateReplyPath = "api/review/updateReply";
-
-    
+        private const string getReviewPath = "api/review/orderReview";
 
         public ReviewService(IHttpClientFactory httpClientFactory, TokenHelper tokenHelper)
         {
@@ -82,6 +75,14 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Review
             await _tokenHelper.ConfigureHttpClientAuthorization(httpClient);
             var uri = $"{UpdateReplyPath}/{reviewId}";
             return await httpClient.PutAsJsonAsync(uri, replyDto).ToResult();
+        }
+
+        public async Task<GetReviewResponseDTO> GetReviewByOrderId(int orderId)
+        {
+            var httpClient = this._httpClientFactory.CreateClient("API");
+            await _tokenHelper.ConfigureHttpClientAuthorization(httpClient);
+            var response = await httpClient.GetFromJsonAsync<GetReviewResponseDTO>($"{getReviewPath}/{orderId}");
+            return response ?? new GetReviewResponseDTO();
         }
     }
 }

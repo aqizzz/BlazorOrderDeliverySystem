@@ -4,18 +4,19 @@
 @using System.Globalization
 @using System.Security.Claims
 @using OrderDeliverySystem.Share.DTOs.ReviewDTO
+@using OrderDeliverySystem.Client.Infrastructure.Services.Review
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @inject IDialogService DialogService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IReviewService ReviewService
 @rendermode InteractiveServer
 
 
 <MudGrid>
     <MudItem xs="12" sm="12" md="12" Class="d-flex justify-content-between align-items-center border-b-4 border-solid" Style="border-color:rgba(112, 0, 0, 1);">
         <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">OrderId: @Order.OrderId</MudText>
-       
        
         <MudButton OnClick="OnExpandCollapseClick">@(_detailExpanded ? "Details" : "Details")</MudButton>
     </MudItem>
@@ -61,7 +62,7 @@
     </MudItem>
     <MudItem xs="12" sm="12" md="2">
         <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount: @Order.TotalAmount.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
-        @if (!CanReview)
+        @if (Order.Status.Equals("Delivered") && CanReview)
         {
             <AuthorizeView Roles="Customer">
                 <Authorized>
@@ -71,7 +72,7 @@
                 </Authorized>
             </AuthorizeView>
         }
-        else
+        else if (Order.Status.Equals("Delivered") && !CanReview)
         {
             <AuthorizeView Roles="Customer">
                 <Authorized>
@@ -97,9 +98,17 @@
                         foreach (var theitem in Order.OrderItems)
                         {
                             <div class="d-flex justify-content-around align-items-center">
-                               <MudText>@theitem.ItemName</MudText>
-                                <MudText> @theitem.ItemPrice</MudText>
-                                <MudText>@theitem.Quantity</MudText>
+                                <MudGrid>
+                                    <MudItem xs="4">
+                                        <MudText>@theitem.ItemName</MudText>
+                                    </MudItem>
+                                    <MudItem xs="4">
+                                        <MudText>@theitem.ItemPrice.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
+                                    </MudItem>
+                                    <MudItem xs="4">
+                                        <MudText>@theitem.Quantity</MudText>
+                                    </MudItem>
+                                </MudGrid>
                             </div>
                         }
                     }
@@ -128,12 +137,11 @@
     [Parameter]
     public OrderDTO Order{ get; set; }
 
-    [Parameter]
-    public bool CanReview { get; set; }
-
     private const decimal TaxRate = 0.15m;
     private const decimal DeliveryFee = 6.00m;
     private GetReviewResponseDTO Review { get; set; } = new GetReviewResponseDTO();
+
+    private bool CanReview;
 
 
     protected override async Task OnInitializedAsync()
@@ -142,6 +150,7 @@
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
+        await GetRivewByOrderId(Order.OrderId);
     }
 
     bool _detailExpanded = false;
@@ -150,12 +159,12 @@
     {
         _detailExpanded = !_detailExpanded;
     }
-    
+
 
     private void GoTracking()
     {
         NavigationManager.NavigateTo($"/tracking/{Order.OrderId}");
-       
+
     }
 
     private decimal GetTaxAmount()
@@ -170,7 +179,7 @@
     {
         return GetTotalAfterTax() + DeliveryFee;
     }
-   
+
     private Task OpenReviewDialogAsync()
     {
         var parameters = new DialogParameters<ReviewDialog> { 
@@ -179,7 +188,7 @@
         };
         var options = new DialogOptions { CloseOnEscapeKey = true, CloseButton = true, MaxWidth = MaxWidth.ExtraLarge };
 
-        return DialogService.ShowAsync<ReviewDialog>("Simple Dialog", options);
+        return DialogService.ShowAsync<ReviewDialog>("Simple Dialog", parameters, options);
     }
 
     private Task OpenCreateReviewDialogAsync()
@@ -188,10 +197,22 @@
             { x => x.OrderId, Order.OrderId }  
         };
         var options = new DialogOptions { CloseOnEscapeKey = true, CloseButton = true, MaxWidth = MaxWidth.ExtraLarge };
-       
 
-        return DialogService.ShowAsync<CreateReviewDialog>("Simple Dialog", options);
+
+        return DialogService.ShowAsync<CreateReviewDialog>("Simple Dialog", parameters, options);
     }
 
+    private async Task GetRivewByOrderId(int orderId)
+    {
+        Review = await ReviewService.GetReviewByOrderId(orderId);
 
+        if (Review == null || string.IsNullOrWhiteSpace(Review.Comment) || Review.OrderId == 0) { CanReview = true; }
+        else { CanReview = false; }
+    }
+
+    private async Task NavigateToReview(int orderId)
+    {
+        NavigationManager.NavigateTo($"/create-review/{orderId}");
+        await Task.CompletedTask; 
+    }
 }

@@ -12,7 +12,8 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Review
         Task<List<GetReviewResponseDTO>> MerchantGetReviews();
         Task<List<GetReviewResponseDTO>> AdminGetReviews();
         Task<Result> UpdateReply(int reviewId, UpdateReplyRequestDTO replyDto);
-        
+        Task<GetReviewResponseDTO> GetReviewByOrderId(int orderId);
+
 
     }
 }

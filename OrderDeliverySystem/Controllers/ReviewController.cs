@@ -95,6 +95,29 @@ namespace OrderDeliverySystemApi.Controllers
             return Ok(reviews);
         }
 
+        [HttpGet("orderReview/{orderId}")]
+        public async Task<IActionResult> GetReviewByOrderId(int orderId)
+        {
+            var result = await _context.Reviews.FirstOrDefaultAsync(r => r.OrderId == orderId);
+
+            if (result == null)
+                return Ok(new GetReviewResponseDTO());
+
+            var review = new GetReviewResponseDTO
+            {
+                ReviewId = result.ReviewId,
+                OrderId = orderId,
+                CustomerId = result.CustomerId,
+                Comment = result.Comment ?? "",
+                Rating = result.Rating,
+                CreatedAt = result.CreatedAt,
+                Reply = result.Reply ?? "",
+                ReplyCreatedAt = result.ReplyCreatedAt
+            };
+
+            return Ok(review);
+        }
+
         // Merchant can view its own reviews
         [HttpGet("merchantReviews")]
         [Authorize(Roles = "Merchant")]

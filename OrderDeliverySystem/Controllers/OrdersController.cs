@@ -750,6 +750,7 @@ namespace OrderDeliverySystemApi.Controllers
                         OrderItemId = oi.OrderItemId,
                         ItemId = oi.ItemId,
                         ItemName = oi.Item.ItemName,
+                        ItemPrice = oi.Item.ItemPrice,
                         OrderId = oi.OrderId,
                         Quantity = oi.Quantity
 

@@ -4,7 +4,8 @@
 @using System.Security.Claims
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IAuthorizationService AuthorizationService
-
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
 
 <MudDialog>
     <TitleContent>
@@ -25,7 +26,7 @@
     [Parameter] public int OrderId { get; set; }
     
     [Parameter]
-    public GetReviewResponseDTO Review { get; set; } = new GetReviewResponseDTO();
+    public GetReviewResponseDTO Review { get; set; }
 
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
@@ -39,6 +40,10 @@
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         user = authState.User;
+
+        await LogToBrowserConsole($"Get Review: {Review.Comment}");
     }
+
+    private async Task LogToBrowserConsole(string message) => await JSRuntime.InvokeVoidAsync("console.log", message);
 
 }

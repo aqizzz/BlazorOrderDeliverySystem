@@ -55,7 +55,7 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    string dbPath = Path.Combine(AppContext.BaseDirectory, "OrderDeliverySystem.db");
+    string dbPath = Path.Combine(Directory.GetCurrentDirectory(), "OrderDeliverySystem.db");
 
     options.UseSqlite($"Data Source={dbPath}",
         sqliteOptions => sqliteOptions.MigrationsAssembly("OrderDeliverySystem.Share"))
