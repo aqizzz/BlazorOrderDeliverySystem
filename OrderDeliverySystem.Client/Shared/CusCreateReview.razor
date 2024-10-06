@@ -14,41 +14,37 @@
 
 
 
-<div class="pa-10" Style="width: 400px;">
-    <div class="d-flex justify-content-between align-items-center">
-        <MudText Typo="Typo.h5" Style="color:rgba(112, 0, 0, 1);">Create Review</MudText>
-        <MudIconButton Icon="@Icons.Material.Filled.Close" Style="color: rgba(112, 0, 0, 1);" OnClick="OnClose" />
-    </div>
-    <MudDivider Class="mb-2" Style="border-color:rgba(112, 0, 0, 1);" />
+<div Style="width: 400px;">
+    <EditForm Model="@newReview" OnValidSubmit="CreateReview">
+    <MudDivider Class="mb-3" Style="border-color:rgba(112, 0, 0, 1);" />
+    <ErrorsList ShowErrors="@showErrors" Errors="@errors" />
     <MudText Typo="Typo.subtitle1">Order Id : @OrderId</MudText>
     <MudText Class="my-3" Typo="Typo.body1">Please rate and leave your review here</MudText>
-         <EditForm Model="@newReview" OnValidSubmit="CreateReview">
-                <ErrorsList ShowErrors="@showErrors" Errors="@errors" />
-            <MudRating @bind-SelectedValue="newReview.Rating" Size="Size.Medium" Label="Rating" Required="true" />
-            <MudTextField @bind-Value="newReview.Comment" Label="Comment" Lines="5" Required="true" />
-           
-            <div class="my-3 d-flex justify-content-between align-items-center">
-                <MudButton Class="rounded-pill" Style="width:40%;color:white; background-color: rgba(112, 0, 0, 1);" OnClick="@(() => ShowSubmitDialog())">Submit</MudButton>
-                <MudButton Class="rounded-pill" Style="width:40%; background-color:lightgrey; color: rgba(112, 0, 0, 1);" OnClick="ResetForm">Reset</MudButton>
-            </div>
-         </EditForm>
-    @if (showSubmitDialog)
-    {
-        <div class="custom-dialog-backdrop">
-            <div class="custom-dialog">
-                <MudText Typo="Typo.h6">Submit Review Confirmation</MudText>
-                <MudText Typo="Typo.body1">Are you sure you want to submit this review?</MudText>
-                <MudButton OnClick="@(async () => await CreateReview())" Color="Color.Primary" Class="mt-2">Yes</MudButton>
-                <MudButton OnClick="CancelSubmit" Color="Color.Default" Class="mt-2">No</MudButton>
-            </div>
-        </div>
-    }
-    
+    <MudRating Class="my-2" @bind-SelectedValue="newReview.Rating" Size="Size.Medium" Label="Rating" Required="true" />
+        <MudTextField Variant="Variant.Outlined" @bind-Value="newReview.Comment" Label="Comment" Lines="5" Required="true" />
+        <MudDivider Class="my-3" Style="border-color:rgba(112, 0, 0, 1);" />
+        <div class="my-3 d-flex justify-content-between align-items-center">
+        <MudButton Class="rounded-pill" Style="width:40%;color:white; background-color: rgba(112, 0, 0, 1);" OnClick="@(() => ShowSubmitDialog())">Submit</MudButton>
+        <MudButton Class="rounded-pill" Style="width:40%; background-color:lightgrey; color: rgba(112, 0, 0, 1);" OnClick="ResetForm">Reset</MudButton>
+    </div>
+    </EditForm>
+  
 </div>
 
+@if (showSubmitDialog)
+{
+    <div class="custom-dialog-backdrop">
+        <div class="custom-dialog">
+            <MudText Typo="Typo.h6">Submit Review Confirmation</MudText>
+            <MudText Typo="Typo.body1">Are you sure you want to submit this review?</MudText>
+            <MudButton OnClick="@(async () => await CreateReview())" Color="Color.Primary" Class="mt-2">Yes</MudButton>
+            <MudButton OnClick="CancelSubmit" Color="Color.Default" Class="mt-2">No</MudButton>
+        </div>
+    </div>
+}
 
 @code {
-    [Parameter] public EventCallback OnClose { get; set; }
+  
     [Parameter]
     public int OrderId { get; set; }
 
@@ -132,7 +128,7 @@
 
 <style>
     .custom-dialog-backdrop {
-        position: fixed;
+        position: absolute;
         top: 0;
         left: 0;
         width: 100vw;
