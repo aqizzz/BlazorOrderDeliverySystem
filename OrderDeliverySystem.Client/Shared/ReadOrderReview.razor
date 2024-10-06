@@ -1,0 +1,41 @@
+﻿@using MudBlazor
+@using OrderDeliverySystem.Share.DTOs.ReviewDTO
+@inject ISnackbar Snackbar
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IAuthorizationService AuthorizationService
+@rendermode InteractiveServer
+
+
+<div style="width:400px">
+    <MudDivider Class="mb-3" Style="border-color:rgba(112, 0, 0, 1);" />
+    <MudText Class="my-2">Order Id: @OrderId</MudText>
+    <MudText Class="my-2">Rating:   <MudRating SelectedValue="Review.Rating" Size="Size.Medium" Label="Rating" ReadOnly="true" /></MudText>
+    <MudText Class="my-2">Create At: @Review.CreatedAt.ToString("MM/dd/yyyy hh:mm:ss tt")</MudText>
+    <MudText Class="my-2">Comment: @Review.Comment</MudText>
+    <MudDivider Class="mt-3" Style="border-color:rgba(112, 0, 0, 1);" />
+    
+</div>
+@if (Review != null && !string.IsNullOrWhiteSpace(Review.Reply))
+    {
+        <MudDivider Class="my-3" />
+        <MudTextField Value="@Review.ReplyCreatedAt" Label="Reply Time" ReadOnly="true" />
+        <MudTextField Value="@Review.Reply" Label="Merchant Reply" ReadOnly="true" />
+
+    }
+
+@code {
+    [Parameter] public int OrderId { get; set; }
+
+    [Parameter]
+    public GetReviewResponseDTO Review { get; set; }
+    private ClaimsPrincipal user;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+    }
+}
