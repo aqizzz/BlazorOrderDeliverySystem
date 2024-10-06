@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using OrderDeliverySystem.Client.Infrastructure.Services.Cart
+@using System.Security.Claims
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
@@ -17,12 +18,12 @@
 <MudHidden Class="my-10" Breakpoint="Breakpoint.MdAndUp" Invert="true">
     <AuthorizeView Roles="Admin,Merchant,Worker">
         <Authorized>
-            <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/dashboard" Class="rounded-lg m-4" /></MudLink>
+            <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Class="rounded-lg m-4" /></MudLink>
             <MudSpacer />
             <MudFab StartIcon="@Icons.Material.Filled.PersonOutline" Style="color: rgba(168, 0, 0, 1);" Label="Log Out" OnClick="LogOut" />
         </Authorized>
         <NotAuthorized>
-            <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House" Href="/" Class="rounded-lg m-4" /></MudLink>
+            <MudLink Href="/"><MudImage Src="images/logo.png" Width="120" Height="80" Alt="Swedish Farm House"  Class="rounded-lg m-4" /></MudLink>
             <MudSpacer />
         </NotAuthorized>
 
@@ -112,10 +113,16 @@
         isDeliveryWorker = user.IsInRole("DeliveryWorker");
         isGuest = (!isAdmin || !isCustomer || !isMerchant || !isDeliveryWorker);
     }*@
-    [Inject]
-    private IAuthService AuthService { get; set; }
-    [Inject]
-    private ICartService CartService { get; set; }
+        [Inject]
+        private IAuthService AuthService { get; set; }
+        [Inject]
+        private ICartService CartService { get; set; }
+    private ClaimsPrincipal user;
+    [Parameter]
+    public int UserId { get; set; }
+    [Parameter]
+    public int Role { get; set; }
+
     bool _cartExpanded = false;
     private int totalCartQuantity = 0;
     protected override async Task OnInitializedAsync()
@@ -123,10 +130,16 @@
 
         // StateHasChanged();
         await base.OnInitializedAsync();
-        CartService.OnCartChanged += UpdateCartQuantity;
-        await LoadCartQuantity();
+
+
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
+        CartService.OnCartChanged += UpdateCartQuantity;
+        if (Role.Equals("Customer")){
+           
+            await LoadCartQuantity();
+        }
+       
         NavigationManager.LocationChanged += OnLocationChanged;
     }
     bool _menuExpanded = true;

@@ -7,6 +7,8 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO;
 using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO.OrderDeliverySystem.Share.DTOs.CartDTO;
+using OrderDeliverySystem.Share.DTOs.ReviewDTO;
+using static MudBlazor.Icons;
 
 
 
@@ -409,6 +411,8 @@ namespace OrderDeliverySystemApi.Controllers
             IQueryable<Order> query = _context.Orders
                 .Include(o => o.Customer)
                 .Include(o => o.OrderItems)
+				 .ThenInclude(oi => oi.Item)
+				.Include(o => o.Reviews)
                 .Include(o => o.Merchant)
                 .Include(o => o.DeliveryWorker);
 
@@ -470,6 +474,15 @@ namespace OrderDeliverySystemApi.Controllers
                     TotalAmount = o.TotalAmount,
                     CreatedAt = o.CreatedAt,
                     Status = o.Status,
+                    Reviews = new GetReviewResponseDTO
+                    {
+                        ReviewId = o.Reviews.ReviewId,
+                        Comment = o.Reviews.Comment,
+                        Rating = o.Reviews.Rating,
+                        Reply = o.Reviews.Reply,
+                        CreatedAt = o.Reviews.CreatedAt,
+                        ReplyCreatedAt = o.Reviews.CreatedAt,
+                    },
                     Customer = new CustomerDTO1
                     {
                         CustomerId = o.Customer.CustomerId,
@@ -647,7 +660,8 @@ namespace OrderDeliverySystemApi.Controllers
 
             IQueryable<Order> query = _context.Orders
               .Include(o => o.Customer)
-              .Include(o => o.OrderItems)
+			  .Include(o => o.Reviews)
+			  .Include(o => o.OrderItems)
                   .ThenInclude(oi => oi.Item)
               .Include(o => o.Merchant)
               .Include(o => o.DeliveryWorker);
@@ -686,6 +700,15 @@ namespace OrderDeliverySystemApi.Controllers
                     TotalAmount = o.TotalAmount,
                     CreatedAt = o.CreatedAt,
                     Status = o.Status,
+                    Reviews = o.Reviews != null ? new GetReviewResponseDTO
+                    {
+                        ReviewId = o.Reviews.ReviewId,
+                        Comment = o.Reviews.Comment,
+                        Rating = o.Reviews.Rating,
+                        Reply = o.Reviews.Reply,
+                        CreatedAt = o.Reviews.CreatedAt,
+                        ReplyCreatedAt = o.Reviews.ReplyCreatedAt,
+                    } : null,
                     Customer = new CustomerDTO1
                     {
                         CustomerId = o.Customer.CustomerId,
@@ -734,11 +757,19 @@ namespace OrderDeliverySystemApi.Controllers
                             }).ToList()
                         }
                     },
+                    DeliveryWorker = o.DeliveryWorker == null ? null : new WorkerDTO1
+                    {
+                        WorkerId = o.DeliveryWorker.WorkerId,
+                        UserId = o.DeliveryWorker.UserId,
+                        WorkerAvailability = o.DeliveryWorker.WorkerAvailability,
+                        CommissionRate = o.DeliveryWorker.CommissionRate,
+                    },
                     OrderItems = o.OrderItems.Select(oi => new AppOrderItem
                     {
                         OrderItemId = oi.OrderItemId,
                         ItemId = oi.ItemId,
                         ItemName = oi.Item.ItemName,
+                        ItemPrice = oi.Item.ItemPrice,
                         OrderId = oi.OrderId,
                         Quantity = oi.Quantity
 

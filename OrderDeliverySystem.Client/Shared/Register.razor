@@ -8,9 +8,9 @@
 @inject NavigationManager NavigationManager
 @rendermode InteractiveAuto
 
-<MudContainer Class="my-10">
- 
-<div class="container d-flex flex-column align-items-center min-vh-100 mt-20">
+<MudContainer Class="my-10 d-flex justify-content-center">
+    <MudPaper Class="my-15 py-10 px-10 d-flex justify-content-center align-items-center w-50 " MinWidth="350px" >
+        <div class="w-100">
 <h3>Register</h3>
 @if (!string.IsNullOrEmpty(message))
 {
@@ -22,7 +22,7 @@
 <EditForm Model="@user" OnValidSubmit="@HandleValidSubmit" FormName="registerForm">
     <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
     <DataAnnotationsValidator />
-
+                <MudDivider Class="my-5" Style="color:rgba(112, 0, 0, 1);border-color:rgba(112, 0, 0, 1);border-width:3px;" />
     <MudField Underline="false">
                 <MudTextField id="email" @bind-Value="user.Email" Label="Email" For="@(() => user.Email)" Variant="Variant.Outlined" />
     </MudField>
@@ -34,16 +34,17 @@
     <MudField Underline="false">
                 <MudTextField id="confirmPassword" @bind-Value="user.ConfirmPassword" Label="Confirm Password" For="@(() => user.ConfirmPassword)" Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="Buttonclick" AdornmentAriaLabel="Show Password" />
     </MudField>
-
-    <div style="display: flex; justify-content: center;" class="mt-6">
-                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Error" Class="Class.object-center"> Register </MudButton>
-    </div>
+     <MudDivider Class="my-5" Style="color:rgba(112, 0, 0, 1);border-color:rgba(112, 0, 0, 1);border-width:3px;" />
+     <MudPaper Class="d-flex justify-content-center" Elevation="0">
+                 <MudButton ButtonType="ButtonType.Submit" Style="width:40%; color:white;background-color:rgba(112, 0, 0, 1);" Class="my-5 text-center rounded-pill" > Register </MudButton>
+    </MudPaper>
 
 
 </EditForm>
 
-<p class="text-center mt-4">Have an account? <a class="text-decoration-underline" href="/login">Log In</a></p>
-</div>
+            <MudText Class="text-center mt-4">Have an account? <MudLink Class="text-decoration-underline" Color="Color.Default" Href="/login">Log In</MudLink></MudText>
+        </div>
+    </MudPaper>
 </MudContainer>
 
 @code {

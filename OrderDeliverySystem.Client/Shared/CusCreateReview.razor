@@ -1,11 +1,11 @@
-﻿@page "/create-review/{OrderId:int}"
+﻿
 
 @inject ISnackbar Snackbar
 @inject IHttpClientFactory HttpClientFactory
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IReviewService ReviewService
 @inject NavigationManager NavigationManager
-
+@using OrderDeliverySystem.Client.Shared.Common
 @using Microsoft.AspNetCore.Components.Authorization
 @using MudBlazor
 @using OrderDeliverySystem.Share.DTOs
@@ -13,40 +13,42 @@
 @using OrderDeliverySystem.Share.DTOs.ReviewDTO
 
 
-<MudContainer Class="my-10 d-flex justify-content-center" MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
-    <MudPaper Class="px-16 pt-10 ma-2 " Elevation="3" Width="100%">
-        <AuthorizeView Roles="Customer">
-            <Authorized>
-                <MudPaper Class="pa-4">
-                    <MudText Typo="Typo.h5">Customer Create Review</MudText>
-                    <MudRating @bind-SelectedValue="newReview.Rating" Size="Size.Medium" Label="Rating" Required="true" />
-                    <MudTextField @bind-Value="newReview.Comment" Label="Comment" Lines="5" Required="true" />
-                    <br />
-                    <MudButton OnClick="@(() => ShowSubmitDialog())" Variant="Variant.Filled" Color="Color.Primary">Submit</MudButton>
-                    <MudButton Type="button" Variant="Variant.Filled" Color="Color.Secondary" OnClick="ResetForm">Cancel</MudButton>
-                </MudPaper>
-            </Authorized>
-            <NotAuthorized>
-                <MudText Typo="Typo.h5" Color="Color.Error">Unauthorized: You do not have permission to create reviews.</MudText>
-            </NotAuthorized>
-        </AuthorizeView>
-    </MudPaper>
-</MudContainer>
 
-
-@if (showSubmitDialog)
-{
-    <div class="custom-dialog-backdrop">
-        <div class="custom-dialog">
-            <MudText Typo="Typo.h6">Submit Review Confirmation</MudText>
-            <MudText Typo="Typo.body1">Are you sure you want to submit this review?</MudText>
-            <MudButton OnClick="@(async () => await CreateReview())" Color="Color.Primary" Class="mt-2">Yes</MudButton>
-            <MudButton OnClick="CancelSubmit" Color="Color.Secondary" Class="mt-2">No</MudButton>
-        </div>
+<div class="pa-10" Style="width: 400px;">
+    <div class="d-flex justify-content-between align-items-center">
+        <MudText Typo="Typo.h5" Style="color:rgba(112, 0, 0, 1);">Create Review</MudText>
+        <MudIconButton Icon="@Icons.Material.Filled.Close" Style="color: rgba(112, 0, 0, 1);" OnClick="OnClose" />
     </div>
-}
+    <MudDivider Class="mb-2" Style="border-color:rgba(112, 0, 0, 1);" />
+    <MudText Typo="Typo.subtitle1">Order Id : @OrderId</MudText>
+    <MudText Class="my-3" Typo="Typo.body1">Please rate and leave your review here</MudText>
+         <EditForm Model="@newReview" OnValidSubmit="CreateReview">
+                <ErrorsList ShowErrors="@showErrors" Errors="@errors" />
+            <MudRating @bind-SelectedValue="newReview.Rating" Size="Size.Medium" Label="Rating" Required="true" />
+            <MudTextField @bind-Value="newReview.Comment" Label="Comment" Lines="5" Required="true" />
+           
+            <div class="my-3 d-flex justify-content-between align-items-center">
+                <MudButton Class="rounded-pill" Style="width:40%;color:white; background-color: rgba(112, 0, 0, 1);" OnClick="@(() => ShowSubmitDialog())">Submit</MudButton>
+                <MudButton Class="rounded-pill" Style="width:40%; background-color:lightgrey; color: rgba(112, 0, 0, 1);" OnClick="ResetForm">Reset</MudButton>
+            </div>
+         </EditForm>
+    @if (showSubmitDialog)
+    {
+        <div class="custom-dialog-backdrop">
+            <div class="custom-dialog">
+                <MudText Typo="Typo.h6">Submit Review Confirmation</MudText>
+                <MudText Typo="Typo.body1">Are you sure you want to submit this review?</MudText>
+                <MudButton OnClick="@(async () => await CreateReview())" Color="Color.Primary" Class="mt-2">Yes</MudButton>
+                <MudButton OnClick="CancelSubmit" Color="Color.Default" Class="mt-2">No</MudButton>
+            </div>
+        </div>
+    }
+    
+</div>
+
 
 @code {
+    [Parameter] public EventCallback OnClose { get; set; }
     [Parameter]
     public int OrderId { get; set; }
 
@@ -65,6 +67,7 @@
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
+        
 
         if (!user.Identity.IsAuthenticated || !user.IsInRole("Customer"))
         {
@@ -79,12 +82,13 @@
 
     private async Task CreateReview()
     {
+        
         try
         {
             newReview.OrderId = OrderId;
             var result = await ReviewService.AddReview(newReview);
 
-            if (result.IsSuccessStatusCode)
+            if (result.Succeeded)
             {
                 Snackbar.Add("Review submitted successfully!", Severity.Success);
                 showErrors = false;
@@ -92,7 +96,7 @@
             }
             else
             {
-                errors = await result.Content.ReadAsStringAsync();
+                errors = result.Error;
                 showErrors = true;
                 Snackbar.Add("Error submitting review", Severity.Error);
             }
@@ -112,6 +116,7 @@
     private void CancelSubmit()
     {
         showSubmitDialog = false;
+       
     }
 
     private void ResetForm()

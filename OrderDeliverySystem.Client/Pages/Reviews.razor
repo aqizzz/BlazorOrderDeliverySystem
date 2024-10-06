@@ -9,7 +9,7 @@
 
 <MudContainer Class="my-10">
     <MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">All Reviews</MudText>
-
+    
     @if (isLoading)
     {
         <MudProgressCircular Indeterminate="true" />
@@ -17,6 +17,7 @@
     else if (reviews != null && reviews.Count > 0)
     {
         <MudTable Items="@reviews" Striped="true" Bordered="true">
+
             <HeaderContent>
                 <MudTh>Review ID</MudTh>
                 <MudTh>Order ID</MudTh>
@@ -68,6 +69,8 @@
     private bool isLoading = true;
     private bool showDeleteDialog = false;
     private int selectedReviewId;
+    public bool ShowErrors { get; set; } = false;
+    public string Errors { get; set; } = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -117,16 +120,17 @@
     {
         try
         {
-            var response = await ReviewService.DeleteReview(selectedReviewId);
-            if (response.IsSuccessStatusCode)
+            var result = await ReviewService.DeleteReview(selectedReviewId);
+            if (result.Succeeded)
             {
-                reviews.RemoveAll(r => r.ReviewId == selectedReviewId); // Remove from list
-                Console.WriteLine("Review deleted successfully.");
+             
+                reviews.RemoveAll(r => r.ReviewId == selectedReviewId);
             }
             else
             {
-                Console.WriteLine("Failed to delete review.");
+                Console.WriteLine($"Failed to delete review");
             }
+            
         }
         catch (Exception ex)
         {
