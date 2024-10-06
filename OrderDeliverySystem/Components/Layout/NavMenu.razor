@@ -92,27 +92,6 @@
 
 
 @code {
-
-    ///bool isCustomer = false;
-    //string _role = "Admin";
-    //string _role = "Merchant";
-    //string _role = "Guest";
-    //string _role = "Customer";
-    // string _role = "Worker";
-
-
-    @*
-    protected override async Task OnInitializedAsync()
-    {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        isAdmin = user.IsInRole("Admin");
-        isCustomer = user.IsInRole("Customer");
-        isMerchant = user.IsInRole("Merchant");
-        isDeliveryWorker = user.IsInRole("DeliveryWorker");
-        isGuest = (!isAdmin || !isCustomer || !isMerchant || !isDeliveryWorker);
-    }*@
     [Inject]
     private IAuthService AuthService { get; set; }
     [Inject]
@@ -121,19 +100,15 @@
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
     private ClaimsPrincipal user;
-    [Parameter]
-    public int UserId { get; set; }
-    [Parameter]
-    public int Role { get; set; }
+
 
     bool _cartExpanded = false;
     private int totalCartQuantity = 0;
+
     protected override async Task OnInitializedAsync()
     {
-
         // StateHasChanged();
         await base.OnInitializedAsync();
-
 
         var authState = await authenticationState;
         user = authState.User;
@@ -142,7 +117,6 @@
 
             await LoadCartQuantity();
         }
-       
         NavigationManager.LocationChanged += OnLocationChanged;
     }
     bool _menuExpanded = true;
@@ -215,7 +189,4 @@
         NavigationManager.LocationChanged -= OnLocationChanged;
         CartService.OnCartChanged -= UpdateCartQuantity;
     }
-
-    
-
 }

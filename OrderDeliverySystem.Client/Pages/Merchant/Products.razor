@@ -8,6 +8,7 @@
 @using OrderDeliverySystem.Client.Shared.Common
 @using Microsoft.AspNetCore.Components.Authorization
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@using System.Globalization
 @inject HttpClient httpClient
 @inject ItemService ItemService
 @inject IHttpClientFactory HttpClientFactory
@@ -25,6 +26,7 @@
         @* <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateNewItem"> *@
         <MudFab Class="mx-2" Label="Create New Item" Href="/create-item" Style="width:20%;color:white;background-color:rgba(112, 0, 0, 1);"/>
     </div>
+
 
     @* <MudTable Items="@Items" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped"  @bind-SelectedItem="selectedItem1"> *@
     <MudTable Items="@Items" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<ViewItemDTO,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
@@ -50,7 +52,7 @@
             <MudTd DataLabel="Description">
                 @context.ItemDescription
                 </MudTd>
-            <MudTd DataLabel="Price">@context.ItemPrice.ToString("C")</MudTd>
+            <MudTd DataLabel="Price">@context.ItemPrice.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudTd>
             <MudTd DataLabel="Picture"><MudImage Src="@context.ItemPic" Width="150" Height="100" OnClick="() => AddToCart(item.ItemId, 1)" Class="mr-2 " /></MudTd>
             <MudTd DataLabel="Available">@context.ItemIsAvailable</MudTd>
 
