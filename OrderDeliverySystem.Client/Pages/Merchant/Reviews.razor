@@ -18,14 +18,15 @@
     {
         <MudTable Items="@reviews" Striped="true" Bordered="true">
             <HeaderContent>
-                <MudTh>Order ID</MudTh>
-                <MudTh>Customer ID</MudTh>
-                <MudTh>Rating</MudTh>
-                <MudTh>Comment</MudTh>
-                <MudTh>Reply</MudTh>
-                <MudTh>Created At</MudTh>
-                <MudTh>Reply Created At</MudTh>
-                <MudTh>Action</MudTh>
+         
+                <MudTh Style="width:50px">Order ID</MudTh>
+                <MudTh Style="width:50px">Customer ID</MudTh>
+                <MudTh Style="width:50px">Rating</MudTh>
+                <MudTh Style="width:150px">Comment</MudTh>
+                <MudTh Style="width:150px">Reply</MudTh>
+                <MudTh Style="width:100px">Review At</MudTh>
+                <MudTh Style="width:100px">Reply At</MudTh>
+                <MudTh Style="width:50px">Action</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Order ID">@context.OrderId</MudTd>
@@ -33,12 +34,12 @@
                 <MudTd DataLabel="Rating">@context.Rating</MudTd>
                 <MudTd DataLabel="Comment">@context.Comment</MudTd>
                 <MudTd DataLabel="Reply">@context.Reply</MudTd>
-                <MudTd DataLabel="Created At">@context.CreatedAt.ToString("yyyy-MM-dd")</MudTd>
-                <MudTd DataLabel="Reply Created At">@context.ReplyCreatedAt?.ToString("yyyy-MM-dd")</MudTd>
+                <MudTd DataLabel="Review At">@context.CreatedAt.ToString("MM/dd/yyyy hh:mm:ss tt")</MudTd>
+                <MudTd DataLabel="Reply At">@context.ReplyCreatedAt?.ToString("MM/dd/yyyy hh:mm:ss tt")</MudTd>
                 <MudTd>
                     @if (string.IsNullOrEmpty(@context.Reply))
                     {
-                        <MudButton OnClick="@(() => OpenReplyDialog(@context.ReviewId))" Color="Color.Primary" Variant="Variant.Text">Reply</MudButton>
+                        <MudButton OnClick="@(() => OpenReplyDialog(@context.ReviewId))" Class="ma-2 rounded-pill" Style="width:80%;color:rgba(112, 0, 0, 1);">Reply</MudButton>
                     }
                 </MudTd>
             </RowTemplate>

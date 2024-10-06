@@ -16,27 +16,27 @@
 
 
 <h3>Users</h3>
-<MudContainer Class=" d-flex justify-content-center"  MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
-        <MudPaper Class="px-16 pt-10 ma-2 " Elevation="3" Width="100%">
-        <div class=" mt-2 d-flex justify-content-between align-items-center">
-            <MudText Class="pt-4" Typo="Typo.h4" GutterBottom="false">Users</MudText>
+<MudContainer Class="my-10"  MaxWidth="MaxWidth.ExtraLarge" Style="min-height:620px">
+       
+        <div class="mt-2 d-flex justify-content-between align-items-center">
+            <MudText Typo="Typo.h4">Users</MudText>
             <MudButton Variant="Variant.Text" OnClick="@(()=>SetAllUsers())">All Users</MudButton>
             <MudButton Variant="Variant.Text" OnClick="@(()=>SetMerchant())" >Merchant</MudButton>
             <MudButton Variant="Variant.Text" OnClick="@(()=>SetWorker())" >Worker</MudButton>
             <MudButton Variant="Variant.Text" OnClick="@(()=>SetCustomer())" >Customer</MudButton>
             <MudFab Href="/admin/create" Style="color:rgba(112, 0, 0, 1);" Label="Create New Merchant/Worker" />
         </div>
-        <MudDivider Class=" border-4" Style="border-color:rgba(112, 0, 0, 1);" />
+        <MudDivider Class="my-2 border-4" Style="border-color:rgba(112, 0, 0, 1);" />
 
-        <MudTable Items="@list" FixedHeader=true Hover="true" Height="400px" Loading="@isLoading" LoadingProgressColor="Color.Error" OnRowClick="OnRowClickCallback">
+        <MudTable Items="@list" FixedHeader=true Hover="true" Height="600px" Loading="@isLoading" LoadingProgressColor="Color.Error" OnRowClick="OnRowClickCallback">
             <HeaderContent>
-                <MudTh>Id</MudTh>
-                <MudTh>Name</MudTh>
-                <MudTh>Role</MudTh>
-                <MudTh>Email Address</MudTh>
-                <MudTh>Phone Number</MudTh>
-                <MudTh>Address</MudTh>
-                <MudTh>Actions</MudTh>
+                <MudTh Style="width:30px">Id</MudTh>
+                <MudTh Style="width:100px">Name</MudTh>
+                <MudTh Style="width:50px">Role</MudTh>
+                <MudTh Style="width:100px">Email Address</MudTh>
+                <MudTh Style="width:100px">Phone Number</MudTh>
+                <MudTh Style="width:200px">Address</MudTh>
+                <MudTh Style="width:150px">Actions</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Id">@context.UserId</MudTd>
@@ -54,11 +54,11 @@
                 <MudTd DataLabel="Actions">
                     @if (@context.Role == "Worker" || @context.Role == "Merchant")
                     {
-                        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="() => EditUser(context.UserId, context.Role)">
+                        <MudButton Class="ma-2 rounded-pill" Style="width:40%;color: white;background-color:rgba(112, 0, 0, 1);" OnClick="() => EditUser(context.UserId, context.Role)">
                             Edit
                         </MudButton>
 
-                        <MudButton Variant="Variant.Filled" OnClick="() => DeleteUser(context.UserId)">
+                    <MudButton Class="ma-2 rounded-pill" Style="width:40%;color: rgba(112, 0, 0, 1);background-color:lightgray;" OnClick="() => DeleteUser(context.UserId)">
                             Delete
                         </MudButton>
                     }
@@ -68,7 +68,7 @@
                 <MudTablePager PageSizeOptions="new int[]{20, 50, 100}" />
             </PagerContent>
         </MudTable>
-    </MudPaper>
+
 </MudContainer>
 @code {
 
