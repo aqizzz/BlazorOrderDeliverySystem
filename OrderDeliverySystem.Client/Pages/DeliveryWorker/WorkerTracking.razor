@@ -1,5 +1,4 @@
-﻿@page "/tracking/{id}"
-@*attribute [Authorize(Roles = "Customer")]*@
+﻿@page "/worker-tracking/{id}"
 @using Microsoft.AspNetCore.Authorization;
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using OrderDeliverySystem.Client.Shared
@@ -9,7 +8,6 @@
 @using OrderDeliverySystem.Client.Shared.Common
 @using OrderDeliverySystem.Share.Data
 @using Microsoft.AspNetCore.Components.Authorization
-@using System.Globalization
 @inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
@@ -58,7 +56,7 @@
                 </div>
             </MudItem>
             <MudItem xs="12" sm="12" md="2">
-                <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount: @order.TotalAmount.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
+                <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Center" GutterBottom="true">Amount: $@order.TotalAmount</MudText>
             </MudItem>
             <MudItem xs="12" sm="12" md="12" Class=" border-t-4 border-solid mt-4" Style="border-color:rgba(112, 0, 0, 1);">
                 <MudCollapse Expanded="_expanded">
@@ -73,14 +71,13 @@
                             <MudText Class="pt-4 ps-6" Typo="Typo.body2" Align="Align.Start" GutterBottom="true">Total(After tax):  $22.98</MudText>
                             <MudText Class="pt-4 ps-6 border-b-2 border-solid mb-2" Typo="Typo.body2" Align="Align.Start" GutterBottom="true" Style="border-color:rgba(112, 0, 0, 1);">Delevery Fee:  $6 ( $3/ km )</MudText>
                             <MudText Class="pt-4 ps-6" Typo="Typo.subtitle2" Align="Align.Start" GutterBottom="true">Total Amount:  $28.98</MudText>
-                        </MudItem>
+                        </MudItem>co
                     </MudGrid>
                     <MudDivider Class="border-b-2 border-solid mt-4" Style="border-color:rgba(112, 0, 0, 1);"></MudDivider>
                 </MudCollapse>
-                @* <gmp-map center="37.4220656,-122.0840897"
-            zoom="10"
-            map-id="DEMO_MAP_ID"
-            style="height: 600px"></gmp-map>*@
+                <MudText>Worker Tracking</MudText>
+                <MudButton OnClick="StartTracking">Start Sharing Location</MudButton>
+                <MudButton OnClick="StopTracking">Stop Sharing Location</MudButton>
                 @if (MerchantLat != 0 && CustomerLat != 0)
                 {
                     <GoogleMap MerchantLat="@MerchantLat" MerchantLng="@MerchantLng" CustomerLat="@CustomerLat" CustomerLng="@CustomerLng" Id="@orderId" />
@@ -103,6 +100,8 @@ else
 
     private OrderDTO order;
 
+    private bool isTracking = false;
+    private IJSObjectReference _jsModule;
     private double MerchantLat;
     private double MerchantLng;
     private double CustomerLat;
@@ -116,6 +115,9 @@ else
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;*@
         //orderId = int.Parse(Id);
+
+        // _jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/map.js");
+
         if (!int.TryParse(Id, out orderId))
         {
             Console.WriteLine($"Invalid: {Id}");
@@ -149,12 +151,28 @@ else
             (MerchantLat, MerchantLng) = await GeocodingService.GetCoordinatesFromAddressAsync(merchantAddress);
             (CustomerLat, CustomerLng) = await GeocodingService.GetCoordinatesFromAddressAsync(customerAddress);
         }
-        Console.WriteLine($"MCoordinates: {MerchantLat}, {MerchantLng}");
-        Console.WriteLine($"CCoordinates: {CustomerLat}, {CustomerLng}");
-
-        await JSRuntime.InvokeVoidAsync("setUpSignalR", orderId, MerchantLat, MerchantLng, CustomerLat, CustomerLng);
+        Console.WriteLine($"M2Coordinates: {MerchantLat}, {MerchantLng}");
+        Console.WriteLine($"C2Coordinates: {CustomerLat}, {CustomerLng}");
+        await JSRuntime.InvokeVoidAsync("setUpWorkerSignalR", orderId);
     }
 
+    private async Task StartTracking()
+    {
+        if (MerchantLat == 0 || MerchantLng == 0 || CustomerLat == 0 || CustomerLng == 0)
+        {
+            Console.WriteLine("Coordinates not available for tracking");
+            return;
+        }
+
+        isTracking = true;
+        await JSRuntime.InvokeVoidAsync("startWorkerTracking", orderId, MerchantLat, MerchantLng, CustomerLat, CustomerLng);
+    }
+
+    private async Task StopTracking()
+    {
+        isTracking = false;
+        await JSRuntime.InvokeVoidAsync("stopTracking", orderId, MerchantLat, MerchantLng, CustomerLat, CustomerLng);
+    }
     protected override void OnInitialized()
     {
         // 使用 Id 参数进行一些操作

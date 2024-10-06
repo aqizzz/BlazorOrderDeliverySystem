@@ -41,7 +41,9 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
 
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
 
-            return await httpClient.GetFromJsonAsync<CustomerProfileDTO>(GetCustomerPath);
+            var response = await httpClient.GetFromJsonAsync<CustomerProfileDTO>(GetCustomerPath);
+
+            return response ?? new CustomerProfileDTO();
         }
 
         public async Task<CustomerProfileDTO> GetCustomerProfile(int userId)
@@ -52,7 +54,9 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
 
             var path = GetCustomerPath + "/" + userId;
 
-            return await httpClient.GetFromJsonAsync<CustomerProfileDTO>(path);
+            var response = await httpClient.GetFromJsonAsync<CustomerProfileDTO>(path);
+
+            return response ?? new CustomerProfileDTO();
         }
 
         public async Task<Result> UpdateCustomerProfile(CustomerProfileDTO model)

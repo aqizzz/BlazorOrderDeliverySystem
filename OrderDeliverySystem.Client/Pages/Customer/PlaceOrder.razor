@@ -38,7 +38,7 @@
         <MudContainer Class="my-3">
             <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Start" GutterBottom="true" Style="color:rgba(112, 0, 0, 1);">Customer Info</MudText>
             <MudDivider Class=" border-2" Style="border-color:rgba(112, 0, 0, 1);" />
-            <AddressCreate />
+            <AddressCreate OnAddressConfirmed="HandleAddressConfirmed" />
         </MudContainer>
         <MudContainer Class="my-3">
             <MudText Class="pt-4" Typo="Typo.h6" Align="Align.Start" GutterBottom="true" Style="color:rgba(112, 0, 0, 1);">Place Order</MudText>
@@ -334,6 +334,11 @@
             Console.WriteLine($"Error clearing cart: {ex.Message}");
         }
 
+    }
+
+    private void HandleAddressConfirmed(int confirmedAddressId)
+    {
+        order.AddressId = confirmedAddressId;
     }
 
     private async Task LogToBrowserConsole(string message) => await JSRuntime.InvokeVoidAsync("console.log", message);

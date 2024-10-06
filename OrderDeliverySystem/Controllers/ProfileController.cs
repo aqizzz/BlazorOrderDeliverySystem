@@ -196,6 +196,8 @@ namespace OrderDeliverySystem.Controllers
             address.City = dto.City;
             address.Province = dto.Province;
             address.Postcode = dto.Postcode;
+            address.ContactName = dto.FirstName + " " + dto.LastName;
+            address.Phone = dto.Phone;
 
             await context.SaveChangesAsync();
             await transaction.CommitAsync();

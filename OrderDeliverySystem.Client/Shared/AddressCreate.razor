@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Authorization;
 @using MudBlazor
 @using Newtonsoft.Json
+@using OrderDeliverySystem.Client.Pages.Customer
 @using OrderDeliverySystem.Share.DTOs
 @using OrderDeliverySystem.Client.Shared.Common
 @using System.Security.Claims
@@ -11,180 +12,91 @@
 @inject IHttpClientFactory httpClientFactory
 @inject NavigationManager NavigationManager
 @inject IProfileService ProfileService
+@inject IAddressService AddressService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JSRuntime
+@inject IDialogService DialogService
 @rendermode InteractiveAuto
 
 
-
-
 <MudForm>
-            <MudRadioGroup @bind-Value="SelectedOption">
-                @if (model.Address == "" && model.City == "" && model.Province == "" && model.Postcode == "")
-            {
-                    <MudRadio Value="@("Radio 1")" Disabled="true">Default Address</MudRadio>
-                    <MudRadio Value="@("Radio 2")" Color="Color.Primary" Dense="true">Create New Address</MudRadio>
-                }
-                else
-                {
-                    <MudRadio Value="@("Radio 1")">Default Addresses</MudRadio>
-                    <MudRadio Value="@("Radio 2")" Color="Color.Primary">Create New Address</MudRadio>
-                }
-            </MudRadioGroup>
-        </MudForm>
-        @if (SelectedOption == "Radio 1")
+    <MudRadioGroup @bind-Value="SelectedOption">
+        @if (model.Address == "" || model.City == "" || model.Province == "" || model.Postcode == "")
+    {
+            <MudFab Label="Please update your address" />
+        }
+        else
         {
-            <MudText Class="" Typo="Typo.h6">Default Address : </MudText>
-            <MudText Typo="Typo.subtitle1">Name : @model.FirstName @model.LastName</MudText>
+            <MudRadio Value="@("Radio 1")">Default Addresses</MudRadio>
+            <MudRadio Value="@("Radio 2")" Color="Color.Primary">Pick Another Address</MudRadio>
+        }
+    </MudRadioGroup>
+</MudForm>
+
+@if (SelectedOption == "Radio 1")
+{
+    <MudText Class="" Typo="Typo.h6">Default Address : </MudText>
+    <MudText Typo="Typo.subtitle1">Name : @model.ContactName</MudText>
     <MudText Typo="Typo.subtitle1">Phone : @model.Phone</MudText>
            
-           @if(model.Unit != "" )
-                {
+    @if (!string.IsNullOrEmpty(model.Unit))
+    {
         <MudText Typo="Typo.subtitle1">
                     Address : @model.Unit, @model.Address, @model.City, @model.Postcode</MudText>
-            }
-            else
-            {
+    }
+    else
+    {
         <MudText Typo="Typo.subtitle1">
                     Address : @model.Address, @model.City, @model.Postcode</MudText>
-            }
-        }
-        else if (SelectedOption == "Radio 2")
-        {
-
-    @if (isLoading)
-    {
-        <p>Loading profile...</p>
     }
-    else if (model != null)
+
+    @code {
+        private void ConfirmDefaultAddress()
+        {
+            OnAddressConfirmed.InvokeAsync(model.AddressId);
+            SelectedOption = "Radio 1";
+        }
+    }
+}
+else if (SelectedOption == "Radio 2")
+{
+    <MudText Typo="Typo.h6">Select a new address:</MudText>
+
+    <MudRadioGroup T="AddressCreateDTO" @bind-Value="SelectedAddress" @onchange="HandleAddressSelection">
+        @foreach (var address in list)
+        {
+            <div>
+                <MudRadio Value="address" @key="address.AddressId" >
+                    @($"{address.ContactName} {address.Address}, {address.City}, {address.Postcode}")
+                </MudRadio>
+                <MudLink Href="javascript:void(0)" OnClick="@(() => OpenEditAddressDialog(address.AddressId))">
+                    Edit address
+                </MudLink>
+            </div>
+        }
+    </MudRadioGroup>
+
+    <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Default" /><MudLink Href="javascript:void(0)" OnClick="@(() => OpenCreateAddressDialog())">
+        Add new address
+    </MudLink>
+
+    @if (SelectedAddress != null)
     {
-     
+        <MudText Typo="Typo.h6">Selected Address: </MudText>
+        <MudText Typo="Typo.subtitle1">Name : @SelectedAddress.ContactName</MudText>
+        <MudText Typo="Typo.subtitle1">Phone : @SelectedAddress.Phone</MudText>
 
-            <EditForm Model="@model" OnValidSubmit="HandleUpdateProfile" FormName="profileForm">
-                    @if (ShowErrors)
-                    {
-                        <ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
-                    }
-                   
-                    @if (!SuccessMessage.Equals(""))
-                    {
-                        <MudAlert Severity="Severity.Success" Variant="Variant.Outlined">@SuccessMessage</MudAlert>
-                    }
-                  
-                <DataAnnotationsValidator />
-                <MudGrid>
-                    <MudItem xs="12">
-                        <MudText Class="py-4" Typo="Typo.h6" Align="Align.Start" GutterBottom="false">Enter your Address</MudText>
-                        <div Style="display:none;">
-                            <MudTextField id="userId" @bind-Value="model.UserId" ReadOnly="true" />
-                        </div>
-                    </MudItem>
-                    <MudItem xs="12" Class="d-flex justify-content-center">
-                        <div class="object-center">
-                            <MudGrid>
-                                    @if (model.FirstName == null && model.LastName == null)
-                                    {
-                                        <MudItem xs="2">
-                                            <MudField Label="Firstname:" AlignLabel="Align.Start" Underline="false" />
-                                        </MudItem>
-                                        <MudItem xs="8">
-                                            <MudField Underline="false">
-                                                <MudTextField id="firstName" @bind-Value="model.FirstName" For="@(() => model.FirstName)" Variant="Variant.Filled"/>
-                                            </MudField>
-                                        </MudItem>
+        @if (!string.IsNullOrEmpty(SelectedAddress.Unit))
+        {
+            <MudText Typo="Typo.subtitle1">Address : @SelectedAddress.Unit, @SelectedAddress.Address, @SelectedAddress.City, @SelectedAddress.Postcode</MudText>
+        }
+        else
+        {
+            <MudText Typo="Typo.subtitle1">Address : @SelectedAddress.Address, @SelectedAddress.City, @SelectedAddress.Postcode</MudText>
+        }
 
-                                        <MudItem xs="2">
-                                        </MudItem>
-                                        <MudItem xs="2">
-                                            <MudField Label="Lastname:" AlignLabel="Align.Start" Underline="false" />
-                                        </MudItem>
-                                        <MudItem xs="8">
-                                            <MudField Underline="false">
-                                                <MudTextField id="lastName" @bind-Value="model.LastName" For="@(() => model.LastName)" Variant="Variant.Filled" />
-                                            </MudField>
-                                        </MudItem>
-                                        <MudItem xs="2">
-                                        </MudItem>
-                                    }
-                                   
-                                 <MudItem xs="2">
-                                    <MudField Label="Phone:" AlignLabel="Align.Start" Underline="false" />
-                                </MudItem>
-                                <MudItem xs="8">
-                                    <MudField Underline="false">
-                                        <MudTextField id="phone" @bind-Value="model.Phone" For="@(() => model.Phone)" Variant="Variant.Filled" />
-                                    </MudField>
-                                </MudItem>
-                                <MudItem xs="2">
-                                </MudItem>                                    
-                                    
-
-                                <MudItem xs="2">
-                                    <MudField Label="Unit:" AlignLabel="Align.Start" Underline="false" />
-                                </MudItem>
-                                <MudItem xs="8">
-                                    <MudField Underline="false">
-                                        <MudTextField id="unit" @bind-Value="model.Unit" For="@(() => model.Unit)" Variant="Variant.Filled" />
-                                    </MudField>
-                                </MudItem>
-                                <MudItem xs="2">
-                                </MudItem>
-
-                                <MudItem xs="2">
-                                    <MudField Label="Address:" AlignLabel="Align.Start" Underline="false" />
-                                </MudItem>
-                                <MudItem xs="8">
-                                    <MudField Underline="false">
-                                        <MudTextField id="address" @bind-Value="model.Address" For="@(() => model.Address)" Variant="Variant.Filled" />
-                                    </MudField>
-                                </MudItem>
-                                <MudItem xs="2">
-                                </MudItem>
-
-                                <MudItem xs="2">
-                                    <MudField Label="City:" AlignLabel="Align.Start" Underline="false" />
-                                </MudItem>
-                                <MudItem xs="8">
-                                    <MudField Underline="false">
-                                        <MudTextField id="city" @bind-Value="model.City" For="@(() => model.City)" Variant="Variant.Filled" />
-                                    </MudField>
-                                </MudItem>
-                                <MudItem xs="2">
-                                </MudItem>
-
-                                <MudItem xs="2">
-                                    <MudField Label="Province:" AlignLabel="Align.Start" Underline="false" />
-                                </MudItem>
-                                <MudItem xs="8">
-                                    <MudField Underline="false">
-                                        <MudTextField id="province" @bind-Value="model.Province" For="@(() => model.Province)" Variant="Variant.Filled" />
-                                    </MudField>
-                                </MudItem>
-                                <MudItem xs="2">
-                                </MudItem>
-
-                                <MudItem xs="2">
-                                    <MudField Label="Postcode:" AlignLabel="Align.Start" Underline="false" />
-                                </MudItem>
-                                <MudItem xs="8">
-                                    <MudField Underline="false">
-                                        <MudTextField id="postcode" @bind-Value="model.Postcode" For="@(() => model.Postcode)" Variant="Variant.Filled" />
-                                    </MudField>
-                                </MudItem>
-                                <MudItem xs="2">
-                                </MudItem>
-                            </MudGrid>
-                        </div>
-                    </MudItem>
-
-                    <MudItem xs="12" Class="d-flex justify-content-start">
-                        <MudButton Class="m-2" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Error" OnClick="@(()=>HandleUpdateProfile())">Update Address</MudButton>
-                        <MudButton Class="m-2" ButtonType="ButtonType.Reset" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.LockReset" Color="Color.Primary">Reset</MudButton>
-                        <MudButton Class="m-2" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Href="/customer-profile">Cancel</MudButton>
-                    </MudItem>
-                </MudGrid>
-            </EditForm>
-        }         
+        <MudButton OnClick="ConfirmSelectedAddress">Confirm Address</MudButton>
+    }
 }
 
 @code {
@@ -194,61 +106,115 @@
 
     [Parameter]
     public int UserId { get; set; }
+    [Parameter] public EventCallback<int> OnAddressConfirmed { get; set; }
 
     public string SelectedOption { get; set; } = "Radio 1";
-    private CustomerProfileDTO model = new(); // Ensure model is initialized
-
+    private AddressCreateDTO model = new();
+    private List<AddressCreateDTO> list = new List<AddressCreateDTO>();// Ensure model is initialized
 
 
     public bool ShowErrors { get; set; } = false;
     public string SuccessMessage { get; set; } = "";
     public string Errors { get; set; } = string.Empty;
 
-    private bool isLoading = true;
+    private AddressCreateDTO _selectedAddress = new();
+
+    private AddressCreateDTO SelectedAddress
+    {
+        get => _selectedAddress;
+        set
+        {
+            _selectedAddress = value;
+            if (_selectedAddress != null)
+            {
+                OnAddressConfirmed.InvokeAsync(_selectedAddress.AddressId);
+            }
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         user = authState.User;
-        await LoadUserProfile();
-        
+        list = await AddressService.GetAddressList();
+        var mainAddress = list.FirstOrDefault(a => a.Type == "Main");
+
+        if (mainAddress != null)
+        {
+            model = mainAddress;
+        }
+
     }
 
-    private async Task LoadUserProfile()
+    private async Task ConfirmSelectedAddress()
     {
-        if (authenticationState is not null)
+        if (SelectedAddress != null)
         {
-            if (user is not null)
-            {
-                if (user.IsInRole("Admin"))
-                {
-                    model = await ProfileService.GetCustomerProfile(UserId);
-                }
-                else if (user.IsInRole("Customer"))
-                {
-                    model = await ProfileService.GetCustomerProfile();
-
-                }
-                isLoading = false;
-                StateHasChanged();
-            }
+            UpdateModelWithSelectedAddress();
+            await OnAddressConfirmed.InvokeAsync(SelectedAddress.AddressId);
+            SelectedOption = "Radio 1"; 
         }
     }
 
-    private async Task HandleUpdateProfile()
+    private void HandleAddressSelection(ChangeEventArgs e)
     {
-        var result = await this.ProfileService.UpdateCustomerProfile(model); // Update customer data
-
-
-        if (result.Succeeded)
+        var selectedAddressId = int.Parse(e.Value.ToString());
+        var selectedAddress = list.FirstOrDefault(a => a.AddressId == selectedAddressId);
+        if (selectedAddress != null)
         {
-            SuccessMessage = "Modified new address successfully!";
+            SelectedAddress = selectedAddress;
         }
-        else
+    }
+
+    private void UpdateModelWithSelectedAddress()
+    {
+        if (SelectedAddress != null)
         {
-            Errors = result.Error;
-            ShowErrors = true;
+            model.AddressId = SelectedAddress.AddressId;
+            model.Address = SelectedAddress.Address;
+            model.City = SelectedAddress.City;
+            model.Province = SelectedAddress.Province;
+            model.Postcode = SelectedAddress.Postcode;
+            model.Unit = SelectedAddress.Unit;
+            model.ContactName = SelectedAddress.ContactName;
+            model.Phone = SelectedAddress.Phone;
+        }
+    }
+
+    private async Task OpenEditAddressDialog(int addressId)
+    {
+        var parameters = new DialogParameters<EditAddressDialog>
+        {
+            { x => x.AddressId, addressId }
+        };
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraLarge };
+
+        var dialogReference = DialogService.Show<EditAddressDialog>($"Edit Address", parameters, options);
+
+        var result = await dialogReference.Result;
+
+        if (!result.Canceled && result.Data is bool isUpdated && isUpdated)
+        {
+            list = await AddressService.GetAddressList();
+            StateHasChanged();
+        }
+    }
+
+    private async Task OpenCreateAddressDialog()
+    {
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraLarge };
+
+        var dialogReference = DialogService.Show<CreateAddressDialog>($"Create Address",options);
+
+        var result = await dialogReference.Result;
+
+        if (!result.Canceled && result.Data is bool isUpdated && isUpdated)
+        {
+            list = await AddressService.GetAddressList();
+            StateHasChanged();
         }
     }
 }

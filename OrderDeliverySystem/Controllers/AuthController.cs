@@ -60,7 +60,9 @@ namespace OrderDeliverySystemApi.Controllers
                 Address = "",
                 City = "",
                 Province = "",
-                Postcode = ""
+                Postcode = "",
+                ContactName = "",
+                Phone = ""
             };
             context.Addresses.Add(newAddress);
             await context.SaveChangesAsync();
