@@ -734,14 +734,14 @@ namespace OrderDeliverySystemApi.Controllers
                             }).ToList()
                         }
                     },
-					DeliveryWorker = new WorkerDTO1
-					{
-						WorkerId = o.DeliveryWorker.WorkerId,
-						UserId = o.DeliveryWorker.UserId,
-						WorkerAvailability = o.DeliveryWorker.WorkerAvailability,
-						CommissionRate = o.DeliveryWorker.CommissionRate,
-					},
-					OrderItems = o.OrderItems.Select(oi => new AppOrderItem
+                    DeliveryWorker = o.DeliveryWorker == null ? null : new WorkerDTO1
+                    {
+                        WorkerId = o.DeliveryWorker.WorkerId,
+                        UserId = o.DeliveryWorker.UserId,
+                        WorkerAvailability = o.DeliveryWorker.WorkerAvailability,
+                        CommissionRate = o.DeliveryWorker.CommissionRate,
+                    },
+                    OrderItems = o.OrderItems.Select(oi => new AppOrderItem
                     {
                         OrderItemId = oi.OrderItemId,
                         ItemId = oi.ItemId,
