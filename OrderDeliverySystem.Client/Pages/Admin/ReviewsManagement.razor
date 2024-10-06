@@ -36,10 +36,10 @@
                 <MudTd DataLabel="Rating">@context.Rating</MudTd>
                 <MudTd DataLabel="Comment">@context.Comment</MudTd>
                 <MudTd DataLabel="Reply">@context.Reply</MudTd>
-                <MudTd DataLabel="Created At">@context.CreatedAt.ToString("MM/dd/yyyy hh:mm:ss tt")</MudTd>
-                <MudTd DataLabel="Reply Created At">@context.ReplyCreatedAt?.ToString("MM/dd/yyyy hh:mm:ss tt")</MudTd>
+                <MudTd DataLabel="Review At">@context.CreatedAt.ToString("MM/dd/yyyy hh:mm:ss tt")</MudTd>
+                <MudTd DataLabel="Reply At">@context.ReplyCreatedAt?.ToString("MM/dd/yyyy hh:mm:ss tt")</MudTd>
                 <MudTd>
-                    <MudButton Class="ma-2 rounded-pill" Style="width:80%;color: white;background-color:rgba(112, 0, 0, 1);" OnClick="@(() => ShowDeleteDialog(@context.ReviewId))">
+                    <MudButton Class="ma-2 rounded-pill" Style="width:80%;color:rgba(112, 0, 0, 1);" OnClick="@(() => ShowDeleteDialog(@context.ReviewId))">
                         Delete
                     </MudButton>
                 </MudTd>
