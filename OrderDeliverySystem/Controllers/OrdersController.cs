@@ -745,7 +745,14 @@ namespace OrderDeliverySystemApi.Controllers
                             }).ToList()
                         }
                     },
-                    OrderItems = o.OrderItems.Select(oi => new AppOrderItem
+					DeliveryWorker = new WorkerDTO1
+					{
+						WorkerId = o.DeliveryWorker.WorkerId,
+						UserId = o.DeliveryWorker.UserId,
+						WorkerAvailability = o.DeliveryWorker.WorkerAvailability,
+						CommissionRate = o.DeliveryWorker.CommissionRate,
+					},
+					OrderItems = o.OrderItems.Select(oi => new AppOrderItem
                     {
                         OrderItemId = oi.OrderItemId,
                         ItemId = oi.ItemId,

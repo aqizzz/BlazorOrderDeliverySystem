@@ -10,6 +10,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
+@using System.Globalization
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
@@ -22,6 +23,7 @@
 <MudContainer Class="my-10">
 	<ErrorsList ShowErrors="ShowErrors" Errors="Errors" />
 	<MudText Class="pt-4" Typo="Typo.h4" Align="Align.Start" GutterBottom="false">My Orders</MudText>
+	<MudDivider Class="my-2 border-2" Style="border-color:rgba(112, 0, 0, 1);" />
 	@if (isLoading)
 	{
 		<MudText>Loading...</MudText>
@@ -43,10 +45,13 @@
 			<MudTd>@context.Merchant.BusinessName</MudTd>
 			<MudTd>@context.Customer.User.Addresses?.FirstOrDefault()?.FullAddress</MudTd>
 			<MudTd>@context.OrderItems.Count()</MudTd>
-			<MudTd>@context.DeliveryWorker?.CommissionRate</MudTd>
+				<MudTd>@context.DeliveryWorker?.CommissionRate?.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudTd>
 			<MudTd></MudTd>
 			</RowTemplate>
 	</MudTable>
+		<MudPaper Elevation="0" Class="mt-2 d-flex justify-content-end align-items-end">
+			<MudText Typo="Typo.subtitle2">Total Commission: @totalCommission?.ToString("C2", CultureInfo.CreateSpecificCulture("en-CA"))</MudText>
+		</MudPaper>
 	
 	}
 	else
@@ -66,7 +71,7 @@
 	public int UserId { get; set; }
 	private bool isLoading = true;
 
-
+	private decimal? totalCommission = 0m;
 	public bool ShowErrors { get; set; } = false;
 	public IEnumerable<string> Errors { get; set; } = new List<string>();
 
@@ -105,6 +110,13 @@
 			{
 				foreach (var order in orderHistory)
 				{
+					if (order.DeliveryWorker != null)
+					{
+						if (order.DeliveryWorker.CommissionRate > 0)
+						{
+							totalCommission += order.DeliveryWorker?.CommissionRate;
+						}
+					}
 					Console.WriteLine($"Order Id: {order.OrderId}, Created At: {order.CreatedAt}, Merchant: {order.Merchant.BusinessName}");
 				}
 			}
