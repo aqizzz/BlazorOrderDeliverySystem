@@ -29,18 +29,18 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
             this.tokenHelper = tokenHelper;
         }
 
-        public async Task<List<AddressUpdateDTO>> GetAddressList()
+        public async Task<List<AddressCreateDTO>> GetAddressList()
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
 
             await tokenHelper.ConfigureHttpClientAuthorization(httpClient);
 
-            var response = await httpClient.GetFromJsonAsync<List<AddressUpdateDTO>>(GetAddressListPath);
+            var response = await httpClient.GetFromJsonAsync<List<AddressCreateDTO>>(GetAddressListPath);
 
-            return response ?? new List<AddressUpdateDTO>();
+            return response ?? new List<AddressCreateDTO>();
         }
 
-        public async Task<AddressUpdateDTO> GetAddress(int addressId)
+        public async Task<AddressCreateDTO> GetAddress(int addressId)
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
 
@@ -48,12 +48,12 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
 
             var path = BasePath + "/" + addressId;
 
-            var response = await httpClient.GetFromJsonAsync<AddressUpdateDTO>(path);
+            var response = await httpClient.GetFromJsonAsync<AddressCreateDTO>(path);
 
-            return response ?? new AddressUpdateDTO();
+            return response ?? new AddressCreateDTO();
         }
 
-        public async Task<Result> UpdateAddress(AddressUpdateDTO addressDto)
+        public async Task<Result> UpdateAddress(AddressCreateDTO addressDto)
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
 
@@ -64,7 +64,7 @@ namespace OrderDeliverySystem.Client.Infrastructure.Services.Profile
                 .ToResult();
         }
 
-        public async Task<Result> CreateAddress(AddressUpdateDTO addressDto)
+        public async Task<Result> CreateAddress(AddressCreateDTO addressDto)
         {
             var httpClient = this.httpClientFactory.CreateClient("API");
 
