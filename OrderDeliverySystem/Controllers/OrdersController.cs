@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO;
 using OrderDeliverySystem.Share.DTOs.PlacedOrderDTO.OrderDeliverySystem.Share.DTOs.CartDTO;
 using OrderDeliverySystem.Share.DTOs.ReviewDTO;
+using static MudBlazor.Icons;
 
 
 
@@ -410,7 +411,8 @@ namespace OrderDeliverySystemApi.Controllers
             IQueryable<Order> query = _context.Orders
                 .Include(o => o.Customer)
                 .Include(o => o.OrderItems)
-                .Include(o => o.Reviews)
+				 .ThenInclude(oi => oi.Item)
+				.Include(o => o.Reviews)
                 .Include(o => o.Merchant)
                 .Include(o => o.DeliveryWorker);
 
@@ -658,7 +660,8 @@ namespace OrderDeliverySystemApi.Controllers
 
             IQueryable<Order> query = _context.Orders
               .Include(o => o.Customer)
-              .Include(o => o.OrderItems)
+			  .Include(o => o.Reviews)
+			  .Include(o => o.OrderItems)
                   .ThenInclude(oi => oi.Item)
               .Include(o => o.Merchant)
               .Include(o => o.DeliveryWorker);
@@ -697,7 +700,16 @@ namespace OrderDeliverySystemApi.Controllers
                     TotalAmount = o.TotalAmount,
                     CreatedAt = o.CreatedAt,
                     Status = o.Status,
-                    Customer = new CustomerDTO1
+					Reviews = new GetReviewResponseDTO
+					{
+						ReviewId = o.Reviews.ReviewId,
+						Comment = o.Reviews.Comment,
+						Rating = o.Reviews.Rating,
+						Reply = o.Reviews.Reply,
+						CreatedAt = o.Reviews.CreatedAt,
+						ReplyCreatedAt = o.Reviews.CreatedAt,
+					},
+					Customer = new CustomerDTO1
                     {
                         CustomerId = o.Customer.CustomerId,
                         User = new UserDTO1
@@ -747,7 +759,6 @@ namespace OrderDeliverySystemApi.Controllers
                     },
 					DeliveryWorker = new WorkerDTO1
 					{
-						WorkerId = o.DeliveryWorker.WorkerId,
 						UserId = o.DeliveryWorker.UserId,
 						WorkerAvailability = o.DeliveryWorker.WorkerAvailability,
 						CommissionRate = o.DeliveryWorker.CommissionRate,
