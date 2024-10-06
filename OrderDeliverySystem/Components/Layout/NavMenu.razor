@@ -113,10 +113,13 @@
         isDeliveryWorker = user.IsInRole("DeliveryWorker");
         isGuest = (!isAdmin || !isCustomer || !isMerchant || !isDeliveryWorker);
     }*@
-        [Inject]
-        private IAuthService AuthService { get; set; }
-        [Inject]
-        private ICartService CartService { get; set; }
+    [Inject]
+    private IAuthService AuthService { get; set; }
+    [Inject]
+    private ICartService CartService { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
     private ClaimsPrincipal user;
     [Parameter]
     public int UserId { get; set; }
@@ -132,11 +135,11 @@
         await base.OnInitializedAsync();
 
 
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
+        var authState = await authenticationState;
+        user = authState.User;
         CartService.OnCartChanged += UpdateCartQuantity;
-        if (Role.Equals("Customer")){
-           
+        if (user.IsInRole("Customer")){
+
             await LoadCartQuantity();
         }
        

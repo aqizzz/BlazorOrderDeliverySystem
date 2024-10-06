@@ -26,7 +26,6 @@
         <MudFab Class="mx-2" Label="Create New Item" Href="/create-item" Style="width:20%;color:white;background-color:rgba(112, 0, 0, 1);"/>
     </div>
 
-    <!-- 表格显示部分 -->
     @* <MudTable Items="@Items" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped"  @bind-SelectedItem="selectedItem1"> *@
     <MudTable Items="@Items" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<ViewItemDTO,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
         <ToolBarContent>
@@ -168,7 +167,6 @@
         {
             var httpClient = HttpClientFactory.CreateClient("ApiClient");
 
-            // DELETE 请求到 /api/items/{itemId} 来删除 Item
             var response = await ItemService.RemoveItem(itemId);
 
             if (response.Succeeded)
@@ -179,13 +177,11 @@
             else
             {
                 Console.WriteLine($"Failed to delete item with id {itemId}. ");
-                // 处理失败情况，可以显示错误信息
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error deleting item: {ex.Message}");
-            // 可以选择显示异常消息或者做其他处理
         }
     }
 
