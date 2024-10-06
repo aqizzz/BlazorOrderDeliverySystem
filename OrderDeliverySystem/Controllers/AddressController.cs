@@ -18,7 +18,20 @@ namespace OrderDeliverySystem.Controllers
         {
             var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-            var addresses = await context.Addresses.Where(a => a.UserId == userId).ToListAsync();
+            var addresses = await context.Addresses.Where(a => a.UserId == userId)
+                                  .Select(a => new AddressCreateDTO
+                                  {
+                                      AddressId = a.AddressId,
+                                      Type = a.Type,
+                                      Unit = a.Unit,
+                                      Address = a.Address,
+                                      City = a.City,
+                                      Province = a.Province,
+                                      Postcode = a.Postcode,
+                                      ContactName = a.ContactName,
+                                      Phone = a.Phone,
+                                  })
+                                  .ToListAsync();
 
             if (addresses == null)
                 return NotFound(new { Error = "Address list not found" });
@@ -35,12 +48,25 @@ namespace OrderDeliverySystem.Controllers
             if (address== null)
                 return NotFound(new { Error = "Address not found" });
 
-            return Ok(address);
+            var addressDto = new AddressCreateDTO
+            {
+                AddressId = addressId,
+                Type = address.Type,
+                Unit = address.Unit,
+                Address = address.Address,
+                City = address.City,
+                Province = address.Province,
+                Postcode = address.Postcode,
+                ContactName = address.ContactName,
+                Phone = address.Phone,
+            };
+
+            return Ok(addressDto);
         }
 
         [HttpPut]
         [Authorize]
-        public async Task<IActionResult> UpdateAddress(AddressUpdateDTO addressDto)
+        public async Task<IActionResult> UpdateAddress(AddressCreateDTO addressDto)
         {
             var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             var user = await context.Users.FindAsync(userId);
@@ -56,6 +82,8 @@ namespace OrderDeliverySystem.Controllers
             address.City = addressDto.City;
             address.Postcode = addressDto.Postcode;
             address.Province = addressDto.Province;
+            address.ContactName = addressDto.ContactName;
+            address.Phone = addressDto.Phone;
 
             await context.SaveChangesAsync();
 
@@ -64,7 +92,7 @@ namespace OrderDeliverySystem.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> CreateAddress(AddressUpdateDTO addressDto)
+        public async Task<IActionResult> CreateAddress(AddressCreateDTO addressDto)
         {
             var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             var user = await context.Users.FindAsync(userId);
@@ -84,6 +112,8 @@ namespace OrderDeliverySystem.Controllers
                 City = addressDto.City,
                 Postcode = addressDto.Postcode,
                 Province = addressDto.Province,
+                ContactName = addressDto.ContactName,
+                Phone = addressDto.Phone,
                 User = user
             };
 

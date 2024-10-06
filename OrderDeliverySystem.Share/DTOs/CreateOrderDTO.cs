@@ -11,6 +11,7 @@ namespace OrderDeliverySystem.Share.DTOs
         public decimal Tax { get; set; }
         public decimal DeliveryFee { get; set; }
         public List<OrderByMerchantDTO>? Orders { get; set; }
+        public int AddressId { get; set; }
 
     }
 }

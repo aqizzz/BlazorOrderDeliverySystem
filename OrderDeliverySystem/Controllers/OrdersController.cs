@@ -113,7 +113,7 @@ namespace OrderDeliverySystemApi.Controllers
                     CustomerId = customer.CustomerId,
                     MerchantId = merchant.MerchantId,
                     PickupAddressId = merchantAddress.AddressId,
-                    DropoffAddressId = customerAddress.AddressId,
+                    DropoffAddressId = orderDto.AddressId,
                     TotalAmount = totalAmount,
                     Status = "Pending",
                     CreatedAt = DateTime.Now,
