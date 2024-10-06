@@ -7,10 +7,11 @@
 @inject NavigationManager Navigation
 @inject IAuthService AuthService
 @rendermode InteractiveServer
-<MudContainer Class="my-10">
-<div class="container d-flex flex-column align-items-center min-vh-100 mt-20">
-<h3>Login</h3>
-
+<MudContainer Class="my-10 d-flex justify-content-center">
+    <MudPaper Class="my-15 px-10 py-10 d-flex justify-content-center align-items-center w-50" MinWidth="350px" >
+        <div class="w-100">
+            <MudText Typo="Typo.h4">Login</MudText>
+            <MudDivider Class="my-5" Style="color:rgba(112, 0, 0, 1);border-color:rgba(112, 0, 0, 1);border-width:3px;" />
 @* Display message to user if it's not empty *@
 @if (!string.IsNullOrEmpty(message))
 {
@@ -18,8 +19,8 @@
         @message
     </div>
 }
-
-<EditForm Model="@model" OnValidSubmit="HandleLogin" FormName="loginForm">
+      
+<EditForm  Model="@model" OnValidSubmit="HandleLogin" FormName="loginForm">
     <ErrorsList ShowErrors="@ShowErrors" Errors="@Errors" />
     <DataAnnotationsValidator />
 
@@ -30,14 +31,18 @@
     <MudField Underline="false">
         <MudTextField id="Password" @bind-Value="model.Password" Label="Password" For="@(() => model.Password)" Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="Buttonclick" AdornmentAriaLabel="Show Password" />
     </MudField>
+                <MudDivider Class="my-5" Style="color:rgba(112, 0, 0, 1);border-color:rgba(112, 0, 0, 1);border-width:3px;" />
+    <MudPaper Class=" d-flex justify-center" Elevation="0">
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Style="width:40%; color:white;background-color:rgba(112, 0, 0, 1);" Class="my-5 text-center rounded-pill"> Login </MudButton>
 
-    <div style="display: flex; justify-content: center;" class="mt-6">
-        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Error" Class="Class.object-center"> Login </MudButton>
-    </div>
+     </MudPaper>
+   
 </EditForm>
-
-        <p class="text-center mt-4">Don't have account? <a class="text-decoration-underline" href="/register">Create one now</a></p>
- </div>
+           
+        <MudText Class="text-center mt-4">Don't have account? <MudLink Class="text-decoration-underline" Color="Color.Default" Href="/register">Create one now</MudLink></MudText>
+            
+        </div>
+ </MudPaper>
 </MudContainer>
 @code {
     // Create an instance of LoginModel to bind form data

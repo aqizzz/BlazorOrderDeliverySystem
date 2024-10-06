@@ -17,6 +17,6 @@ namespace OrderDeliverySystem.Share.DTOs
         public string? Province { get; set; }
         public string? Postcode { get; set; }
         public string FullAddress => $"{Unit} {Address}, {City}, {Province}";
-        public  UserDTO1 User { get; set; }
+      
     }
 }

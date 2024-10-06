@@ -1,0 +1,49 @@
+﻿@using MudBlazor
+@using OrderDeliverySystem.Share.DTOs.ReviewDTO
+@inject ISnackbar Snackbar
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IAuthorizationService AuthorizationService
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h5" Style="color:rgba(112, 0, 0, 1);">Your Review</MudText>
+    </TitleContent>
+    <DialogContent>
+        <ReadOrderReview OrderId="@OrderId" Review="@Review"/>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+       
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; }
+    [Parameter] public int OrderId { get; set; }
+    
+    [Parameter]
+    public GetReviewResponseDTO Review { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+  
+
+    private ClaimsPrincipal user;
+
+    private void Cancel() => MudDialog.Cancel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+
+        await LogToBrowserConsole($"Get Review: {Review.Comment}");
+    }
+
+    private async Task LogToBrowserConsole(string message) => await JSRuntime.InvokeVoidAsync("console.log", message);
+
+}

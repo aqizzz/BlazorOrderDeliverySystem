@@ -10,6 +10,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using OrderDeliverySystem.Client.Infrastructure.Services.Authentication
 @using System.Globalization
+@using System.Security.Claims
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
@@ -26,6 +27,10 @@
     </ToolBarContent>
     <HeaderContent>
         <MudTh Class="text-center">OrderId</MudTh>
+        @if (@user.IsInRole("Merchant"))
+        {
+            <MudTh Class="text-center">Delivery WorkerId</MudTh>
+        }
         <MudTh Class="text-center">OrderTime</MudTh>
         <MudTh Class="text-center">Item Name</MudTh>
         <MudTh Class="text-center">Item Quantity</MudTh>
@@ -37,6 +42,10 @@
     <RowTemplate>
 
         <MudTd Class="text-center" DataLabel="OrderId">@context.OrderId</MudTd>
+        @if (@user.IsInRole("Merchant"))
+        {
+            <MudTh Class="text-center">@context.WorkerId</MudTh>
+        }
         <MudTd Class="text-center" DataLabel="OrderTime">@context.CreatedAt.ToString("MM/dd/yyyy hh:mm:ss")</MudTd>
         <MudTd Class="text-center" DataLabel="ItemName">
             @foreach (var orderItem in @context.OrderItems)
@@ -83,6 +92,7 @@
     private Task<AuthenticationState> authenticationState { get; set; }
     [Inject]
     private IAuthService AuthService { get; set; }
+    private ClaimsPrincipal user;
 
 
     [Parameter]
@@ -115,17 +125,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-
         await base.OnInitializedAsync();
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
+        var authState = await authenticationState;
+        user = authState.User;
 
         if (user.Identity.IsAuthenticated)
         {
-
             await LoadOrders();
-
-
         }
         else
         {
@@ -136,7 +142,6 @@
     {
         try
         {
-
             if (role != null)
             {
                 var response = await Orderservice.GetOrdersTableByRole(role, recent);
@@ -148,9 +153,7 @@
                 {
                     Console.WriteLine($"No order was found");
                 }
-
             }
-
         }
         catch (Exception ex)
         {
@@ -185,10 +188,7 @@
 
         if (thisOrder.Status != null)
         {
-
             order.Status = thisOrder.Status; // Update status
-
-
         }
 
         // Perform the update
@@ -202,20 +202,17 @@
                 ShowErrors = false;
                 StateHasChanged();
                 NavigationManager.NavigateTo("/my-orders");
-
             }
             else
             {
                 Errors = result.Error;
                 ShowErrors = true;
             }
-
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error updating order: {ex.Message}");
         }
-
         // Trigger UI update
         StateHasChanged();
     }
@@ -244,7 +241,6 @@
 
          order.Status = "Cancelled"; // Update status
            
-
         // Perform the update
         try
         {
@@ -283,7 +279,5 @@
 
         return false;
     }
-
-
 
 }
