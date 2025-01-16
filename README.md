@@ -10,7 +10,7 @@ The objective of this project is to develop a comprehensive order and delivery s
 4.	Admin: Admin who will view users account, and manage workers and merchants account.
 
 ## Tech Stack:
-- **Frontend:** HTML, CSS, C#, Blazor.
+- **Frontend:** HTML, CSS, C#, Blazor, JavaScript.
 - **Backend:** C#, ASP.NET Core，Azure Blob Storage.
 - **Database:** SQL server / SQLite
 - **Other tools:** Google Maps API, SignalR, Trello, GitHub, Figma
